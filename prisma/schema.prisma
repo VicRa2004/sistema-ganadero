@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+//  1. Entidades principales
+// ─────────────────────────────────────────────
+
+model User {
+  id        Int       @id @default(autoincrement()) @map("usr_id")
+  email     String    @unique @map("usr_email") @db.VarChar(128)
+  name      String    @map("usr_nombre") @db.VarChar(255)
+  password  String    @map("usr_password") @db.VarChar(255)
+  isActive  Boolean   @default(true) @map("estatus")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  // Relaciones N-a-N gestionadas por tablas intermedias explícitas
+  roles             UserRole[]
+  directPermissions UserPermission[]
+  refreshTokens     RefreshToken[]
+
+  @@map("user")
+}
+
+model Role {
+  id          Int       @id @default(autoincrement()) @map("rol_id")
+  name        String    @unique @map("rol_nombre") @db.VarChar(150) // e.g., 'ADMIN', 'MOD', 'USER'
+  description String?   @map("rol_descripcion") @db.Text
+  isActive    Boolean   @default(true) @map("estatus")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("rol")
+}
+
+/// Permiso atómico: combinación única de recurso + acción.
+/// Ejemplo: resource="turnos", action="create"
+model Permission {
+  id        Int       @id @default(autoincrement()) @map("per_id")
+  resource  String    @map("per_recurso") @db.VarChar(100) // e.g., "turnos", "users"
+  action    String    @map("per_accion") @db.VarChar(50) // e.g., "create", "read", "update", "delete"
+  isActive  Boolean   @default(true) @map("estatus")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  roles RolePermission[]
+  users UserPermission[]
+
+  @@unique([resource, action])
+  @@map("permiso")
+}
+
+// ─────────────────────────────────────────────
+//  2. Tablas intermedias (N-a-N explícitas)
+// ─────────────────────────────────────────────
+
+/// Asigna roles a usuarios
+model UserRole {
+  userId    Int      @map("usrrol_fkuser")
+  roleId    Int      @map("usrrol_fkrol")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+  @@map("user_rol")
+}
+
+/// Permisos que posee un rol completo
+model RolePermission {
+  roleId       Int @map("rolper_fkrol")
+  permissionId Int @map("rolper_fkpermiso")
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("rol_permiso")
+}
+
+/// Permisos directos o excepcionales por usuario (pueden conceder O denegar)
+model UserPermission {
+  userId       Int     @map("usrper_fkuser")
+  permissionId Int     @map("usrper_fkpermiso")
+  /// true = conceder, false = denegar (override sobre el rol)
+  granted      Boolean @default(true) @map("usrper_concedido")
+
+  user       User       @relation(fields: [userId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([userId, permissionId])
+  @@map("user_permiso")
+}
+
+// ─────────────────────────────────────────────
+//  3. Refresh Tokens
+// ─────────────────────────────────────────────
+
+/// Token de refresco para la rotación segura de sesiones.
+/// Se almacena un hash del token, nunca el token en claro.
+model RefreshToken {
+  id        Int      @id @default(autoincrement()) @map("rft_id")
+  tokenHash String   @unique @map("rft_token_hash") @db.VarChar(512)
+  userId    Int      @map("rft_fkuser")
+  expiresAt DateTime @map("rft_expires_at")
+  revoked   Boolean  @default(false) @map("rft_revoked")
+  createdAt DateTime @default(now()) @map("rft_created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_token")
+}

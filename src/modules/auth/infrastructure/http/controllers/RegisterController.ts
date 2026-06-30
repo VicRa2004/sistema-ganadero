@@ -1,0 +1,26 @@
+import type { Context } from "hono";
+import { injectable, inject } from "tsyringe";
+import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
+import { RegisterUseCase } from "../../../application/useCases/RegisterUseCase";
+
+import { validate } from "@/core/shared/infrastructure/libs/validate";
+import { registerSchema } from "../schemas/authSchemas";
+
+@injectable()
+export class RegisterController extends BaseController {
+  constructor(
+    @inject(RegisterUseCase) private readonly registerUseCase: RegisterUseCase,
+  ) {
+    super();
+  }
+
+  run = async (c: Context): Promise<Response> => {
+    return this.executeSafely(c, async () => {
+      const body = await c.req.json();
+      const dto = validate(registerSchema, body);
+      const result = await this.registerUseCase.run(dto);
+
+      return this.created(c, result);
+    });
+  };
+}

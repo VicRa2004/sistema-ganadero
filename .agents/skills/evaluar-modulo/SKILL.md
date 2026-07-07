@@ -15,6 +15,8 @@ Esta skill define el checklist y protocolo que se debe seguir para auditar, eval
 - [ ] **Aislamiento de Domain:** Abre todos los archivos dentro de `domain/` y asegúrate de que no importan nada relacionado con `infrastructure/` o dependencias externas (ej. `@prisma/client`, `hono`, `zod`, `jsonwebtoken`, `bcrypt`). Sólo deben importar otros elementos del dominio u objetos compartidos en `core/shared/domain/`.
 - [ ] **Aislamiento de Application:** Verifica que los archivos en `application/` interactúen con el dominio o dependencias externas sólo a través de interfaces inyectadas. No deben depender de bases de datos o detalles de transporte HTTP.
 - [ ] **Mappers y DTOs:** Comprueba que ningún caso de uso retorne una entidad de dominio directamente al exterior. Deben transformarse a DTOs mediante Mappers antes de salir de la capa de aplicación.
+- [ ] **Filtros en el Dominio:** Verificar que los filtros se ubiquen en un archivo `<Entidad>Filters.ts` en el dominio y posean obligatoriamente los parámetros `page: number` y `limit: number`.
+- [ ] **Queries Complejas:** Comprobar que las consultas complejas de lectura estén en `application/queries/` y que los controladores las consuman estrictamente a través de un Caso de Uso (nunca de forma directa).
 
 ### 2. Estilo de Código y TypeScript
 - [ ] **Sin Getters/Setters Nativos:** Verifica que no existan las palabras clave `get ` y `set ` precediendo métodos en clases de entidades.
@@ -23,6 +25,7 @@ Esta skill define el checklist y protocolo que se debe seguir para auditar, eval
 - [ ] **Regla de Idioma Mixto:**
   - *Español:* Nombres de entidades del dominio, propiedades y métodos que representen lógica de negocio interna (ej: `Ganado`, `peso`, `categoria`, `obtenerPeso()`, `getEdad()`).
   - *Inglés:* Nombres de interfaces de repositorios/servicios, casos de uso, controladores, routers y utilidades técnicas (ej: `UserRepository`, `CreateUserUseCase`, `PasswordHasher`, `CreateUserController`).
+- [ ] **Paginación Estándar:** Comprobar que todas las respuestas de listas paginadas utilicen la estructura genérica `Pagination<T>`.
 
 ### 3. Inyección de Dependencias (TSyringe)
 - [ ] **Decorador `@injectable()`:** Obligatorio en Casos de Uso, Controladores, Mappers y la implementación de Repositorios.

@@ -23,12 +23,14 @@ Antes de instalar cualquier paquete, revisar `package.json` para confirmar si ya
 
 ### Domain
 
-Interfaces, errores (extendiendo `BaseError`) y modelos. Sin dependencias de frameworks.
+- Interfaces, errores (extendiendo `BaseError`) y modelos. Sin dependencias de frameworks.
+- **Filtros:** Si se requieren filtros de búsqueda, definirlos en una interfaz dentro de un archivo `<Entidad>Filters.ts` en el dominio, incluyendo siempre `page: number` y `limit: number`.
 
 ### Application
 
-- Método principal de Use Cases: `run` (nunca `execute`)
-- Prohibido devolver entidades de dominio hacia HTTP. Usar Mappers y DTOs
+- Método principal de Use Cases: `run` (nunca `execute`).
+- Prohibido devolver entidades de dominio hacia HTTP. Usar Mappers y DTOs.
+- **Queries Complejas:** Para lecturas complejas o combinación de agregados, ubicar interfaces en `application/queries/`. Deben ser llamadas por controladores a través de un Caso de Uso (nunca directamente). Respuestas paginadas deben usar `Pagination<T>`.
 
 ### Infrastructure — HTTP
 

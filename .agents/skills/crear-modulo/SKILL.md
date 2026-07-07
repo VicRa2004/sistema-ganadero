@@ -42,18 +42,20 @@ Cada módulo nuevo debe ubicarse en `src/modules/<nombre>/` y seguir esta estruc
 src/modules/<nombre>/
 ├── domain/
 │   ├── error/             ← Errores del dominio que heredan de BaseError
-│   ├── repository/        ← Interfaces de repositorio (Inglés, ej. GanadoRepository.ts)
+│   ├── repository/        ← Interfaces de repositorio e interfaces de filtros (ej. GanadoFilters.ts)
 │   ├── service/           ← Interfaces de servicios externos (Inglés, ej. ValidadorIdentificador.ts)
 │   └── <Entidad>.ts       ← Clase de entidad (Español, ej. Ganado.ts)
 ├── application/
-│   ├── dtos/              ← Tipos o interfaces DTO (Inglés, ej. RegistrarGanadoDto.ts)
+│   ├── dtos/              ← DTOs para Casos de Uso y/o Queries (ej. GanadoOcupacionDto.ts)
 │   ├── mappers/           ← Transformadores Entidad -> DTO decorados con @injectable()
+│   ├── queries/           ← Interfaces de consultas complejas de lectura (ej. GanadoOcupacionQuery.ts)
 │   └── useCases/          ← Casos de uso con método principal 'run'
 └── infrastructure/
-    ├── repository/        ← Implementación real usando Prisma (ej. PrismaGanadoRepository.ts)
+    ├── repository/        ← Implementación de repositorios usando Prisma (ej. PrismaGanadoRepository.ts)
+    ├── queries/           ← Implementación de consultas complejas usando Prisma (ej. PrismaGanadoOcupacionQuery.ts)
     ├── service/           ← Implementaciones de servicios reales
     └── http/
-        ├── controllers/   ← Un controlador por caso de uso, heredan de BaseController
+        ├── controllers/   ← Un controlador por caso de uso/query, heredan de BaseController
         ├── middlewares/
         ├── routes/        ← Clases router inyectables, definen endpoints
         └── schemas/       ← Validaciones de entrada de Zod
@@ -280,10 +282,123 @@ src/modules/<nombre>/
 
 ### Paso 4: Registrar en el Contenedor de Inyección de Dependencias
 
-Registrar la asociación en `src/core/shared/infrastructure/di/container.ts`:
+Registrar la asociación de tu repositorio y servicios en `src/core/shared/infrastructure/di/container.ts`:
 
 ```typescript
 import { PrismaGanadoRepository } from "@/modules/ganado/infrastructure/repository/PrismaGanadoRepository";
 
 container.register("GanadoRepository", { useClass: PrismaGanadoRepository });
 ```
+
+---
+
+## Directrices Avanzadas: Filtros, Queries Complejas y Paginación
+
+### 1. Filtros en el Dominio (`domain/repository/GanadoFilters.ts`)
+Cuando necesites filtros en consultas, encapsúlalos en una interfaz dedicada dentro del dominio y añade las propiedades de paginación obligatorias:
+
+```typescript
+export interface GanadoFilters {
+  page: number;
+  limit: number;
+  // Filtros de negocio opcionales
+  identificador?: string;
+  ranchoId?: string;
+}
+```
+
+### 2. Paginación Estándar (`Pagination<T>`)
+Toda colección paginada debe retornar la estructura común de [Pagination.ts](file:///home/victor-raul/proyectos/sistema-ganadero/src/core/shared/domain/Pagination.ts):
+
+```typescript
+import type { Pagination } from "@/core/shared/domain/Pagination";
+
+// Retorno en Repositorios o Casos de Uso
+async find(filters: GanadoFilters): Promise<Pagination<Ganado>>;
+```
+
+### 3. Consultas Complejas (Queries en Application)
+Para vistas que no se correspondan con una sola entidad o requieran joins complejos (por ejemplo, reporte de ocupación física de ranchos):
+
+1. **Definir DTO de salida (`application/dtos/GanadoOcupacionDto.ts`):**
+   ```typescript
+   export interface RanchoOcupacionDto {
+     ranchoId: string;
+     nombreRancho: string;
+     cabezasRegistradas: number;
+     capacidadMaxima: number;
+     porcentajeOcupacion: number;
+   }
+   ```
+
+2. **Crear interfaz de Query (`application/queries/RanchoOcupacionQuery.ts`):**
+   ```typescript
+   import type { Pagination } from "@/core/shared/domain/Pagination";
+   import type { RanchoOcupacionDto } from "../dtos/GanadoOcupacionDto";
+
+   export interface RanchoOcupacionQueryFilters {
+     page: number;
+     limit: number;
+     nombreRancho?: string;
+   }
+
+   export interface RanchoOcupacionQuery {
+     obtenerOcupacion(filters: RanchoOcupacionQueryFilters): Promise<Pagination<RanchoOcupacionDto>>;
+   }
+   ```
+
+3. **Crear el Caso de Uso que la consume (`application/useCases/ObtenerOcupacionRanchosUseCase.ts`):**
+   *Los controladores nunca llaman a la query de forma directa; siempre inyectan el caso de uso.*
+   ```typescript
+   import { inject, injectable } from "tsyringe";
+   import type { Pagination } from "@/core/shared/domain/Pagination";
+   import type { RanchoOcupacionQuery, RanchoOcupacionQueryFilters } from "../queries/RanchoOcupacionQuery";
+   import type { RanchoOcupacionDto } from "../dtos/GanadoOcupacionDto";
+
+   @injectable()
+   export class ObtenerOcupacionRanchosUseCase {
+     constructor(
+       @inject("RanchoOcupacionQuery") private readonly query: RanchoOcupacionQuery
+     ) {}
+
+     public async run(filters: RanchoOcupacionQueryFilters): Promise<Pagination<RanchoOcupacionDto>> {
+       return this.query.obtenerOcupacion(filters);
+     }
+   }
+   ```
+
+4. **Implementar en Infraestructura (`infrastructure/queries/PrismaRanchoOcupacionQuery.ts`):**
+   ```typescript
+   import { injectable } from "tsyringe";
+   import { PrismaClient } from "@prisma/client";
+   import type { Pagination } from "@/core/shared/domain/Pagination";
+   import type { RanchoOcupacionQuery, RanchoOcupacionQueryFilters } from "../../application/queries/RanchoOcupacionQuery";
+   import type { RanchoOcupacionDto } from "../../application/dtos/GanadoOcupacionDto";
+
+   @injectable()
+   export class PrismaRanchoOcupacionQuery implements RanchoOcupacionQuery {
+     constructor(private readonly prisma: PrismaClient) {}
+
+     public async obtenerOcupacion(filters: RanchoOcupacionQueryFilters): Promise<Pagination<RanchoOcupacionDto>> {
+       const skip = (filters.page - 1) * filters.limit;
+       
+       // Lógica de consulta (ej. prisma.$queryRaw o joins optimizados)
+       // ...
+
+       return {
+         data: [], // Datos mapeados
+         page: filters.page,
+         totalItems: 0,
+         totalPages: 0
+       };
+     }
+   }
+   ```
+
+5. **Registrar la Query en el Contenedor de Inyección:**
+   ```typescript
+   import { PrismaRanchoOcupacionQuery } from "@/modules/ganado/infrastructure/queries/PrismaRanchoOcupacionQuery";
+
+   container.register("RanchoOcupacionQuery", { useClass: PrismaRanchoOcupacionQuery });
+   ```
+

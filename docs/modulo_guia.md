@@ -29,6 +29,19 @@ El flujo de desarrollo y dependencias va siempre de adentro hacia afuera:
 - Inyectar las interfaces mediante `@inject("TokenName")` en los constructores.
 - Registrar el mapeo de interfaces a implementaciones en `src/core/shared/infrastructure/di/container.ts`.
 
+### E. Filtros en el Dominio (`<Entidad>Filters.ts`)
+- Las consultas paginadas o complejas del dominio que requieran filtros deben definirse en una interfaz específica dentro del dominio (ej: `GanadoFilters.ts` en `domain/repository/` o `domain/`).
+- Esta interfaz debe incluir de forma obligatoria los atributos `page: number` y `limit: number` debido al estándar de paginación de la app.
+
+### F. Consultas Complejas (Queries en Application)
+- Para vistas complejas que requieran combinar información de múltiples agregados o procesar datos con lógica no correspondiente a una sola entidad (evitando contaminar el dominio con modelos de lectura ad-hoc), se define la carpeta `application/queries/`.
+- Aquí irán interfaces de consultas específicas (ej: `GanadoOcupacionQuery.ts`) con sus propios DTOs de salida y filtros de entrada.
+- Su implementación real se efectúa en infraestructura (ej: `PrismaGanadoOcupacionQuery.ts` mediante SQL crudo o queries optimizadas).
+- **Regla Estricta:** Los controladores HTTP no pueden consumir estas queries directamente; deben hacerlo a través de un Caso de Uso (inyectando la interfaz de la query).
+
+### G. Paginación Estándar (`Pagination<T>`)
+- Cualquier endpoint o consulta que devuelva colecciones de datos paginadas debe estructurar la salida mediante la interfaz genérica `Pagination<T>` provista en [Pagination.ts](file:///home/victor-raul/proyectos/sistema-ganadero/src/core/shared/domain/Pagination.ts).
+
 ---
 
 ## 2. Inventario y Estado de los Módulos

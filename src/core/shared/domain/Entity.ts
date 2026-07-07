@@ -1,5 +1,5 @@
 import { EntityId } from "./EntityId";
-import { DomainEvent } from "./events/DomainEvent";
+import type { DomainEvent } from "./events/DomainEvent";
 
 export abstract class Entity {
   protected readonly id: EntityId;

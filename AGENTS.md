@@ -1,4 +1,4 @@
-# Reglas del Proyecto (Hexacore)
+# Reglas del Proyecto - Sistemas Ganadero
 
 ## Stack
 

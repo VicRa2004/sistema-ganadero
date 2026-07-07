@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 
 import type { LoginController } from "../controllers/LoginController";
 import type { RegisterController } from "../controllers/RegisterController";
@@ -11,9 +11,13 @@ export class AuthRouter {
 	public readonly router: Hono;
 
 	constructor(
+		@inject("LoginController")
 		private readonly loginController: LoginController,
+		@inject("RegisterController")
 		private readonly registerController: RegisterController,
+		@inject("RefreshTokenController")
 		private readonly refreshTokenController: RefreshTokenController,
+		@inject("LogoutController")
 		private readonly logoutController: LogoutController,
 	) {
 		this.router = new Hono();

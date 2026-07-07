@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { GetAllPermissionsUseCase } from "../../../application/useCases/GetAllPermissionsUseCase";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
@@ -6,6 +6,7 @@ import { BaseController } from "@/core/shared/infrastructure/http/base.controlle
 @injectable()
 export class GetAllPermissionsController extends BaseController {
 	constructor(
+		@inject("GetAllPermissionsUseCase")
 		private readonly getAllPermissionsUseCase: GetAllPermissionsUseCase,
 	) {
 		super();

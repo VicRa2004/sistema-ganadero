@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { DeletePermissionUseCase } from "../../../application/useCases/DeletePermissionUseCase";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
@@ -8,6 +8,7 @@ import { permissionIdSchema } from "../schemas/permissionSchemas";
 @injectable()
 export class DeletePermissionController extends BaseController {
 	constructor(
+		@inject("DeletePermissionUseCase")
 		private readonly deletePermissionUseCase: DeletePermissionUseCase,
 	) {
 		super();

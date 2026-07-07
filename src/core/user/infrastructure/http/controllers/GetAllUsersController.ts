@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { GetAllUsersUseCase } from "../../../application/useCases/GetAllUsersUseCase";
 import { getAllUsersSchema } from "../schemas/userSchemas";
@@ -7,7 +7,10 @@ import { validate } from "@/core/shared/infrastructure/libs/validate";
 
 @injectable()
 export class GetAllUsersController extends BaseController {
-	constructor(private readonly getAllUsersUseCase: GetAllUsersUseCase) {
+	constructor(
+		@inject("GetAllUsersUseCase")
+		private readonly getAllUsersUseCase: GetAllUsersUseCase,
+	) {
 		super();
 	}
 

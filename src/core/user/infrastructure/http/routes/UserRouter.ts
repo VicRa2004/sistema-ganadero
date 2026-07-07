@@ -20,10 +20,15 @@ export class UserRouter {
 		private readonly authMiddleware: AuthMiddleware,
 		@inject("RequirePermissionMiddleware")
 		private readonly requirePermissionMiddleware: RequirePermissionMiddleware,
+		@inject("CreateUserController")
 		private readonly createUserController: CreateUserController,
+		@inject("GetAllUsersController")
 		private readonly getAllUsersController: GetAllUsersController,
+		@inject("GetOneUserController")
 		private readonly getOneUserController: GetOneUserController,
+		@inject("UpdateUserController")
 		private readonly updateUserController: UpdateUserController,
+		@inject("DeleteUserController")
 		private readonly deleteUserController: DeleteUserController,
 	) {
 		this.router = new Hono();

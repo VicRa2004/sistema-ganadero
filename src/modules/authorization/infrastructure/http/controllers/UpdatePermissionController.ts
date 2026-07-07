@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { UpdatePermissionUseCase } from "../../../application/useCases/UpdatePermissionUseCase";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
@@ -11,6 +11,7 @@ import {
 @injectable()
 export class UpdatePermissionController extends BaseController {
 	constructor(
+		@inject("UpdatePermissionUseCase")
 		private readonly updatePermissionUseCase: UpdatePermissionUseCase,
 	) {
 		super();

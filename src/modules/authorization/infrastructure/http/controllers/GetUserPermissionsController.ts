@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { GetUserPermissionsUseCase } from "../../../application/useCases/GetUserPermissionsUseCase";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
@@ -8,6 +8,7 @@ import { userIdParamSchema } from "../schemas/permissionSchemas";
 @injectable()
 export class GetUserPermissionsController extends BaseController {
 	constructor(
+		@inject("GetUserPermissionsUseCase")
 		private readonly getUserPermissionsUseCase: GetUserPermissionsUseCase,
 	) {
 		super();

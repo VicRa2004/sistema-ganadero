@@ -21,11 +21,17 @@ export class PermissionRouter {
 		private readonly authMiddleware: AuthMiddleware,
 		@inject("RequirePermissionMiddleware")
 		private readonly requirePermissionMiddleware: RequirePermissionMiddleware,
+		@inject("GetAllPermissionsController")
 		private readonly getAllPermissionsController: GetAllPermissionsController,
+		@inject("GetPermissionController")
 		private readonly getPermissionController: GetPermissionController,
+		@inject("CreatePermissionController")
 		private readonly createPermissionController: CreatePermissionController,
+		@inject("UpdatePermissionController")
 		private readonly updatePermissionController: UpdatePermissionController,
+		@inject("DeletePermissionController")
 		private readonly deletePermissionController: DeletePermissionController,
+		@inject("GetUserPermissionsController")
 		private readonly getUserPermissionsController: GetUserPermissionsController,
 	) {
 		this.router = new Hono();

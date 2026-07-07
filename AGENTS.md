@@ -50,11 +50,13 @@ Todo en `infrastructure/http/`: Rutas, Controladores, Middlewares, Schemas.
 
 ## Inyección de dependencias (TSyringe)
 
-- `@injectable()` obligatorio en: Casos de Uso, Controladores, Repos, Mappers
-- Prohibido instanciar con `new`
-- Interfaces: registrar en `src/core/shared/infrastructure/di/container.ts` e inyectar con `@inject("TokenName")`
-- `import type` → Interfaces, DTOs, Tipos inyectados vía `@inject`
-- `import` regular → Clases inyectadas directamente (ej: Controladores en Rutas)
+- `@injectable()` obligatorio en: Casos de Uso, Controladores, Repos, Mappers.
+- Prohibido instanciar con `new`.
+- **Uso Obligatorio de String Tokens con `@inject`:** Debido a que el linter de Biome fuerza a usar `import type` para las clases que solo se usen en posiciones de tipo del constructor, el compilador descarta sus referencias en runtime y TSyringe no puede inyectarlas de forma automática por tipo de clase (arrojaría el error `TypeInfo not known for "Object"`).
+- **Regla de Inyección:** Se debe inyectar **SIEMPRE** mediante tokens de texto con `@inject("TokenString")` tanto en Routers, Controladores como en Casos de Uso.
+  - *Ejemplo:* `constructor(@inject("CreateUserUseCase") private readonly createUserUseCase: CreateUserUseCase) {}`
+- **Registro Centralizado:** Todas las clases de Casos de Uso, Controladores, Mappers y Repositorios deben registrarse explícitamente en el contenedor central `src/core/shared/infrastructure/di/container.ts` asociándolos a su token string correspondiente.
+  - *Ejemplo:* `container.register("CreateUserUseCase", { useClass: CreateUserUseCase });`
 
 ## Convenciones de Código y Nomenclatura
 

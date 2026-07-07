@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { CreateUserUseCase } from "../../../application/useCases/CreateUserUseCase";
 import { createUserSchema } from "../schemas/userSchemas";
@@ -7,7 +7,10 @@ import { validate } from "@/core/shared/infrastructure/libs/validate";
 
 @injectable()
 export class CreateUserController extends BaseController {
-	constructor(private readonly createUserUseCase: CreateUserUseCase) {
+	constructor(
+		@inject("CreateUserUseCase")
+		private readonly createUserUseCase: CreateUserUseCase,
+	) {
 		super();
 	}
 

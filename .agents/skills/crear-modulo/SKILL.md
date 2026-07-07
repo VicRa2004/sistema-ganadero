@@ -179,27 +179,27 @@ src/modules/<nombre>/
    El caso de uso debe usar inyección de dependencias, el decorador `@injectable()` y el método `run()`.
 
    ```typescript
-   import { inject, injectable } from "tsyringe";
-   import { Ganado } from "../../domain/Ganado";
-   import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
-   import type { RegistrarGanadoInputDto, GanadoOutputDto } from "../dtos/RegistrarGanadoDto";
-   import { GanadoMapper } from "../mappers/GanadoMapper";
-
-   @injectable()
-   export class RegistrarGanadoUseCase {
-     constructor(
-       @inject("GanadoRepository") private readonly ganadoRepository: GanadoRepository,
-       private readonly mapper: GanadoMapper
-     ) {}
-
-     public async run(dto: RegistrarGanadoInputDto): Promise<GanadoOutputDto> {
-       const id = crypto.randomUUID(); // Generación nativa
-       const ganado = Ganado.create(id, dto.identificador, dto.peso, dto.edadEnMeses);
-       
-       await this.ganadoRepository.save(ganado);
-       return this.mapper.toDto(ganado);
-     }
-   }
+    import { inject, injectable } from "tsyringe";
+    import { Ganado } from "../../domain/Ganado";
+    import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
+    import type { RegistrarGanadoInputDto, GanadoOutputDto } from "../dtos/RegistrarGanadoDto";
+    import type { GanadoMapper } from "../mappers/GanadoMapper";
+ 
+    @injectable()
+    export class RegistrarGanadoUseCase {
+      constructor(
+        @inject("GanadoRepository") private readonly ganadoRepository: GanadoRepository,
+        @inject("GanadoMapper") private readonly mapper: GanadoMapper
+      ) {}
+ 
+      public async run(dto: RegistrarGanadoInputDto): Promise<GanadoOutputDto> {
+        const id = crypto.randomUUID(); // Generación nativa
+        const ganado = Ganado.create(id, dto.identificador, dto.peso, dto.edadEnMeses);
+        
+        await this.ganadoRepository.save(ganado);
+        return this.mapper.toDto(ganado);
+      }
+    }
    ```
 
 ### Paso 3: Definir la Infraestructura
@@ -257,14 +257,17 @@ src/modules/<nombre>/
    Hereda de `BaseController` y usa `this.executeSafely()`.
 
    ```typescript
-   import { injectable } from "tsyringe";
-   import type { Context } from "hono";
-   import { BaseController } from "@/core/shared/infrastructure/http/BaseController";
-   import { RegistrarGanadoUseCase } from "../../../application/useCases/RegistrarGanadoUseCase";
-
-   @injectable()
-   export class RegistrarGanadoController extends BaseController {
-     constructor(private readonly registrarGanadoUseCase: RegistrarGanadoUseCase) {
+    import { inject, injectable } from "tsyringe";
+    import type { Context } from "hono";
+    import { BaseController } from "@/core/shared/infrastructure/http/BaseController";
+    import type { RegistrarGanadoUseCase } from "../../../application/useCases/RegistrarGanadoUseCase";
+ 
+    @injectable()
+    export class RegistrarGanadoController extends BaseController {
+      constructor(
+        @inject("RegistrarGanadoUseCase")
+        private readonly registrarGanadoUseCase: RegistrarGanadoUseCase
+      ) {
        super();
      }
 
@@ -283,17 +286,18 @@ src/modules/<nombre>/
    Clase decorada con `@injectable()`, inyecta controladores por constructor y asigna los endpoints usando `.bind()`.
 
    ```typescript
-   import { injectable } from "tsyringe";
-   import { Hono } from "hono";
-   import { RegistrarGanadoController } from "../controllers/RegistrarGanadoController";
-
-   @injectable()
-   export class GanadoRouter {
-     public readonly router: Hono;
-
-     constructor(
-       private readonly registrarController: RegistrarGanadoController
-     ) {
+    import { inject, injectable } from "tsyringe";
+    import { Hono } from "hono";
+    import type { RegistrarGanadoController } from "../controllers/RegistrarGanadoController";
+ 
+    @injectable()
+    export class GanadoRouter {
+      public readonly router: Hono;
+ 
+      constructor(
+        @inject("RegistrarGanadoController")
+        private readonly registrarController: RegistrarGanadoController
+      ) {
        this.router = new Hono();
        this.router.post("/", this.registrarController.run.bind(this.registrarController));
      }
@@ -302,12 +306,18 @@ src/modules/<nombre>/
 
 ### Paso 4: Registrar en el Contenedor de Inyección de Dependencias
 
-Registrar la asociación de tu repositorio y servicios en `src/core/shared/infrastructure/di/container.ts`:
+Registrar la asociación de tu repositorio, casos de uso, controladores y mappers en `src/core/shared/infrastructure/di/container.ts`:
 
 ```typescript
 import { PrismaGanadoRepository } from "@/modules/ganado/infrastructure/repository/PrismaGanadoRepository";
+import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
+import { RegistrarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarGanadoController";
+import { GanadoMapper } from "@/modules/ganado/application/mappers/GanadoMapper";
 
 container.register("GanadoRepository", { useClass: PrismaGanadoRepository });
+container.register("RegistrarGanadoUseCase", { useClass: RegistrarGanadoUseCase });
+container.register("RegistrarGanadoController", { useClass: RegistrarGanadoController });
+container.register("GanadoMapper", { useClass: GanadoMapper });
 ```
 
 ---

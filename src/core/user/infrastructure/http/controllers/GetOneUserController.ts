@@ -1,4 +1,4 @@
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { GetOneUserUseCase } from "../../../application/useCases/GetOneUserUseCase";
 import { userIdSchema } from "../schemas/userSchemas";
@@ -7,7 +7,10 @@ import { validate } from "@/core/shared/infrastructure/libs/validate";
 
 @injectable()
 export class GetOneUserController extends BaseController {
-	constructor(private readonly getOneUserUseCase: GetOneUserUseCase) {
+	constructor(
+		@inject("GetOneUserUseCase")
+		private readonly getOneUserUseCase: GetOneUserUseCase,
+	) {
 		super();
 	}
 

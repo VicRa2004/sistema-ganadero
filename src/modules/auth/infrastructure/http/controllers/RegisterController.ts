@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { injectable, inject } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
-import { RegisterUseCase } from "../../../application/useCases/RegisterUseCase";
+import type { RegisterUseCase } from "../../../application/useCases/RegisterUseCase";
 
 import { validate } from "@/core/shared/infrastructure/libs/validate";
 import { registerSchema } from "../schemas/authSchemas";
@@ -9,7 +9,8 @@ import { registerSchema } from "../schemas/authSchemas";
 @injectable()
 export class RegisterController extends BaseController {
 	constructor(
-		@inject(RegisterUseCase) private readonly registerUseCase: RegisterUseCase,
+		@inject("RegisterUseCase")
+		private readonly registerUseCase: RegisterUseCase,
 	) {
 		super();
 	}

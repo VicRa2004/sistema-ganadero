@@ -5,7 +5,13 @@ description: Guía detallada y obligatoria para crear un nuevo módulo en el sis
 
 # Crear Módulo en el Sistema Ganadero
 
-Esta skill define la estructura, las reglas de nomenclatura y el proceso para crear un nuevo módulo de negocio dentro del directorio `src/modules/`.
+Esta skill define la estructura, las reglas de nomenclatura y el proceso para crear un nuevo módulo dentro de la aplicación.
+
+> [!IMPORTANT]
+> - Antes de diseñar o codificar un módulo, consulta la guía central [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md) y su respectiva especificación funcional dentro de la carpeta [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/).
+> - **Ubicación de Módulos:**
+>   - **Módulos de Negocio Ganadero:** Deben crearse dentro del directorio `src/modules/<nombre_modulo>/`.
+>   - **Módulos Genéricos o Transversales:** Todo módulo o utilidad que sea de uso general o soporte compartido por toda la aplicación (por ejemplo, el módulo de gestión de usuarios `user`) debe colocarse dentro de `src/core/` y no en `src/modules/`.
 
 ## Convenciones Críticas
 

@@ -30,6 +30,10 @@ Esta skill define el checklist y protocolo que se debe seguir para auditar, eval
 - [ ] **Sin Instanciación Manual (`new`):** Prohibido instanciar clases inyectables con `new` dentro de la lógica del sistema (excepto en tests unitarios para mockear el entorno).
 - [ ] **Registro en Contenedor:** Comprobar que las interfaces implementadas estén mapeadas a su clase concreta en `src/core/shared/infrastructure/di/container.ts`.
 
+### 4. Cumplimiento Funcional y Documentación
+- [ ] **Ficha Técnica de Módulo:** Compara la lógica implementada contra la ficha de diseño respectiva en [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/). Valida que se hayan codificado todas las propiedades del dominio, métodos de negocio y casos de uso requeridos.
+- [ ] **Alineación con el Catálogo:** Verifica que las reglas generales y estado del módulo estén de acuerdo con [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md).
+
 ---
 
 ## Protocolo de Pruebas Técnicas

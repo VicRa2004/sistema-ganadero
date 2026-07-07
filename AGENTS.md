@@ -14,9 +14,10 @@ Antes de instalar cualquier paquete, revisar `package.json` para confirmar si ya
 ## Arquitectura
 
 - `src/` — todo el código
-- `src/core/` — base general y modulos compartidos
-- `src/modules/<nombre>/{domain,application,infrastructure}` — lógica de negocio
-- `/docs` — guías detalladas (p.ej., cómo crear un módulo completo)
+- `src/core/` — base general, soporte compartido y módulos transversales/genéricos (ej. `user`).
+- `src/modules/<nombre>/{domain,application,infrastructure}` — lógica de negocio específica del dominio ganadero. Prohibido colocar aquí lógica genérica de la aplicación.
+- `/docs` — documentación funcional y guías. Destaca [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md) como índice central y los archivos en [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/) para especificaciones por módulo.
+
 
 ## Capas
 
@@ -62,6 +63,6 @@ Todo en `infrastructure/http/`: Rutas, Controladores, Middlewares, Schemas.
 
 ## Skills de Asistencia Local
 
-- Para crear un nuevo módulo, apóyate en la skill local `crear-modulo` (`.agents/skills/crear-modulo/SKILL.md`).
+- Para crear un nuevo módulo, apóyate en la skill local `crear-modulo` (`.agents/skills/crear-modulo/SKILL.md`), la cual te guiará usando [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md) y sus respectivas fichas técnicas en [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/).
 - Para auditar y evaluar un módulo, apóyate en la skill local `evaluar-modulo` (`.agents/skills/evaluar-modulo/SKILL.md`).
 

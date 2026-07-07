@@ -52,3 +52,16 @@ Todo en `infrastructure/http/`: Rutas, Controladores, Middlewares, Schemas.
 - Interfaces: registrar en `src/core/shared/infrastructure/di/container.ts` e inyectar con `@inject("TokenName")`
 - `import type` → Interfaces, DTOs, Tipos inyectados vía `@inject`
 - `import` regular → Clases inyectadas directamente (ej: Controladores en Rutas)
+
+## Convenciones de Código y Nomenclatura
+
+- **Getters/Setters:** Prohibido el uso de getters y setters nativos de TypeScript (`get ` y `set ` en métodos). En su lugar, usar métodos normales (ej: `getNombre()`, `setNombre()`).
+- **Idioma Mixto:**
+  - Usar **Español** para la lógica interna y del dominio (ej: entidad `Ganado`, `getEdad()`, atributo `peso`).
+  - Usar **Inglés** para conceptos de diseño estandarizados, patrones arquitectónicos (DDD) e infraestructura (ej: `EventBus`, `UserRepository`, `CreateUserUseCase`).
+
+## Skills de Asistencia Local
+
+- Para crear un nuevo módulo, apóyate en la skill local `crear-modulo` (`.agents/skills/crear-modulo/SKILL.md`).
+- Para auditar y evaluar un módulo, apóyate en la skill local `evaluar-modulo` (`.agents/skills/evaluar-modulo/SKILL.md`).
+

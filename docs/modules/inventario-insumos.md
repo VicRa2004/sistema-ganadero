@@ -61,17 +61,25 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model Insumo {
-  id             String    @id @default(uuid()) @map("ins_id")
-  nombre         String    @map("ins_nombre") @db.VarChar(150)
-  tipo           String    @map("ins_tipo") @db.VarChar(20) // MEDICAMENTO, VACUNA, ALIMENTO
-  stock          Float     @map("ins_stock")
-  stockMinimo    Float     @map("ins_stock_minimo")
-  unidadMedida   String    @map("ins_unidad") @db.VarChar(20)
-  lote           String    @map("ins_lote") @db.VarChar(50)
-  fechaCaducidad DateTime  @map("ins_fecha_caducidad")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime? @updatedAt @map("updated_at")
+  id             Int        @id @default(autoincrement()) @map("ins_id")
+  nombre         String     @map("ins_nombre") @db.VarChar(150)
+  tipo           TipoInsumo @map("ins_tipo")
+  stock          Float      @map("ins_stock")
+  stockMinimo    Float      @map("ins_stock_minimo")
+  unidadMedida   String     @map("ins_unidad") @db.VarChar(20)
+  lote           String     @map("ins_lote") @db.VarChar(50)
+  fechaCaducidad DateTime   @map("ins_fecha_caducidad")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime?  @updatedAt @map("updated_at")
+  deletedAt      DateTime?  @map("deleted_at")
+
+  sesionesSanitarias  SesionSanitaria[]
+  tratamientosMedicos TratamientoMedico[]
 
   @@map("insumo")
 }
 ```
+
+> [!NOTE]
+> **Nota de Diseño (Soft Delete):** La entidad de dominio no expone la propiedad `deletedAt` ya que es un detalle de persistencia. La exclusión de registros eliminados suavemente se maneja a nivel de infraestructura (repositorio) al realizar consultas (filtrando `deletedAt: null`).
+

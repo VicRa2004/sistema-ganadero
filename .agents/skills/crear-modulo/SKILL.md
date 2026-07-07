@@ -32,6 +32,15 @@ Esta skill define la estructura, las reglas de nomenclatura y el proceso para cr
 - **Application:** Contiene los casos de uso (`run`), DTOs y mappers. Se inyectan interfaces del dominio mediante `@inject("Token")` de TSyringe. Está prohibido devolver entidades de dominio hacia HTTP; siempre transformar a DTO usando Mappers.
 - **Infrastructure:** Implementa las interfaces de repositorio (Prisma) y de servicios, y contiene el transporte HTTP (controladores, rutas, middlewares y esquemas Zod).
 
+### 4. Alineación de Identificadores (Core)
+- Para mantener la compatibilidad con el Core (`Entity`, `EntityId`), los nuevos módulos de negocio deben utilizar identificadores de tipo **`Int` autoincrementales** en la persistencia y base de datos (evitando el uso de UUIDs como claves primarias).
+
+### 5. Eliminación Suave (Soft Delete)
+- **Desacoplamiento:** El dominio **no debe** tener conocimiento del atributo `deletedAt` (no se expone en la entidad). Es un detalle puramente de persistencia.
+- **Filtrado en Repositorios:** La exclusión de registros eliminados se gestiona a nivel de repositorio (Infraestructura). En cualquier consulta (`findUnique`, `findFirst`, `findMany`), se debe aplicar el filtro `deletedAt: null`.
+- **Borrado Lógico:** El método para eliminar un registro en el repositorio no realiza un delete físico en la base de datos, sino que realiza una actualización seteando `deletedAt = new Date()`.
+
+
 ---
 
 ## Estructura de Directorios
@@ -204,33 +213,44 @@ src/modules/<nombre>/
    import { Ganado } from "../../domain/Ganado";
    import { PrismaClient } from "@prisma/client"; // Asumiendo cliente global configurado
 
-   @injectable()
-   export class PrismaGanadoRepository implements GanadoRepository {
-     constructor(private readonly prisma: PrismaClient) {}
+    @injectable()
+    export class PrismaGanadoRepository implements GanadoRepository {
+      constructor(private readonly prisma: PrismaClient) {}
 
-     public async findById(id: string): Promise<Ganado | null> {
-       const record = await this.prisma.ganado.findUnique({ where: { id } });
-       if (!record) return null;
-       return Ganado.create(record.id, record.identificador, record.peso, record.edadEnMeses);
-     }
+      public async findById(id: number): Promise<Ganado | null> {
+        // Importante: Filtrar por deletedAt: null para ignorar eliminados suaves
+        const record = await this.prisma.ganado.findFirst({
+          where: { id, deletedAt: null }
+        });
+        if (!record) return null;
+        return Ganado.create(record.id, record.identificador, record.peso, record.edadEnMeses);
+      }
 
-     public async save(ganado: Ganado): Promise<void> {
-       await this.prisma.ganado.upsert({
-         where: { id: ganado.getId() },
-         update: {
-           identificador: ganado.getIdentificador(),
-           peso: ganado.getPeso(),
-           edadEnMeses: ganado.getEdadEnMeses()
-         },
-         create: {
-           id: ganado.getId(),
-           identificador: ganado.getIdentificador(),
-           peso: ganado.getPeso(),
-           edadEnMeses: ganado.getEdadEnMeses()
-         }
-       });
-     }
-   }
+      public async save(ganado: Ganado): Promise<void> {
+        await this.prisma.ganado.upsert({
+          where: { id: ganado.getId() },
+          update: {
+            identificador: ganado.getIdentificador(),
+            peso: ganado.getPeso(),
+            edadEnMeses: ganado.getEdadEnMeses()
+          },
+          create: {
+            id: ganado.getId(),
+            identificador: ganado.getIdentificador(),
+            peso: ganado.getPeso(),
+            edadEnMeses: ganado.getEdadEnMeses()
+          }
+        });
+      }
+
+      // Ejemplo de eliminación suave en infraestructura
+      public async delete(id: number): Promise<void> {
+        await this.prisma.ganado.update({
+          where: { id },
+          data: { deletedAt: new Date() }
+        });
+      }
+    }
    ```
 
 2. **Controlador HTTP (`infrastructure/http/controllers/RegistrarGanadoController.ts`):**

@@ -46,13 +46,20 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model Propietario {
-  id        String    @id @default(uuid()) @map("prop_id")
+  id        Int       @id @default(autoincrement()) @map("prop_id")
   nombre    String    @map("prop_nombre") @db.VarChar(255)
   telefono  String?   @map("prop_telefono") @db.VarChar(20)
   correo    String?   @map("prop_correo") @db.VarChar(128)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  ganados   Ganado[]
 
   @@map("propietario")
 }
 ```
+
+> [!NOTE]
+> **Nota de Diseño (Soft Delete):** La entidad de dominio no expone la propiedad `deletedAt` ya que es un detalle de persistencia. La exclusión de registros eliminados suavemente se maneja a nivel de infraestructura (repositorio) al realizar consultas (filtrando `deletedAt: null`).
+

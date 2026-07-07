@@ -63,17 +63,28 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model Ganado {
-  id             String    @id @default(uuid()) @map("gan_id")
-  identificador  String    @unique @map("gan_identificador") @db.VarChar(50)
-  peso           Float     @map("gan_peso")
-  edadEnMeses    Int       @map("gan_edad_meses")
-  sexo           String    @map("gan_sexo") @db.VarChar(10)
-  razaId         String    @map("gan_fkraza")
-  ranchoId       String    @map("gan_fkrancho")
-  propietarioId  String    @map("gan_fkpropietario")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime? @updatedAt @map("updated_at")
+  id            Int        @id @default(autoincrement()) @map("gan_id")
+  identificador String     @unique @map("gan_identificador") @db.VarChar(50)
+  peso          Float      @map("gan_peso")
+  edadEnMeses   Int        @map("gan_edad_meses")
+  sexo          SexoGanado @map("gan_sexo")
+  razaId        Int        @map("gan_fkraza")
+  ranchoId      Int        @map("gan_fkrancho")
+  propietarioId Int        @map("gan_fkpropietario")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime?  @updatedAt @map("updated_at")
+  deletedAt     DateTime?  @map("deleted_at")
+
+  raza                 Raza                  @relation(fields: [razaId], references: [id], onDelete: Restrict)
+  rancho               Rancho                @relation(fields: [ranchoId], references: [id], onDelete: Restrict)
+  propietario          Propietario           @relation(fields: [propietarioId], references: [id], onDelete: Restrict)
+  aplicacionesSanitarias AplicacionSanitaria[]
+  tratamientosMedicos  TratamientoMedico[]
 
   @@map("ganado")
 }
 ```
+
+> [!NOTE]
+> **Nota de Diseño (Soft Delete):** La entidad de dominio no expone la propiedad `deletedAt` ya que es un detalle de persistencia. La exclusión de registros eliminados suavemente se maneja a nivel de infraestructura (repositorio) al realizar consultas (filtrando `deletedAt: null`).
+

@@ -13,6 +13,7 @@ Esta skill define el checklist y protocolo que se debe seguir para auditar, eval
 
 ### 1. Independencia y DDD (Hexagonal)
 - [ ] **Aislamiento de Domain:** Abre todos los archivos dentro de `domain/` y asegúrate de que no importan nada relacionado con `infrastructure/` o dependencias externas (ej. `@prisma/client`, `hono`, `zod`, `jsonwebtoken`, `bcrypt`). Sólo deben importar otros elementos del dominio u objetos compartidos en `core/shared/domain/`.
+- [ ] **Desacoplamiento de Soft Delete:** Asegúrate de que las entidades de dominio no tengan atributos ni conocimiento de `deletedAt`. Este campo sólo debe existir en la persistencia.
 - [ ] **Aislamiento de Application:** Verifica que los archivos en `application/` interactúen con el dominio o dependencias externas sólo a través de interfaces inyectadas. No deben depender de bases de datos o detalles de transporte HTTP.
 - [ ] **Mappers y DTOs:** Comprueba que ningún caso de uso retorne una entidad de dominio directamente al exterior. Deben transformarse a DTOs mediante Mappers antes de salir de la capa de aplicación.
 - [ ] **Filtros en el Dominio:** Verificar que los filtros se ubiquen en un archivo `<Entidad>Filters.ts` en el dominio y posean obligatoriamente los parámetros `page: number` y `limit: number`.
@@ -25,15 +26,20 @@ Esta skill define el checklist y protocolo que se debe seguir para auditar, eval
 - [ ] **Regla de Idioma Mixto:**
   - *Español:* Nombres de entidades del dominio, propiedades y métodos que representen lógica de negocio interna (ej: `Ganado`, `peso`, `categoria`, `obtenerPeso()`, `getEdad()`).
   - *Inglés:* Nombres de interfaces de repositorios/servicios, casos de uso, controladores, routers y utilidades técnicas (ej: `UserRepository`, `CreateUserUseCase`, `PasswordHasher`, `CreateUserController`).
+- [ ] **IDs Numéricos Autoincrementales:** Verifica que los nuevos módulos utilicen identificadores numéricos (`number`) en el dominio y repositorio para alinearse con `Entity`/`EntityId` del core.
 - [ ] **Paginación Estándar:** Comprobar que todas las respuestas de listas paginadas utilicen la estructura genérica `Pagination<T>`.
 
-### 3. Inyección de Dependencias (TSyringe)
+### 3. Persistencia e Infraestructura
+- [ ] **Filtro de Soft Delete en Repositorios:** Confirma que todas las consultas a base de datos (`findFirst`, `findMany`, etc.) en la implementación de repositorios filtren explícitamente registros eliminados lógicamente (es decir, `{ deletedAt: null }`).
+- [ ] **Borrado Lógico:** Asegúrate de que el método para eliminar un registro en el repositorio realice una actualización seteando `deletedAt` con la fecha actual, en lugar de un borrado físico (`delete`).
+
+### 4. Inyección de Dependencias (TSyringe)
 - [ ] **Decorador `@injectable()`:** Obligatorio en Casos de Uso, Controladores, Mappers y la implementación de Repositorios.
 - [ ] **Uso de `@inject`:** Las interfaces del dominio deben inyectarse mediante `@inject("TokenName")` en los constructores.
 - [ ] **Sin Instanciación Manual (`new`):** Prohibido instanciar clases inyectables con `new` dentro de la lógica del sistema (excepto en tests unitarios para mockear el entorno).
 - [ ] **Registro en Contenedor:** Comprobar que las interfaces implementadas estén mapeadas a su clase concreta en `src/core/shared/infrastructure/di/container.ts`.
 
-### 4. Cumplimiento Funcional y Documentación
+### 5. Cumplimiento Funcional y Documentación
 - [ ] **Ficha Técnica de Módulo:** Compara la lógica implementada contra la ficha de diseño respectiva en [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/). Valida que se hayan codificado todas las propiedades del dominio, métodos de negocio y casos de uso requeridos.
 - [ ] **Alineación con el Catálogo:** Verifica que las reglas generales y estado del módulo estén de acuerdo con [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md).
 

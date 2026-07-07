@@ -70,30 +70,38 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model SesionSanitaria {
-  id           String    @id @default(uuid()) @map("ses_id")
-  fecha        DateTime  @map("ses_fecha")
-  veterinario  String    @map("ses_veterinario") @db.VarChar(150)
-  descripcion  String    @map("ses_descripcion") @db.Text
-  insumoId     String?   @map("ses_fkinsumo")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime? @updatedAt @map("updated_at")
+  id          Int       @id @default(autoincrement()) @map("ses_id")
+  fecha       DateTime  @map("ses_fecha")
+  veterinario String    @map("ses_veterinario") @db.VarChar(150)
+  descripcion String    @map("ses_descripcion") @db.Text
+  insumoId    Int       @map("ses_fkinsumo")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
+  insumo       Insumo                @relation(fields: [insumoId], references: [id], onDelete: Restrict)
   aplicaciones AplicacionSanitaria[]
 
   @@map("sesion_sanitaria")
 }
 
 model AplicacionSanitaria {
-  id            String   @id @default(uuid()) @map("aps_id")
-  sesionId      String   @map("aps_fksesion")
-  ganadoId      String   @map("aps_fkganado")
-  dosisAplicada Float    @map("aps_dosis")
-  observaciones String?  @map("aps_observaciones") @db.Text
-  createdAt     DateTime @default(now()) @map("created_at")
+  id            Int       @id @default(autoincrement()) @map("aps_id")
+  sesionId      Int       @map("aps_fksesion")
+  ganadoId      Int       @map("aps_fkganado")
+  dosisAplicada Float     @map("aps_dosis")
+  observaciones String?   @map("aps_observaciones") @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   sesion SesionSanitaria @relation(fields: [sesionId], references: [id], onDelete: Cascade)
+  ganado Ganado          @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
 
   @@unique([sesionId, ganadoId])
   @@map("aplicacion_sanitaria")
 }
 ```
+
+> [!NOTE]
+> **Nota de Diseño (Soft Delete):** La entidad de dominio no expone la propiedad `deletedAt` ya que es un detalle de persistencia. La exclusión de registros eliminados suavemente se maneja a nivel de infraestructura (repositorio) al realizar consultas (filtrando `deletedAt: null`).
+

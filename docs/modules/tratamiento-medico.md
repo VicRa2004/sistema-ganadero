@@ -56,17 +56,25 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model TratamientoMedico {
-  id           String    @id @default(uuid()) @map("trt_id")
-  ganadoId     String    @map("trt_fkganado")
-  diagnostico  String    @map("trt_diagnostico") @db.VarChar(255)
-  fechaInicio  DateTime  @map("trt_fecha_inicio")
-  fechaFin     DateTime  @map("trt_fecha_fin")
-  activo       Boolean   @default(true) @map("trt_activo")
-  insumoId     String    @map("trt_fkinsumo")
-  dosisDiaria  Float     @map("trt_dosis_diaria")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime? @updatedAt @map("updated_at")
+  id          Int       @id @default(autoincrement()) @map("trt_id")
+  ganadoId    Int       @map("trt_fkganado")
+  diagnostico String    @map("trt_diagnostico") @db.VarChar(255)
+  fechaInicio DateTime  @map("trt_fecha_inicio")
+  fechaFin    DateTime  @map("trt_fecha_fin")
+  activo      Boolean   @default(true) @map("trt_activo")
+  insumoId    Int       @map("trt_fkinsumo")
+  dosisDiaria Float     @map("trt_dosis_diaria")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  ganado      Ganado    @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+  insumo      Insumo    @relation(fields: [insumoId], references: [id], onDelete: Restrict)
 
   @@map("tratamiento_medico")
 }
 ```
+
+> [!NOTE]
+> **Nota de Diseño (Soft Delete):** La entidad de dominio no expone la propiedad `deletedAt` ya que es un detalle de persistencia. La exclusión de registros eliminados suavemente se maneja a nivel de infraestructura (repositorio) al realizar consultas (filtrando `deletedAt: null`).
+

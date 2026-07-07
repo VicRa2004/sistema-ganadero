@@ -10,7 +10,7 @@ La entidad principal `Ganado` define los atributos y comportamientos clave del a
 
 ### Atributos (Español)
 - `id` (string): Identificador único del sistema (UUID).
-- `identificador` (string): Código físico o número de arete del animal.
+- `identificador` (string): Código de arete SINIGA (México). Físicamente el arete posee un número exclusivo de 8 dígitos (único a nivel nacional) y un número complementario de 4 dígitos (consecutivo local que podría llegar a repetirse entre distintos ganaderos).
 - `peso` (number): Peso actual del animal en kilogramos.
 - `edadEnMeses` (number): Edad calculada del animal.
 - `sexo` (string): Macho o Hembra.

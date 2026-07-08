@@ -52,6 +52,21 @@ import { RequirePermissionMiddleware } from "@/modules/authorization/infrastruct
 import { CheckUserPermissionUseCase } from "@/modules/authorization/application/useCases/CheckUserPermissionUseCase";
 import { PrismaRefreshTokenRepository } from "@/modules/auth/infrastructure/repository/PrismaRefreshTokenRepository";
 
+// Propietario
+import { PrismaPropietarioRepository } from "@/modules/propietario/infrastructure/repository/PrismaPropietarioRepository";
+import { PrismaPropietarioDetalleQuery } from "@/modules/propietario/infrastructure/queries/PrismaPropietarioDetalleQuery";
+import { PropietarioMapper } from "@/modules/propietario/application/mappers/PropietarioMapper";
+import { RegistrarPropietarioUseCase } from "@/modules/propietario/application/useCases/RegistrarPropietarioUseCase";
+import { ActualizarDatosPropietarioUseCase } from "@/modules/propietario/application/useCases/ActualizarDatosPropietarioUseCase";
+import { ObtenerDetallePropietarioUseCase } from "@/modules/propietario/application/useCases/ObtenerDetallePropietarioUseCase";
+import { ListarPropietariosUseCase } from "@/modules/propietario/application/useCases/ListarPropietariosUseCase";
+import { EliminarPropietarioUseCase } from "@/modules/propietario/application/useCases/EliminarPropietarioUseCase";
+import { RegistrarPropietarioController } from "@/modules/propietario/infrastructure/http/controllers/RegistrarPropietarioController";
+import { ActualizarPropietarioController } from "@/modules/propietario/infrastructure/http/controllers/ActualizarPropietarioController";
+import { ObtenerDetallePropietarioController } from "@/modules/propietario/infrastructure/http/controllers/ObtenerDetallePropietarioController";
+import { ListarPropietariosController } from "@/modules/propietario/infrastructure/http/controllers/ListarPropietariosController";
+import { EliminarPropietarioController } from "@/modules/propietario/infrastructure/http/controllers/EliminarPropietarioController";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -176,6 +191,49 @@ container.register("UpdateRazaController", { useClass: UpdateRazaController });
 container.register("DeleteRazaController", { useClass: DeleteRazaController });
 
 container.register("RazaMapper", { useClass: RazaMapper });
+
+// Módulo Propietario - Repositorios & Queries
+container.register("PropietarioRepository", {
+	useClass: PrismaPropietarioRepository,
+});
+container.register("PropietarioDetalleQuery", {
+	useClass: PrismaPropietarioDetalleQuery,
+});
+container.register("PropietarioMapper", { useClass: PropietarioMapper });
+
+// Módulo Propietario - Use Cases
+container.register("RegistrarPropietarioUseCase", {
+	useClass: RegistrarPropietarioUseCase,
+});
+container.register("ActualizarDatosPropietarioUseCase", {
+	useClass: ActualizarDatosPropietarioUseCase,
+});
+container.register("ObtenerDetallePropietarioUseCase", {
+	useClass: ObtenerDetallePropietarioUseCase,
+});
+container.register("ListarPropietariosUseCase", {
+	useClass: ListarPropietariosUseCase,
+});
+container.register("EliminarPropietarioUseCase", {
+	useClass: EliminarPropietarioUseCase,
+});
+
+// Módulo Propietario - Controladores
+container.register("RegistrarPropietarioController", {
+	useClass: RegistrarPropietarioController,
+});
+container.register("ActualizarPropietarioController", {
+	useClass: ActualizarPropietarioController,
+});
+container.register("ObtenerDetallePropietarioController", {
+	useClass: ObtenerDetallePropietarioController,
+});
+container.register("ListarPropietariosController", {
+	useClass: ListarPropietariosController,
+});
+container.register("EliminarPropietarioController", {
+	useClass: EliminarPropietarioController,
+});
 
 container.register(
 	"EventBus",

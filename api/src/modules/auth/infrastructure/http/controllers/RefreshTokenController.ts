@@ -1,10 +1,10 @@
 import type { Context } from "hono";
+import { getCookie, setCookie } from "hono/cookie";
 import { injectable, inject } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import type { RefreshTokenUseCase } from "../../../application/useCases/RefreshTokenUseCase";
-
-import { validate } from "@/core/shared/infrastructure/libs/validate";
-import { refreshTokenSchema } from "../schemas/authSchemas";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
+import { env } from "@/core/config/env";
 
 @injectable()
 export class RefreshTokenController extends BaseController {
@@ -17,11 +17,23 @@ export class RefreshTokenController extends BaseController {
 
 	run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const body = await c.req.json();
-			const dto = validate(refreshTokenSchema, body);
-			const result = await this.refreshTokenUseCase.run(dto.refreshToken);
+			const refreshToken = getCookie(c, "refreshToken");
 
-			return this.ok(c, result);
+			if (!refreshToken) {
+				throw new BaseError("Refresh token no proporcionado o expirado", 401);
+			}
+
+			const result = await this.refreshTokenUseCase.run(refreshToken);
+
+			setCookie(c, "refreshToken", result.refreshToken, {
+				httpOnly: true,
+				secure: env.NODE_ENV === "prod",
+				sameSite: "Lax",
+				path: "/api/auth",
+				maxAge: 7 * 24 * 60 * 60, // 7 días en segundos
+			});
+
+			return this.ok(c, { accessToken: result.accessToken });
 		});
 	};
 }

@@ -1,10 +1,9 @@
 import type { Context } from "hono";
+import { getCookie, deleteCookie } from "hono/cookie";
 import { injectable, inject } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import type { LogoutUseCase } from "../../../application/useCases/LogoutUseCase";
-
-import { validate } from "@/core/shared/infrastructure/libs/validate";
-import { refreshTokenSchema } from "../schemas/authSchemas";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
 
 @injectable()
 export class LogoutController extends BaseController {
@@ -17,9 +16,17 @@ export class LogoutController extends BaseController {
 
 	run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const body = await c.req.json();
-			const dto = validate(refreshTokenSchema, body);
-			await this.logoutUseCase.run(dto.refreshToken);
+			const refreshToken = getCookie(c, "refreshToken");
+
+			if (!refreshToken) {
+				throw new BaseError("Refresh token no proporcionado o expirado", 401);
+			}
+
+			await this.logoutUseCase.run(refreshToken);
+
+			deleteCookie(c, "refreshToken", {
+				path: "/api/auth",
+			});
 
 			return this.ok(c, { message: "Sesión cerrada correctamente" });
 		});

@@ -17,7 +17,13 @@ const app = new Hono();
 
 // 1. Middlewares Nativos (Reemplazan a helmet, morgan y cors)
 app.use("*", secureHeaders());
-app.use("*", cors());
+app.use(
+	"*",
+	cors({
+		origin: (origin) => origin,
+		credentials: true,
+	}),
+);
 app.use("*", logger());
 // Nota: express.json() desaparece. Hono procesa el JSON automáticamente
 // cuando llamas a c.req.json() en tus controladores.

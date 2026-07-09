@@ -48,7 +48,7 @@ export class AuthRouter {
 		 *                 type: string
 		 *     responses:
 		 *       200:
-		 *         description: Login exitoso, devuelve accessToken y refreshToken
+		 *         description: Login exitoso, devuelve accessToken y guarda refreshToken en una cookie HttpOnly.
 		 *       401:
 		 *         description: Credenciales inválidas
 		 */
@@ -75,7 +75,7 @@ export class AuthRouter {
 		 *                 type: string
 		 *     responses:
 		 *       201:
-		 *         description: Usuario registrado exitosamente
+		 *         description: Usuario registrado exitosamente, devuelve accessToken y guarda refreshToken en una cookie HttpOnly.
 		 */
 		this.router.post("/register", this.registerController.run);
 
@@ -86,22 +86,13 @@ export class AuthRouter {
 		 *     tags: [Auth]
 		 *     summary: Renovar tokens usando un refresh token válido
 		 *     description: >
-		 *       Rota el refresh token: el token enviado se revoca y se genera
-		 *       un nuevo par accessToken + refreshToken (Refresh Token Rotation).
-		 *     requestBody:
-		 *       required: true
-		 *       content:
-		 *         application/json:
-		 *           schema:
-		 *             type: object
-		 *             properties:
-		 *               refreshToken:
-		 *                 type: string
+		 *       Rota el refresh token: el token enviado en la cookie se revoca y se genera
+		 *       un nuevo accessToken (devuelto en respuesta JSON) y se guarda el nuevo refreshToken en la cookie (Refresh Token Rotation).
 		 *     responses:
 		 *       200:
-		 *         description: Tokens renovados exitosamente
+		 *         description: Tokens renovados exitosamente, devuelve accessToken.
 		 *       401:
-		 *         description: Refresh token inválido o expirado
+		 *         description: Refresh token inválido o expirado en la cookie
 		 */
 		this.router.post("/refresh", this.refreshTokenController.run);
 
@@ -112,23 +103,12 @@ export class AuthRouter {
 		 *     tags: [Auth]
 		 *     summary: Cerrar sesión (revocar refresh token)
 		 *     description: >
-		 *       Revoca el refresh token proporcionado. El access token seguirá
-		 *       siendo válido hasta que expire (máx 15 min), pero no se podrá
-		 *       obtener uno nuevo.
-		 *     requestBody:
-		 *       required: true
-		 *       content:
-		 *         application/json:
-		 *           schema:
-		 *             type: object
-		 *             properties:
-		 *               refreshToken:
-		 *                 type: string
+		 *       Revoca el refresh token almacenado en la cookie y expira dicha cookie.
 		 *     responses:
 		 *       200:
 		 *         description: Sesión cerrada correctamente
-		 *       400:
-		 *         description: Refresh token inválido
+		 *       401:
+		 *         description: Refresh token inválido o expirado en la cookie
 		 */
 		this.router.post("/logout", this.logoutController.run);
 	}

@@ -12,6 +12,7 @@
 		"test:coverage": "bun test --coverage",
 		"test:e2e": "bun test '**/*.e2e.spec.ts'",
 		"test:watch": "bun test --watch",
+		"typecheck": "tsc --noEmit",
 		"create:admin": "bun scripts/create-admin.ts"
 	},
 	"prisma": {

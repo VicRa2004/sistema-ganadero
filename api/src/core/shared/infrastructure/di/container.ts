@@ -67,6 +67,24 @@ import { ObtenerDetallePropietarioController } from "@/modules/propietario/infra
 import { ListarPropietariosController } from "@/modules/propietario/infrastructure/http/controllers/ListarPropietariosController";
 import { EliminarPropietarioController } from "@/modules/propietario/infrastructure/http/controllers/EliminarPropietarioController";
 
+// Insumos
+import { PrismaInsumoRepository } from "@/modules/inventario-insumos/infrastructure/repository/PrismaInsumoRepository";
+import { InsumoMapper } from "@/modules/inventario-insumos/application/mappers/InsumoMapper";
+import { RegistrarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/RegistrarInsumoUseCase";
+import { AbastecerInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/AbastecerInsumoUseCase";
+import { ConsumirInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ConsumirInsumoUseCase";
+import { ObtenerInsumosCriticosUseCase } from "@/modules/inventario-insumos/application/useCases/ObtenerInsumosCriticosUseCase";
+import { ListarInsumosUseCase } from "@/modules/inventario-insumos/application/useCases/ListarInsumosUseCase";
+import { ObtenerDetalleInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ObtenerDetalleInsumoUseCase";
+import { EliminarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/EliminarInsumoUseCase";
+import { RegistrarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/RegistrarInsumoController";
+import { AbastecerInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/AbastecerInsumoController";
+import { ConsumirInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ConsumirInsumoController";
+import { ObtenerInsumosCriticosController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerInsumosCriticosController";
+import { ListarInsumosController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ListarInsumosController";
+import { ObtenerDetalleInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerDetalleInsumoController";
+import { EliminarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/EliminarInsumoController";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -233,6 +251,54 @@ container.register("ListarPropietariosController", {
 });
 container.register("EliminarPropietarioController", {
 	useClass: EliminarPropietarioController,
+});
+
+// Módulo Insumos - Repositorio & Mappers
+container.register("InsumoRepository", { useClass: PrismaInsumoRepository });
+container.register("InsumoMapper", { useClass: InsumoMapper });
+
+// Módulo Insumos - Use Cases
+container.register("RegistrarInsumoUseCase", {
+	useClass: RegistrarInsumoUseCase,
+});
+container.register("AbastecerInsumoUseCase", {
+	useClass: AbastecerInsumoUseCase,
+});
+container.register("ConsumirInsumoUseCase", {
+	useClass: ConsumirInsumoUseCase,
+});
+container.register("ObtenerInsumosCriticosUseCase", {
+	useClass: ObtenerInsumosCriticosUseCase,
+});
+container.register("ListarInsumosUseCase", { useClass: ListarInsumosUseCase });
+container.register("ObtenerDetalleInsumoUseCase", {
+	useClass: ObtenerDetalleInsumoUseCase,
+});
+container.register("EliminarInsumoUseCase", {
+	useClass: EliminarInsumoUseCase,
+});
+
+// Módulo Insumos - Controladores
+container.register("RegistrarInsumoController", {
+	useClass: RegistrarInsumoController,
+});
+container.register("AbastecerInsumoController", {
+	useClass: AbastecerInsumoController,
+});
+container.register("ConsumirInsumoController", {
+	useClass: ConsumirInsumoController,
+});
+container.register("ObtenerInsumosCriticosController", {
+	useClass: ObtenerInsumosCriticosController,
+});
+container.register("ListarInsumosController", {
+	useClass: ListarInsumosController,
+});
+container.register("ObtenerDetalleInsumoController", {
+	useClass: ObtenerDetalleInsumoController,
+});
+container.register("EliminarInsumoController", {
+	useClass: EliminarInsumoController,
 });
 
 container.register(

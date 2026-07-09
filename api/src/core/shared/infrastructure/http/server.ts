@@ -11,6 +11,7 @@ import { AuthRouter } from "@/modules/auth/infrastructure/http/routes/AuthRouter
 import { PermissionRouter } from "@/modules/authorization/infrastructure/http/routes/PermissionRouter";
 import { RazaRouter } from "@/modules/raza/infrastructure/http/routes/RazaRouter";
 import { PropietarioRouter } from "@/modules/propietario/infrastructure/http/routes/PropietarioRouter";
+import { InsumoRouter } from "@/modules/inventario-insumos/infrastructure/http/routes/InsumoRouter";
 
 const app = new Hono();
 
@@ -32,6 +33,7 @@ const authRouter = container.resolve(AuthRouter);
 const permissionRouter = container.resolve(PermissionRouter);
 const razaRouter = container.resolve(RazaRouter);
 const propietarioRouter = container.resolve(PropietarioRouter);
+const insumoRouter = container.resolve(InsumoRouter);
 
 // 4. Registro de rutas
 // En Hono se usa .route() en lugar de .use() para anidar otros routers
@@ -40,6 +42,7 @@ app.route("/api/auth", authRouter.router);
 app.route("/api/permissions", permissionRouter.router);
 app.route("/api/razas", razaRouter.router);
 app.route("/api/propietarios", propietarioRouter.router);
+app.route("/api/insumos", insumoRouter.router);
 
 // 5. Global Error Handler
 app.onError((err, c) => {

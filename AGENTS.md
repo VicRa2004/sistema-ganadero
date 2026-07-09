@@ -32,6 +32,7 @@ Desde la raíz, puedes interactuar con el monorepo usando los siguientes scripts
 - **Iniciar Frontend:** `pnpm dev:web` (ejecuta el servidor de desarrollo de Vite)
 - **Formatear Código:** `pnpm format` (aplica el formateador Biome de manera recursiva en todo el monorepo)
 - **Ejecutar Linter:** `pnpm lint` (ejecuta el análisis estático de Biome en todo el monorepo)
+- **Comprobar Tipado (Backend):** `pnpm typecheck:api` (ejecuta la validación de tipos TypeScript en la API)
 
 ---
 

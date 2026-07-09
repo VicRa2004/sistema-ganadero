@@ -1,0 +1,7 @@
+packages:
+  - 'api'
+  - 'web'
+allowBuilds:
+  '@prisma/engines': true
+  bcrypt: true
+  prisma: true

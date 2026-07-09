@@ -1,72 +1,42 @@
-# Reglas del Proyecto - Sistemas Ganadero
+# Reglas del Monorepo - Sistema Ganadero
 
-## Stack
+Este archivo contiene las pautas básicas del diseño, arquitectura y flujos de trabajo del monorepo.
 
-- **Runtime:** Bun. Instalar paquetes con versión exacta: `bun add -E <paquete>`
-- **Framework:** Hono
-- **DB:** Solo Prisma con PostgreSQL
-- **Idioma de respuesta:** Español
+## Estructura General
 
-## Dependencias
+El proyecto está organizado como un monorepo utilizando **pnpm workspaces**:
 
-Antes de instalar cualquier paquete, revisar `package.json` para confirmar si ya existe.
+- [api/](file:///home/victor-raul/proyectos/sistema-ganadero/api/) — Aplicación backend escrita en Hono, Prisma, TSyringe y ejecutada bajo el runtime de **Bun**.
+- [web/](file:///home/victor-raul/proyectos/sistema-ganadero/web/) — Aplicación frontend inicializada con **Vite**, React y TypeScript.
 
-## Arquitectura
+Cada subdirectorio (`api` y `web`) cuenta con su propio archivo `AGENTS.md` con reglas de desarrollo locales y su respectiva carpeta `.agents/` para skills específicas del subproyecto.
 
-- `src/` — todo el código
-- `src/core/` — base general, soporte compartido y módulos transversales/genéricos (ej. `user`).
-- `src/modules/<nombre>/{domain,application,infrastructure}` — lógica de negocio específica del dominio ganadero. Prohibido colocar aquí lógica genérica de la aplicación.
-- `/docs` — documentación funcional y guías. Destaca [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md) como índice central y los archivos en [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/) para especificaciones por módulo.
+---
 
+## Gestión de Dependencias
 
-## Capas
+- **Instalador:** Se utiliza estrictamente **pnpm** para instalar dependencias a nivel raíz.
+- **Versiones Exactas:** Al instalar cualquier paquete, hazlo de forma exacta usando el flag `-E` o `--save-exact`.
+  - Para instalar dependencias en la raíz: `pnpm add -E -w <paquete>`
+  - Para instalar dependencias en una sub-app: `pnpm --filter <app> add -E <paquete>`
+- **Bloqueo de Scripts en pnpm:** pnpm v11 requiere aprobación explícita de dependencias compiladas (como `bcrypt` o `prisma`). Esto está preconfigurado en [.npmrc](file:///home/victor-raul/proyectos/sistema-ganadero/.npmrc).
 
-### Domain
+---
 
-- Interfaces, errores (extendiendo `BaseError`) y modelos. Sin dependencias de frameworks.
-- **Filtros:** Si se requieren filtros de búsqueda, definirlos en una interfaz dentro de un archivo `<Entidad>Filters.ts` en el dominio, incluyendo siempre `page: number` y `limit: number`.
+## Ejecución y Scripts Comunes
 
-### Application
+Desde la raíz, puedes interactuar con el monorepo usando los siguientes scripts:
 
-- Método principal de Use Cases: `run` (nunca `execute`).
-- Prohibido devolver entidades de dominio hacia HTTP. Usar Mappers y DTOs.
-- **Queries Complejas:** Para lecturas complejas o combinación de agregados, ubicar interfaces en `application/queries/`. Deben ser llamadas por controladores a través de un Caso de Uso (nunca directamente). Respuestas paginadas deben usar `Pagination<T>`.
+- **Iniciar Ambos (Simultáneo):** `pnpm dev` (ejecuta backend y frontend simultáneamente en paralelo)
+- **Iniciar Backend:** `pnpm dev:api` (ejecuta el backend usando `bun` en modo hot reload)
+- **Iniciar Frontend:** `pnpm dev:web` (ejecuta el servidor de desarrollo de Vite)
+- **Formatear Código:** `pnpm format` (aplica el formateador Biome de manera recursiva en todo el monorepo)
+- **Ejecutar Linter:** `pnpm lint` (ejecuta el análisis estático de Biome en todo el monorepo)
 
-### Infrastructure — HTTP
+---
 
-Todo en `infrastructure/http/`: Rutas, Controladores, Middlewares, Schemas.
+## Linter & Formatter (Biome)
 
-**Controladores** — uno por caso de uso en `http/controllers/`:
-
-- Heredan de `BaseController`, usan `this.executeSafely()`
-- Método: `run(req, res)`
-
-**Rutas** — clases en `http/routes/` decoradas con `@injectable()`:
-
-- Inyectar controladores por constructor
-- `this.router = Router()` interno
-- Bind de métodos: `this.router.get("/", this.ctrl.run.bind(this.ctrl))`
-- Prohibido usar `container.resolve()` en la declaración de rutas
-
-## Inyección de dependencias (TSyringe)
-
-- `@injectable()` obligatorio en: Casos de Uso, Controladores, Repos, Mappers.
-- Prohibido instanciar con `new`.
-- **Uso Obligatorio de String Tokens con `@inject`:** Debido a que el linter de Biome fuerza a usar `import type` para las clases que solo se usen en posiciones de tipo del constructor, el compilador descarta sus referencias en runtime y TSyringe no puede inyectarlas de forma automática por tipo de clase (arrojaría el error `TypeInfo not known for "Object"`).
-- **Regla de Inyección:** Se debe inyectar **SIEMPRE** mediante tokens de texto con `@inject("TokenString")` tanto en Routers, Controladores como en Casos de Uso.
-  - *Ejemplo:* `constructor(@inject("CreateUserUseCase") private readonly createUserUseCase: CreateUserUseCase) {}`
-- **Registro Centralizado:** Todas las clases de Casos de Uso, Controladores, Mappers y Repositorios deben registrarse explícitamente en el contenedor central `src/core/shared/infrastructure/di/container.ts` asociándolos a su token string correspondiente.
-  - *Ejemplo:* `container.register("CreateUserUseCase", { useClass: CreateUserUseCase });`
-
-## Convenciones de Código y Nomenclatura
-
-- **Getters/Setters:** Prohibido el uso de getters y setters nativos de TypeScript (`get ` y `set ` en métodos). En su lugar, usar métodos normales (ej: `getNombre()`, `setNombre()`).
-- **Idioma Mixto:**
-  - Usar **Español** para la lógica interna y del dominio (ej: entidad `Ganado`, `getEdad()`, atributo `peso`).
-  - Usar **Inglés** para conceptos de diseño estandarizados, patrones arquitectónicos (DDD) e infraestructura (ej: `EventBus`, `UserRepository`, `CreateUserUseCase`).
-
-## Skills de Asistencia Local
-
-- Para crear un nuevo módulo, apóyate en la skill local `crear-modulo` (`.agents/skills/crear-modulo/SKILL.md`), la cual te guiará usando [modulo_guia.md](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modulo_guia.md) y sus respectivas fichas técnicas en [docs/modules/](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/).
-- Para auditar y evaluar un módulo, apóyate en la skill local `evaluar-modulo` (`.agents/skills/evaluar-modulo/SKILL.md`).
-
+El monorepo cuenta con una configuración única de Biome en la raíz ([biome.json](file:///home/victor-raul/proyectos/sistema-ganadero/biome.json)). 
+Las aplicaciones individuales **no deben** tener linters propios para asegurar la consistencia del código a lo largo de todo el monorepo.
+Cualquier archivo de configuración adicional de linter local en los workspaces está prohibido.

@@ -5,17 +5,29 @@
 - **Framework:** React + TypeScript (Vite)
 - **Gestor de Paquetes:** `pnpm` (a nivel raíz del monorepo)
 - **Linter & Formatter:** Biome (a nivel raíz del monorepo)
+- **Routing:** TanStack Router (File-based)
+- **State & Data:** TanStack Query, Zustand, Axios, Zod
 
 ## Estructura de Directorios
 
-- `src/` — Código fuente del frontend
-  - `components/` — Componentes visuales y lógicos reutilizables
-  - `hooks/` — Custom hooks de React
-  - `services/` — Clientes de API e integraciones con backend
-  - `assets/` — Recursos multimedia (imágenes, fuentes, etc.)
+El código dentro de `src/` se divide estrictamente en:
+- `routes/` — Rutas y vistas de la aplicación (definidas automáticamente por archivos).
+- `components/` — Componentes visuales y de UI de propósito general.
+- `config/` — Configuraciones del sistema (cliente Axios, QueryClient, etc.).
+- `modules/` — Módulos de negocio (ej. `auth`, `ganado`, `rancho`). Cada uno debe contener:
+  - `services/` — Clientes HTTP específicos con Axios.
+  - `hooks/` — Custom hooks de TanStack Query para desacoplar llamadas API de la UI.
+  - `store/` — Stores de Zustand correspondientes para el estado del módulo.
+  - `types/` — Definición de interfaces y tipos del módulo (evitar duplicados).
 
-## Buenas Prácticas
+## UI & Design (Shadcn/ui)
 
-- Mantener la separación de responsabilidades: desacoplar la lógica compleja y llamadas a API de los componentes visuales.
-- Usar tipado estricto en todas las props, estados y respuestas de API.
-- Todo desarrollo de componentes debe realizarse siguiendo prácticas de UI responsiva y moderna.
+- **Shadcn/ui:** Se usará shadcn para componentes de UI. Seguir sus principios: usar `FieldGroup` + `Field` para formularios, `asChild` para componentes Radix/Base personalizados, y el componente `cn()` para clases condicionales.
+- **Tailwind CSS v4:** El diseño y variables semánticas se definen mediante Tailwind v4 en el CSS global.
+
+## Buenas Prácticas y Calidad
+
+- **Tipado estricto:** Prohibido el uso de `any`. Reutilizar tipos comunes de dominio y compartidos.
+- **Separación de responsabilidades:** La interfaz de usuario debe ser puramente visual. Ningún componente debe realizar peticiones fetch/axios ni definir lógica compleja de Query/Mutation directa; debe delegar a los hooks del módulo.
+- **Consistencia:** Mantener este archivo conciso. Seguir las convenciones de formato Biome configuradas a nivel raíz.
+

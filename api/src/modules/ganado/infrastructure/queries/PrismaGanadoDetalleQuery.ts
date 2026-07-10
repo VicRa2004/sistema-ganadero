@@ -26,7 +26,9 @@ interface PrismaGanadoDetalleRecord {
 
 @injectable()
 export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
-	private formatRecord(record: PrismaGanadoDetalleRecord): GanadoDetalleOutputDto {
+	private formatRecord(
+		record: PrismaGanadoDetalleRecord,
+	): GanadoDetalleOutputDto {
 		return {
 			id: record.id,
 			identificador: record.identificador,

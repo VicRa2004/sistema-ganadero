@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +14,11 @@ import {
 	ArrowUpRight,
 	ClipboardList,
 	Database,
-	Plus,
+	Dna,
 	ShieldAlert,
 	ShieldCheck,
 	Sprout,
+	Stethoscope,
 	User,
 	Users,
 	Warehouse,
@@ -27,6 +28,88 @@ export const Route = createFileRoute("/dashboard/")({
 	component: DashboardIndexComponent,
 });
 
+// ─── Tipos ────────────────────────────────────────────────────────────────────
+
+interface OperationCard {
+	resource: string;
+	title: string;
+	description: string;
+	icon: React.ElementType;
+	readAction: string;
+	badge: string;
+	href: string;
+}
+
+// ─── Datos de tarjetas operativas ────────────────────────────────────────────
+
+const OPERATIONS_DATA: OperationCard[] = [
+	{
+		resource: "ganado",
+		title: "Trazabilidad de Ganado",
+		description: "Control de pesaje, historial clínico y genealogía.",
+		icon: Sprout,
+		readAction: "read",
+		badge: "Operativo",
+		href: "#",
+	},
+	{
+		resource: "ranchos",
+		title: "Control de Ranchos",
+		description: "Asignación de potreros y administración de sedes.",
+		icon: Warehouse,
+		readAction: "read",
+		badge: "Infraestructura",
+		href: "#",
+	},
+	{
+		resource: "propietario",
+		title: "Propietarios",
+		description: "Registro y gestión de dueños de ganado y ranchos.",
+		icon: Users,
+		readAction: "read",
+		badge: "Operativo",
+		href: "/dashboard/propietarios",
+	},
+	{
+		resource: "razas",
+		title: "Razas",
+		description: "Catálogo de razas bovinas registradas en el sistema.",
+		icon: Dna,
+		readAction: "read",
+		badge: "Catálogo",
+		href: "#",
+	},
+	{
+		resource: "inventario-insumos",
+		title: "Inventario de Insumos",
+		description: "Stock de vacunas, alimentos y herramientas.",
+		icon: Database,
+		readAction: "read",
+		badge: "Insumos",
+		href: "#",
+	},
+	{
+		resource: "sesiones-sanitarias",
+		title: "Sesiones Sanitarias",
+		description: "Control de campañas de vacunación y desparasitación.",
+		icon: Activity,
+		readAction: "read",
+		badge: "Sanidad",
+		href: "#",
+	},
+	{
+		resource: "tratamientos-medicos",
+		title: "Tratamientos Médicos",
+		description: "Historial de tratamientos y prescripciones veterinarias.",
+		icon: Stethoscope,
+		readAction: "read",
+		badge: "Sanidad",
+		href: "#",
+	},
+];
+
+// ─── Componente principal ─────────────────────────────────────────────────────
+
 function DashboardIndexComponent() {
 	const user = useAuthStore((state) => state.user);
 	const permissions = useAuthStore((state) => state.permissions) || [];
@@ -35,48 +118,8 @@ function DashboardIndexComponent() {
 		return permissions.includes(`${resource}:${action}`);
 	};
 
-	// Lista de tarjetas operativas de negocio
-	const operationsData = [
-		{
-			resource: "ganado",
-			title: "Trazabilidad de Ganado",
-			description: "Control de pesaje, historial clínico y genealogía.",
-			icon: Sprout,
-			readAction: "read",
-			createAction: "create",
-			badge: "Operativo",
-		},
-		{
-			resource: "ranchos",
-			title: "Control de Ranchos",
-			description: "Asignación de potreros y administración de sedes.",
-			icon: Warehouse,
-			readAction: "read",
-			createAction: "create",
-			badge: "Infraestructura",
-		},
-		{
-			resource: "inventario-insumos",
-			title: "Inventario de Insumos",
-			description: "Stock de vacunas, alimentos y herramientas.",
-			icon: Database,
-			readAction: "read",
-			createAction: "create",
-			badge: "Insumos",
-		},
-		{
-			resource: "sesiones-sanitarias",
-			title: "Sesiones Sanitarias",
-			description: "Control de campañas de vacunación y desparasitación.",
-			icon: Activity,
-			readAction: "read",
-			createAction: "create",
-			badge: "Sanidad",
-		},
-	];
-
 	return (
-		<div className="space-y-10 py-6 animate-fade-in text-foreground">
+		<div className="space-y-10 animate-fade-in text-foreground">
 			{/* Bienvenida */}
 			<section className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
 				<div className="space-y-1 text-left">
@@ -103,7 +146,7 @@ function DashboardIndexComponent() {
 				</div>
 			</section>
 
-			{/* Contenedor principal de operaciones de negocio */}
+			{/* Tarjetas de operaciones */}
 			<section className="space-y-6">
 				<h2 className="text-xl font-bold tracking-tight text-left flex items-center gap-2">
 					<ClipboardList className="h-5 w-5 text-primary" />
@@ -111,16 +154,16 @@ function DashboardIndexComponent() {
 				</h2>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-					{operationsData.map((op) => {
+					{OPERATIONS_DATA.map((op) => {
 						const Icon = op.icon;
 						const canRead = hasPermission(op.resource, op.readAction);
-						const canCreate = hasPermission(op.resource, op.createAction);
+						const hasRoute = op.href !== "#";
 
 						if (!canRead) return null;
 
 						return (
 							<Card
-								key={op.title}
+								key={op.resource}
 								className="border border-border bg-card/45 hover:bg-card/85 transition-all duration-300 shadow-sm relative overflow-hidden group"
 							>
 								{/* Adorno visual superior */}
@@ -141,27 +184,30 @@ function DashboardIndexComponent() {
 										</div>
 									</div>
 								</CardHeader>
+
 								<CardContent className="space-y-4">
 									<p className="text-muted-foreground text-sm text-left leading-relaxed">
 										{op.description}
 									</p>
 									<div className="flex gap-3 justify-end pt-2">
-										<Button
-											variant="outline"
-											size="sm"
-											className="h-8 gap-1.5 cursor-pointer text-xs"
-										>
-											Ver Registros
-											<ArrowUpRight className="h-3 w-3" />
-										</Button>
-
-										{canCreate && (
+										{hasRoute ? (
+											<Link to={op.href}>
+												<Button
+													size="sm"
+													className="h-8 gap-1.5 cursor-pointer text-xs"
+												>
+													Ver Registros
+													<ArrowUpRight className="h-3 w-3" />
+												</Button>
+											</Link>
+										) : (
 											<Button
 												size="sm"
-												className="h-8 gap-1.5 cursor-pointer text-xs"
+												className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed"
+												disabled
 											>
-												<Plus className="h-3 w-3" />
-												Registrar
+												Ver Registros
+												<ArrowUpRight className="h-3 w-3" />
 											</Button>
 										)}
 									</div>
@@ -172,7 +218,7 @@ function DashboardIndexComponent() {
 				</div>
 			</section>
 
-			{/* Sección Administrativa Exclusiva */}
+			{/* Panel Administrativo */}
 			{hasPermission("users", "read") && (
 				<section className="space-y-6 pt-6 border-t border-border animate-fade-in">
 					<h2 className="text-xl font-bold tracking-tight text-left flex items-center gap-2 text-foreground">
@@ -181,6 +227,7 @@ function DashboardIndexComponent() {
 					</h2>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{/* Gestión de Usuarios */}
 						<Card className="border border-border bg-amber-500/5 shadow-sm relative overflow-hidden group">
 							<div className="absolute top-0 left-0 w-full h-[3px] bg-amber-500/40" />
 							<CardHeader className="flex flex-row items-center gap-3 pb-2">
@@ -205,7 +252,8 @@ function DashboardIndexComponent() {
 									<Button
 										variant="outline"
 										size="sm"
-										className="h-8 gap-1.5 cursor-pointer text-xs border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+										className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed border-amber-500/30 text-amber-600 dark:text-amber-400"
+										disabled
 									>
 										Administrar Usuarios
 										<ArrowUpRight className="h-3 w-3" />
@@ -214,11 +262,12 @@ function DashboardIndexComponent() {
 							</CardContent>
 						</Card>
 
+						{/* Roles y Permisos */}
 						<Card className="border border-border bg-amber-500/5 shadow-sm relative overflow-hidden group">
 							<div className="absolute top-0 left-0 w-full h-[3px] bg-amber-500/40" />
 							<CardHeader className="flex flex-row items-center gap-3 pb-2">
 								<div className="size-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
-									<Users className="size-5" />
+									<ShieldCheck className="size-5" />
 								</div>
 								<div className="text-left">
 									<CardTitle className="text-base font-bold text-foreground">
@@ -238,7 +287,8 @@ function DashboardIndexComponent() {
 									<Button
 										variant="outline"
 										size="sm"
-										className="h-8 gap-1.5 cursor-pointer text-xs border-amber-500/30 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+										className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed border-amber-500/30 text-amber-600 dark:text-amber-400"
+										disabled
 									>
 										Ver Matriz de Permisos
 										<ArrowUpRight className="h-3 w-3" />

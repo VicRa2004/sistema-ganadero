@@ -3,24 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
-import {
-	Sun,
-	Moon,
-	LogOut,
-	LayoutDashboard,
-	Loader2,
-	Users,
-} from "lucide-react";
+import { Sun, Moon, LogOut, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
 	const user = useAuthStore((state) => state.user);
 	const accessToken = useAuthStore((state) => state.accessToken);
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
 	const isAuthenticated = !!accessToken;
-
-	const hasPermission = (resource: string, action: string) =>
-		permissions.includes(`${resource}:${action}`);
 
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
@@ -51,60 +40,17 @@ export function Navbar() {
 	return (
 		<header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-				{/* Lado izquierdo - Logo y Enlaces principales */}
-				<div className="flex items-center gap-8">
-					<Link
-						to="/"
-						className="flex items-center gap-2 font-bold text-xl tracking-tight text-foreground hover:opacity-90 transition-opacity"
-					>
-						🐮 Sistema Ganadero
-					</Link>
-					<nav className="hidden md:flex items-center gap-6">
-						<Link
-							to="/"
-							activeProps={{ className: "text-primary font-semibold" }}
-							inactiveProps={{
-								className: "text-muted-foreground hover:text-foreground",
-							}}
-							activeOptions={{ exact: true }}
-							className="text-sm transition-colors"
-						>
-							Inicio
-						</Link>
+				{/* Logo */}
+				<Link
+					to="/"
+					className="flex items-center gap-2 font-bold text-xl tracking-tight text-foreground hover:opacity-90 transition-opacity"
+				>
+					🐮 Sistema Ganadero
+				</Link>
 
-						{isAuthenticated && (
-							<Link
-								to="/dashboard"
-								activeProps={{ className: "text-primary font-semibold" }}
-								inactiveProps={{
-									className: "text-muted-foreground hover:text-foreground",
-								}}
-								className="text-sm transition-colors flex items-center gap-1.5"
-							>
-								<LayoutDashboard className="h-4 w-4" />
-								Dashboard
-							</Link>
-						)}
-
-						{isAuthenticated && hasPermission("propietario", "read") && (
-							<Link
-								to="/dashboard/propietarios"
-								activeProps={{ className: "text-primary font-semibold" }}
-								inactiveProps={{
-									className: "text-muted-foreground hover:text-foreground",
-								}}
-								className="text-sm transition-colors flex items-center gap-1.5"
-							>
-								<Users className="h-4 w-4" />
-								Propietarios
-							</Link>
-						)}
-					</nav>
-				</div>
-
-				{/* Lado derecho - Tema y Acciones de Auth */}
+				{/* Lado derecho — Tema y Auth */}
 				<div className="flex items-center gap-4">
-					{/* Botón de alternancia de tema */}
+					{/* Toggle de tema */}
 					<Button
 						type="button"
 						variant="ghost"
@@ -118,7 +64,7 @@ export function Navbar() {
 
 					{isAuthenticated ? (
 						<div className="flex items-center gap-4">
-							{/* Detalle del perfil del usuario */}
+							{/* Perfil del usuario */}
 							<div className="flex items-center gap-2.5">
 								<div className="hidden sm:flex flex-col items-end text-right leading-none gap-0.5">
 									<span className="text-xs font-bold text-foreground">
@@ -148,7 +94,7 @@ export function Navbar() {
 								</div>
 							</div>
 
-							{/* Botón Cerrar Sesión */}
+							{/* Cerrar Sesión */}
 							<Button
 								type="button"
 								variant="outline"

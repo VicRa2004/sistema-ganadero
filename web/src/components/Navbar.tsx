@@ -3,13 +3,24 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
-import { Sun, Moon, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
+import {
+	Sun,
+	Moon,
+	LogOut,
+	LayoutDashboard,
+	Loader2,
+	Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
 	const user = useAuthStore((state) => state.user);
 	const accessToken = useAuthStore((state) => state.accessToken);
+	const permissions = useAuthStore((state) => state.permissions) ?? [];
 	const isAuthenticated = !!accessToken;
+
+	const hasPermission = (resource: string, action: string) =>
+		permissions.includes(`${resource}:${action}`);
 
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
@@ -72,6 +83,20 @@ export function Navbar() {
 							>
 								<LayoutDashboard className="h-4 w-4" />
 								Dashboard
+							</Link>
+						)}
+
+						{isAuthenticated && hasPermission("propietario", "read") && (
+							<Link
+								to="/dashboard/propietarios"
+								activeProps={{ className: "text-primary font-semibold" }}
+								inactiveProps={{
+									className: "text-muted-foreground hover:text-foreground",
+								}}
+								className="text-sm transition-colors flex items-center gap-1.5"
+							>
+								<Users className="h-4 w-4" />
+								Propietarios
 							</Link>
 						)}
 					</nav>

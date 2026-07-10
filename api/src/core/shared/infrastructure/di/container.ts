@@ -101,6 +101,23 @@ import { ListarRanchosController } from "@/modules/rancho/infrastructure/http/co
 import { ObtenerDetalleRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ObtenerDetalleRanchoController";
 import { EliminarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/EliminarRanchoController";
 
+// Ganado
+import { PrismaGanadoRepository } from "@/modules/ganado/infrastructure/repository/PrismaGanadoRepository";
+import { PrismaGanadoDetalleQuery } from "@/modules/ganado/infrastructure/queries/PrismaGanadoDetalleQuery";
+import { GanadoMapper } from "@/modules/ganado/application/mappers/GanadoMapper";
+import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
+import { RegistrarPesajeUseCase } from "@/modules/ganado/application/useCases/RegistrarPesajeUseCase";
+import { TrasladarGanadoUseCase } from "@/modules/ganado/application/useCases/TrasladarGanadoUseCase";
+import { ObtenerFichaGanadoUseCase } from "@/modules/ganado/application/useCases/ObtenerFichaGanadoUseCase";
+import { ListarGanadosUseCase } from "@/modules/ganado/application/useCases/ListarGanadosUseCase";
+import { EliminarGanadoUseCase } from "@/modules/ganado/application/useCases/EliminarGanadoUseCase";
+import { RegistrarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarGanadoController";
+import { RegistrarPesajeController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarPesajeController";
+import { TrasladarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/TrasladarGanadoController";
+import { ObtenerFichaGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ObtenerFichaGanadoController";
+import { ListarGanadosController } from "@/modules/ganado/infrastructure/http/controllers/ListarGanadosController";
+import { EliminarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/EliminarGanadoController";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -357,6 +374,51 @@ container.register("ObtenerDetalleRanchoController", {
 });
 container.register("EliminarRanchoController", {
 	useClass: EliminarRanchoController,
+});
+
+// Módulo Ganado - Repositorio, Query & Mapper
+container.register("GanadoRepository", { useClass: PrismaGanadoRepository });
+container.register("GanadoDetalleQuery", {
+	useClass: PrismaGanadoDetalleQuery,
+});
+container.register("GanadoMapper", { useClass: GanadoMapper });
+
+// Módulo Ganado - Casos de Uso
+container.register("RegistrarGanadoUseCase", {
+	useClass: RegistrarGanadoUseCase,
+});
+container.register("RegistrarPesajeUseCase", {
+	useClass: RegistrarPesajeUseCase,
+});
+container.register("TrasladarGanadoUseCase", {
+	useClass: TrasladarGanadoUseCase,
+});
+container.register("ObtenerFichaGanadoUseCase", {
+	useClass: ObtenerFichaGanadoUseCase,
+});
+container.register("ListarGanadosUseCase", { useClass: ListarGanadosUseCase });
+container.register("EliminarGanadoUseCase", {
+	useClass: EliminarGanadoUseCase,
+});
+
+// Módulo Ganado - Controladores
+container.register("RegistrarGanadoController", {
+	useClass: RegistrarGanadoController,
+});
+container.register("RegistrarPesajeController", {
+	useClass: RegistrarPesajeController,
+});
+container.register("TrasladarGanadoController", {
+	useClass: TrasladarGanadoController,
+});
+container.register("ObtenerFichaGanadoController", {
+	useClass: ObtenerFichaGanadoController,
+});
+container.register("ListarGanadosController", {
+	useClass: ListarGanadosController,
+});
+container.register("EliminarGanadoController", {
+	useClass: EliminarGanadoController,
 });
 
 container.register(

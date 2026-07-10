@@ -23,6 +23,10 @@ El código dentro de `src/` se divide estrictamente en:
 ## UI & Design (Shadcn/ui)
 
 - **Shadcn/ui:** Se usará shadcn para componentes de UI. Seguir sus principios: usar `FieldGroup` + `Field` para formularios, `asChild` para componentes Radix/Base personalizados, y el componente `cn()` para clases condicionales.
+- **Estilos Nativos:** Usar estrictamente los estilos nativos de shadcn/ui. Prohibido sobreescribir colores, fuentes o márgenes críticos por fuera de los tokens semánticos del tema.
+- **Iconos:** Utilizar exclusivamente iconos de `lucide-react`. Está prohibido el uso de emojis o iconos de terceros improvisados.
+- **Modo Claro & Oscuro:** La interfaz debe soportar de manera nativa los modos claro y oscuro utilizando las variables del tema y la clase `.dark`.
+- **Estética Premium:** Crear diseños interactivos y modernos con transiciones suaves, gradientes sutiles y uso de imágenes reales/generadas en lugar de placeholders genéricos.
 - **Tailwind CSS v4:** El diseño y variables semánticas se definen mediante Tailwind v4 en el CSS global.
 
 ## Buenas Prácticas y Calidad

@@ -2,8 +2,17 @@ import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 
+import type { UserDto } from "@/modules/auth/types";
+
+export interface RouterAuthContext {
+	isAuthenticated: boolean;
+	accessToken: string | null;
+	user: UserDto | null;
+}
+
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient;
+	auth: RouterAuthContext;
 }>()({
 	component: RootComponent,
 });

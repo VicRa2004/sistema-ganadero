@@ -41,11 +41,7 @@ export class PermissionRouter {
 	private initRoutes(): void {
 		this.router.use(this.authMiddleware.handle);
 
-		this.router.get(
-			"/users/:userId",
-			this.requirePermissionMiddleware.handle("permissions", "read"),
-			this.getUserPermissionsController.run,
-		);
+		this.router.get("/users/:userId", this.getUserPermissionsController.run);
 
 		this.router.get(
 			"/",

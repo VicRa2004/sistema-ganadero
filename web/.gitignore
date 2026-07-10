@@ -26,3 +26,8 @@ dist-ssr
 # TanStack Router
 src/routeTree.gen.ts
 
+# Variables de entorno locales
+.env
+.env.local
+.env.*.local
+

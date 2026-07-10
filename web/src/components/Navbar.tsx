@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon } from "lucide-react";
+import { useAuthStore } from "@/modules/auth/store/authStore";
+import { useLogout } from "@/modules/auth/hooks/useLogout";
+import { Sun, Moon, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
 
 export function Navbar() {
+	const user = useAuthStore((state) => state.user);
+	const accessToken = useAuthStore((state) => state.accessToken);
+	const isAuthenticated = !!accessToken;
+
+	const { mutate: logout, isPending: isLoggingOut } = useLogout();
+
 	const [theme, setTheme] = useState<"light" | "dark">(() => {
 		const saved = localStorage.getItem("theme");
 		if (saved === "light" || saved === "dark") return saved;
@@ -26,9 +34,12 @@ export function Navbar() {
 		setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 	};
 
+	const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+
 	return (
 		<header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+				{/* Lado izquierdo - Logo y Enlaces principales */}
 				<div className="flex items-center gap-8">
 					<Link
 						to="/"
@@ -48,10 +59,26 @@ export function Navbar() {
 						>
 							Inicio
 						</Link>
+
+						{isAuthenticated && (
+							<Link
+								to="/dashboard"
+								activeProps={{ className: "text-primary font-semibold" }}
+								inactiveProps={{
+									className: "text-muted-foreground hover:text-foreground",
+								}}
+								className="text-sm transition-colors flex items-center gap-1.5"
+							>
+								<LayoutDashboard className="h-4 w-4" />
+								Dashboard
+							</Link>
+						)}
 					</nav>
 				</div>
 
+				{/* Lado derecho - Tema y Acciones de Auth */}
 				<div className="flex items-center gap-4">
+					{/* Botón de alternancia de tema */}
 					<Button
 						type="button"
 						variant="ghost"
@@ -62,9 +89,62 @@ export function Navbar() {
 					>
 						{theme === "dark" ? <Sun /> : <Moon />}
 					</Button>
-					<div className="h-8 w-8 rounded-full bg-accent border border-border flex items-center justify-center text-sm font-semibold text-accent-foreground">
-						U
-					</div>
+
+					{isAuthenticated ? (
+						<div className="flex items-center gap-4">
+							{/* Detalle del perfil del usuario */}
+							<div className="flex items-center gap-2">
+								<div className="hidden sm:flex flex-col items-end text-right">
+									<span className="text-xs font-semibold text-foreground">
+										{user?.name}
+									</span>
+									<span className="text-[10px] text-muted-foreground">
+										{user?.role === "ADMIN" ? "Administrador" : "Operador"}
+									</span>
+								</div>
+								<div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary select-none">
+									{userInitial}
+								</div>
+							</div>
+
+							{/* Botón Cerrar Sesión */}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="gap-1.5 cursor-pointer h-9 text-xs"
+								onClick={() => logout()}
+								disabled={isLoggingOut}
+							>
+								{isLoggingOut ? (
+									<Loader2 className="h-3.5 w-3.5 animate-spin" />
+								) : (
+									<LogOut className="h-3.5 w-3.5" />
+								)}
+								<span className="hidden sm:inline">Cerrar Sesión</span>
+							</Button>
+						</div>
+					) : (
+						<div className="flex items-center gap-2">
+							<Link to="/login">
+								<Button
+									variant="ghost"
+									size="sm"
+									className="cursor-pointer text-xs h-9"
+								>
+									Iniciar Sesión
+								</Button>
+							</Link>
+							<Link to="/register">
+								<Button
+									size="sm"
+									className="cursor-pointer text-xs h-9 shadow-sm"
+								>
+									Registrarse
+								</Button>
+							</Link>
+						</div>
+					)}
 				</div>
 			</div>
 		</header>

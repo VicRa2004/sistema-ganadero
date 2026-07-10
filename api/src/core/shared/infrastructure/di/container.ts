@@ -85,6 +85,22 @@ import { ListarInsumosController } from "@/modules/inventario-insumos/infrastruc
 import { ObtenerDetalleInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerDetalleInsumoController";
 import { EliminarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/EliminarInsumoController";
 
+// Rancho
+import { PrismaRanchoRepository } from "@/modules/rancho/infrastructure/repository/PrismaRanchoRepository";
+import { RanchoMapper } from "@/modules/rancho/application/mappers/RanchoMapper";
+import { RegistrarRanchoUseCase } from "@/modules/rancho/application/useCases/RegistrarRanchoUseCase";
+import { ActualizarRanchoUseCase } from "@/modules/rancho/application/useCases/ActualizarRanchoUseCase";
+import { ObtenerCapacidadRanchoUseCase } from "@/modules/rancho/application/useCases/ObtenerCapacidadRanchoUseCase";
+import { ListarRanchosUseCase } from "@/modules/rancho/application/useCases/ListarRanchosUseCase";
+import { ObtenerDetalleRanchoUseCase } from "@/modules/rancho/application/useCases/ObtenerDetalleRanchoUseCase";
+import { EliminarRanchoUseCase } from "@/modules/rancho/application/useCases/EliminarRanchoUseCase";
+import { RegistrarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/RegistrarRanchoController";
+import { ActualizarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ActualizarRanchoController";
+import { ObtenerCapacidadRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ObtenerCapacidadRanchoController";
+import { ListarRanchosController } from "@/modules/rancho/infrastructure/http/controllers/ListarRanchosController";
+import { ObtenerDetalleRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ObtenerDetalleRanchoController";
+import { EliminarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/EliminarRanchoController";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -299,6 +315,48 @@ container.register("ObtenerDetalleInsumoController", {
 });
 container.register("EliminarInsumoController", {
 	useClass: EliminarInsumoController,
+});
+
+// Módulo Rancho - Repositorio & Mapper
+container.register("RanchoRepository", { useClass: PrismaRanchoRepository });
+container.register("RanchoMapper", { useClass: RanchoMapper });
+
+// Módulo Rancho - Casos de Uso
+container.register("RegistrarRanchoUseCase", {
+	useClass: RegistrarRanchoUseCase,
+});
+container.register("ActualizarRanchoUseCase", {
+	useClass: ActualizarRanchoUseCase,
+});
+container.register("ObtenerCapacidadRanchoUseCase", {
+	useClass: ObtenerCapacidadRanchoUseCase,
+});
+container.register("ListarRanchosUseCase", { useClass: ListarRanchosUseCase });
+container.register("ObtenerDetalleRanchoUseCase", {
+	useClass: ObtenerDetalleRanchoUseCase,
+});
+container.register("EliminarRanchoUseCase", {
+	useClass: EliminarRanchoUseCase,
+});
+
+// Módulo Rancho - Controladores
+container.register("RegistrarRanchoController", {
+	useClass: RegistrarRanchoController,
+});
+container.register("ActualizarRanchoController", {
+	useClass: ActualizarRanchoController,
+});
+container.register("ObtenerCapacidadRanchoController", {
+	useClass: ObtenerCapacidadRanchoController,
+});
+container.register("ListarRanchosController", {
+	useClass: ListarRanchosController,
+});
+container.register("ObtenerDetalleRanchoController", {
+	useClass: ObtenerDetalleRanchoController,
+});
+container.register("EliminarRanchoController", {
+	useClass: EliminarRanchoController,
 });
 
 container.register(

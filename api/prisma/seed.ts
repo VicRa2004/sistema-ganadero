@@ -6,75 +6,127 @@ async function main() {
 
 	// ─── 1. Roles ───────────────────────────────────────────────────────────────
 	const rolesData = [
-		{ name: "USER", description: "Usuario estándar del sistema" },
 		{ name: "ADMIN", description: "Administrador con acceso total" },
-		{ name: "MOD", description: "Moderador con acceso parcial" },
+		{
+			name: "USER",
+			description: "Usuario estándar de consulta y operación básica",
+		},
 	];
 
+	const rolesMap: Record<
+		string,
+		{ id: number; name: string; description: string | null; isActive: boolean }
+	> = {};
+
 	for (const role of rolesData) {
-		await prisma.role.upsert({
+		const dbRole = await prisma.role.upsert({
 			where: { name: role.name },
 			update: { description: role.description },
 			create: role,
 		});
+		rolesMap[role.name] = dbRole;
 	}
 	console.log("✅ Roles inicializados");
 
-	// ─── 2. Permisos atómicos ────────────────────────────────────────────────────
-	const permissionsData = [
-		{ resource: "users", action: "create" },
-		{ resource: "users", action: "read" },
-		{ resource: "users", action: "update" },
-		{ resource: "users", action: "delete" },
+	// ─── 2. Recursos y Permisos atómicos ─────────────────────────────────────────
+	const resources = [
+		"users",
+		"permissions",
+		"ganado",
+		"ranchos",
+		"inventario-insumos",
+		"propietarios",
+		"razas",
+		"sesiones-sanitarias",
+		"tratamientos-medicos",
 	];
+	const actions = ["create", "read", "update", "delete"];
 
-	for (const perm of permissionsData) {
-		await prisma.permission.upsert({
+	const permissionsList: { resource: string; action: string }[] = [];
+	for (const resource of resources) {
+		for (const action of actions) {
+			permissionsList.push({ resource, action });
+		}
+	}
+
+	const permissionsMap: Record<
+		string,
+		{ id: number; resource: string; action: string }
+	> = {};
+
+	for (const perm of permissionsList) {
+		const dbPerm = await prisma.permission.upsert({
 			where: {
 				resource_action: { resource: perm.resource, action: perm.action },
 			},
 			update: {},
 			create: perm,
 		});
+		permissionsMap[`${perm.resource}:${perm.action}`] = dbPerm;
 	}
 	console.log("✅ Permisos atómicos inicializados");
 
-	// ─── 3. Asignación de permisos a roles ──────────────────────────────────────
-	const rolePermissionsMap: Record<
-		string,
-		{ resource: string; action: string }[]
-	> = {
-		ADMIN: permissionsData,
-		MOD: [
-			{ resource: "users", action: "create" },
-			{ resource: "users", action: "read" },
-			{ resource: "users", action: "update" },
+	// ─── 3. Asignación de permisos a roles (Idempotente & Limpieza de obsoletos) ──
+	const rolePermissionsSetup: Record<string, string[]> = {
+		ADMIN: Object.keys(permissionsMap), // Todos los permisos
+		USER: [
+			// Lectura de todo el negocio
+			"ganado:read",
+			"ranchos:read",
+			"inventario-insumos:read",
+			"propietarios:read",
+			"razas:read",
+			"sesiones-sanitarias:read",
+			"tratamientos-medicos:read",
+			// Operación básica (creación y actualización)
+			"ganado:create",
+			"ganado:update",
+			"inventario-insumos:create",
+			"inventario-insumos:update",
+			"sesiones-sanitarias:create",
+			"sesiones-sanitarias:update",
+			"tratamientos-medicos:create",
+			"tratamientos-medicos:update",
 		],
-		USER: [{ resource: "users", action: "read" }],
 	};
 
-	for (const [roleName, permissions] of Object.entries(rolePermissionsMap)) {
-		const role = await prisma.role.findUnique({ where: { name: roleName } });
+	for (const [roleName, allowedPermKeys] of Object.entries(
+		rolePermissionsSetup,
+	)) {
+		const role = rolesMap[roleName];
 		if (!role) continue;
 
-		for (const perm of permissions) {
-			const permission = await prisma.permission.findUnique({
-				where: {
-					resource_action: { resource: perm.resource, action: perm.action },
-				},
-			});
-			if (!permission) continue;
+		const targetPermissionIds: number[] = [];
 
+		for (const key of allowedPermKeys) {
+			const perm = permissionsMap[key];
+			if (perm) {
+				targetPermissionIds.push(perm.id);
+			}
+		}
+
+		// Registrar los permisos requeridos de forma idempotente
+		for (const permissionId of targetPermissionIds) {
 			await prisma.rolePermission.upsert({
 				where: {
-					roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+					roleId_permissionId: { roleId: role.id, permissionId },
 				},
 				update: {},
-				create: { roleId: role.id, permissionId: permission.id },
+				create: { roleId: role.id, permissionId },
 			});
 		}
+
+		// Purgar permisos que hayan sido eliminados del seed para este rol
+		await prisma.rolePermission.deleteMany({
+			where: {
+				roleId: role.id,
+				permissionId: { notIn: targetPermissionIds },
+			},
+		});
 	}
-	console.log("✅ Permisos asignados a roles");
+	console.log(
+		"✅ Permisos asignados a roles (limpieza de obsoletos realizada)",
+	);
 
 	// ─── 4. Usuarios de prueba ───────────────────────────────────────────────────
 	const passwordHash = await bcrypt.hash("SecurePass123!", 10);
@@ -87,12 +139,6 @@ async function main() {
 			roleName: "ADMIN",
 		},
 		{
-			email: "mod@dev.com",
-			name: "Super Moderador",
-			password: passwordHash,
-			roleName: "MOD",
-		},
-		{
 			email: "user@dev.com",
 			name: "Usuario Estándar",
 			password: passwordHash,
@@ -101,28 +147,53 @@ async function main() {
 	];
 
 	for (const { roleName, ...userFields } of usersData) {
+		// Crear o actualizar usuario
 		const user = await prisma.user.upsert({
 			where: { email: userFields.email },
-			update: {},
+			update: {
+				name: userFields.name,
+				password: userFields.password,
+			},
 			create: userFields,
 		});
 
-		const role = await prisma.role.findUnique({ where: { name: roleName } });
+		const role = rolesMap[roleName];
 		if (!role) continue;
 
+		// Asignar el rol de forma idempotente a través de UserRole
 		await prisma.userRole.upsert({
 			where: { userId_roleId: { userId: user.id, roleId: role.id } },
 			update: {},
 			create: { userId: user.id, roleId: role.id },
 		});
+
+		// Purgar otros roles del usuario si queremos asegurar que solo tenga el rol de seed
+		await prisma.userRole.deleteMany({
+			where: {
+				userId: user.id,
+				roleId: { not: role.id },
+			},
+		});
 	}
+
+	// Opcional: Desactivar o eliminar roles obsoletos de la base de datos que no están en el seed (ej. "MOD")
+	const activeRoleIds = Object.values(rolesMap).map((r) => r.id);
+	await prisma.role.updateMany({
+		where: {
+			id: { notIn: activeRoleIds },
+		},
+		data: {
+			isActive: false,
+		},
+	});
 
 	console.log(
 		"✅ Usuarios de prueba creados (CONTRASEÑA PARA TODOS: SecurePass123!)",
 	);
 	console.log("   - admin@dev.com (ADMIN) → todos los permisos");
-	console.log("   - mod@dev.com   (MOD)   → crear, leer, actualizar");
-	console.log("   - user@dev.com  (USER)  → solo leer");
+	console.log(
+		"   - user@dev.com  (USER)  → lectura global y operaciones de negocio",
+	);
 }
 
 main()

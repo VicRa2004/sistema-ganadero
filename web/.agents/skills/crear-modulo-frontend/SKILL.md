@@ -75,22 +75,24 @@ const hasPermission = (resource: string, action: string) => {
 ```
 
 ### 4.2 Protección de Rutas (TanStack Router)
-Las rutas privadas o de administración del sistema deben protegerse en su definición de archivo dentro de `web/src/routes/` evaluando el contexto de autenticación en `beforeLoad`:
+Las rutas privadas deben protegerse en `beforeLoad`. **IMPORTANTE:** el `RouterAuthContext` no expone `permissions`, por lo que los permisos deben leerse del store de Zustand directamente con `getState()` (seguro fuera de React):
 ```typescript
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 
-export const Route = createFileRoute("/dashboard/admin")({
+export const Route = createFileRoute("/dashboard/mi-modulo")({
     beforeLoad: ({ context }) => {
-        // Redirigir a login si no está autenticado
         if (!context.auth.isAuthenticated) {
             throw redirect({ to: "/login" });
         }
-        // Redirigir a inicio si no es administrador
-        if (context.auth.user?.role !== "ADMIN") {
-            throw redirect({ to: "/" });
+        // ✅ Correcto: usar getState() fuera de React
+        const permissions = useAuthStore.getState().permissions ?? [];
+        if (!permissions.includes("mi-recurso:read")) {
+            throw redirect({ to: "/dashboard" });
         }
     },
 });
+// ❌ Incorrecto: context.auth.permissions no existe en RouterAuthContext
 ```
 
 ---
@@ -111,3 +113,102 @@ export const Route = createFileRoute("/dashboard/admin")({
 Antes de elaborar cualquier plan de desarrollo o proponer instalaciones:
 *   **Inspeccionar package.json:** Es un requisito obligatorio leer el archivo [web/package.json](file:///home/victor-raul/proyectos/sistema-ganadero/web/package.json) para verificar si los paquetes necesarios ya están instalados.
 *   **Evitar redundancia:** No propongas ni instales nuevas librerías a menos que sea estrictamente necesario y cuentes con aprobación explícita del usuario. Prioriza siempre capacidades nativas y dependencias existentes (`lucide-react`, `zustand`, `axios`, etc.).
+
+---
+
+## 7. Rutas Anidadas con TanStack Router (File-based)
+
+Esta es una fuente crítica de bugs. Las rutas con notación de punto crean jerarquías de layout que DEBEN ser manejadas explícitamente.
+
+### 7.1 Patrón Layout + Index (OBLIGATORIO)
+Cuando un módulo vive bajo `/dashboard/<modulo>`, el archivo `dashboard.tsx` actúa como **layout padre** y DEBE renderizar `<Outlet />`. El contenido propio del dashboard debe estar en `dashboard.index.tsx`:
+
+```
+src/routes/
+├── dashboard.tsx                    # Layout puro: solo beforeLoad + <Outlet />
+├── dashboard.index.tsx              # Página principal /dashboard (ruta exacta)
+├── dashboard.mi-modulo.tsx          # Página /dashboard/mi-modulo (hija del layout)
+└── dashboard.mi-modulo.$id.tsx     # Página /dashboard/mi-modulo/:id
+```
+
+```typescript
+// dashboard.tsx — SIEMPRE así, nunca con componente propio:
+import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
+export const Route = createFileRoute("/dashboard")({
+    beforeLoad: ({ context }) => {
+        if (!context.auth.isAuthenticated) throw redirect({ to: "/login" });
+    },
+    component: () => <Outlet />,  // ← obligatorio para que las rutas hijas funcionen
+});
+
+// dashboard.index.tsx — contenido de /dashboard exacto:
+export const Route = createFileRoute("/dashboard/")({  // ← notar la barra al final
+    component: DashboardIndexPage,
+});
+```
+
+> **Síntoma del bug:** Al navegar a `/dashboard/mi-modulo` se muestra el contenido del dashboard principal en lugar del módulo. Causa: `dashboard.tsx` no tiene `<Outlet />`.
+
+---
+
+## 8. Rutas de Imports en Componentes
+
+Los componentes en `src/components/<modulo>/` son físicamente distintos de `src/modules/<modulo>/`. **Nunca usar rutas relativas `../` desde un componente para acceder a hooks o tipos de un módulo**; siempre usar el alias `@/`:
+
+```typescript
+// ✅ Correcto — desde src/components/propietario/MiComponente.tsx:
+import { useRegistrar } from "@/modules/propietario/hooks/useRegistrarPropietario";
+import type { PropietarioDto } from "@/modules/propietario/types";
+
+// ❌ Incorrecto — resuelve a src/components/hooks/ (no existe, Vite lo rechaza):
+import { useRegistrar } from "../hooks/useRegistrarPropietario";
+```
+
+> **Regla práctica:** Si el archivo está en `src/components/`, todos sus imports de lógica de negocio usan `@/modules/`. Si el archivo está dentro de `src/modules/<modulo>/`, los imports internos del mismo módulo pueden ser relativos.
+
+---
+
+## 9. Forma Real de las Respuestas del API
+
+**Antes de tipar el servicio**, verificar el tipo de retorno del Use Case correspondiente en el backend (`api/src/modules/<modulo>/application/useCases/`). El proyecto usa `Pagination<T>` para listados paginados:
+
+```typescript
+// Shape real devuelta por el API para listados paginados:
+export interface PaginatedResponse<T> {
+    data: T[];
+    page: number;
+    totalItems: number;
+    totalPages: number;
+}
+
+// ✅ Correcto en el servicio:
+async listar(page: number, limit: number): Promise<PaginatedResponse<MiDto>> {
+    const { data } = await api.get<PaginatedResponse<MiDto>>("/mi-recurso", {
+        params: { page, limit },
+    });
+    return data;
+}
+
+// ✅ Correcto en el componente/ruta:
+const { data: paginado } = useListarMiEntidad(page, limit);
+// Acceder al array con .data:
+<MiTabla items={paginado.data} />
+// Controlar paginación con .totalPages:
+disabled={page >= paginado.totalPages}
+```
+
+> **Síntoma del bug:** `xxx.map is not a function` en runtime. Causa: el servicio tipaba `Promise<T[]>` pero el API devuelve `{ data: T[], ... }`.
+
+---
+
+## 10. Consistencia del Nombre de Recurso (Seed vs Router)
+
+El nombre del recurso en `api/prisma/seed.ts` **debe ser idéntico** al string usado en `requirePermissionMiddleware.handle("recurso", "action")` en el Router del API. Una discrepancia hace que todos los permisos fallen silenciosamente en runtime (el middleware no encuentra el permiso aunque exista en BD).
+
+**Checklist obligatorio al crear un módulo:**
+1. Leer el `<Entidad>Router.ts` y anotar el string exacto del primer argumento de `requirePermissionMiddleware.handle(...)`.
+2. Buscar ese recurso en `api/prisma/seed.ts` dentro del array `resources` y el objeto `USER`.
+3. Si hay discrepancia (ej. `"propietarios"` vs `"propietario"`), corregir el seed.
+4. Re-ejecutar: `pnpm --filter api exec bun run prisma/seed.ts`
+5. Informar al usuario que debe **cerrar sesión y volver a iniciar sesión** para que el token de permisos se actualice.
+

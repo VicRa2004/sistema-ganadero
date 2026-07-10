@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
 import { Sun, Moon, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function Navbar() {
 	const user = useAuthStore((state) => state.user);
@@ -93,16 +94,31 @@ export function Navbar() {
 					{isAuthenticated ? (
 						<div className="flex items-center gap-4">
 							{/* Detalle del perfil del usuario */}
-							<div className="flex items-center gap-2">
-								<div className="hidden sm:flex flex-col items-end text-right">
-									<span className="text-xs font-semibold text-foreground">
-										{user?.name}
+							<div className="flex items-center gap-2.5">
+								<div className="hidden sm:flex flex-col items-end text-right leading-none gap-0.5">
+									<span className="text-xs font-bold text-foreground">
+										{user?.name || "Usuario"}
 									</span>
-									<span className="text-[10px] text-muted-foreground">
-										{user?.role === "ADMIN" ? "Administrador" : "Operador"}
+									<span
+										className="text-[10px] text-muted-foreground max-w-[140px] truncate"
+										title={user?.email}
+									>
+										{user?.email || "sin correo"}
 									</span>
 								</div>
-								<div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary select-none">
+								<div
+									className={cn(
+										"h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold select-none border shadow-sm",
+										user?.role === "ADMIN"
+											? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+											: "bg-primary/10 border-primary/20 text-primary",
+									)}
+									title={
+										user?.role === "ADMIN"
+											? "Rol: Administrador"
+											: "Rol: Usuario Estándar"
+									}
+								>
 									{userInitial}
 								</div>
 							</div>

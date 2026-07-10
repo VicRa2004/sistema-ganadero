@@ -16,7 +16,9 @@ import {
 	Database,
 	Plus,
 	ShieldAlert,
+	ShieldCheck,
 	Sprout,
+	User,
 	Users,
 	Warehouse,
 } from "lucide-react";
@@ -92,14 +94,16 @@ function DashboardComponent() {
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
-					<span className="text-xs text-muted-foreground">Rol actual:</span>
 					<Badge
 						variant={user?.role === "ADMIN" ? "default" : "secondary"}
-						className="px-3 py-1 font-semibold text-xs"
+						className="px-3 py-1 font-semibold text-xs tracking-wider gap-1.5 flex items-center"
 					>
-						{user?.role === "ADMIN"
-							? "⚙️ Administrador"
-							: "👤 Operador Estándar"}
+						{user?.role === "ADMIN" ? (
+							<ShieldCheck className="h-3.5 w-3.5" />
+						) : (
+							<User className="h-3.5 w-3.5" />
+						)}
+						{user?.role || "USER"}
 					</Badge>
 				</div>
 			</section>

@@ -17,9 +17,9 @@ export const authService = {
 	},
 
 	async getPermissions(userId: number): Promise<PermissionDto[]> {
-		const { data } = await api.get<{ data: PermissionDto[] }>(
+		const { data } = await api.get<PermissionDto[]>(
 			`/permissions/users/${userId}`,
 		);
-		return data.data;
+		return data;
 	},
 };

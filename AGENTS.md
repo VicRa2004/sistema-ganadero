@@ -20,6 +20,7 @@ Cada subdirectorio (`api` y `web`) cuenta con su propio archivo `AGENTS.md` con 
   - Para instalar dependencias en la raíz: `pnpm add -E -w <paquete>`
   - Para instalar dependencias en una sub-app: `pnpm --filter <app> add -E <paquete>`
 - **Bloqueo de Scripts en pnpm:** pnpm v11 requiere aprobación explícita de dependencias compiladas (como `bcrypt` o `prisma`). Esto está preconfigurado en [.npmrc](file:///home/victor-raul/proyectos/sistema-ganadero/.npmrc).
+- **Planificación Preventiva de Dependencias:** Al elaborar un plan de implementación, los agentes de IA deben leer y analizar obligatoriamente el archivo `package.json` correspondiente para verificar si los paquetes requeridos ya están instalados, con el fin de evitar la instalación redundante o el uso de versiones incorrectas.
 
 ---
 

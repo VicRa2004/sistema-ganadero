@@ -111,12 +111,14 @@ import { TrasladarGanadoUseCase } from "@/modules/ganado/application/useCases/Tr
 import { ObtenerFichaGanadoUseCase } from "@/modules/ganado/application/useCases/ObtenerFichaGanadoUseCase";
 import { ListarGanadosUseCase } from "@/modules/ganado/application/useCases/ListarGanadosUseCase";
 import { EliminarGanadoUseCase } from "@/modules/ganado/application/useCases/EliminarGanadoUseCase";
+import { ActualizarGanadoUseCase } from "@/modules/ganado/application/useCases/ActualizarGanadoUseCase";
 import { RegistrarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarGanadoController";
 import { RegistrarPesajeController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarPesajeController";
 import { TrasladarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/TrasladarGanadoController";
 import { ObtenerFichaGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ObtenerFichaGanadoController";
 import { ListarGanadosController } from "@/modules/ganado/infrastructure/http/controllers/ListarGanadosController";
 import { EliminarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/EliminarGanadoController";
+import { ActualizarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ActualizarGanadoController";
 
 // Register Tokens
 container.register("UserRepository", {
@@ -400,6 +402,9 @@ container.register("ListarGanadosUseCase", { useClass: ListarGanadosUseCase });
 container.register("EliminarGanadoUseCase", {
 	useClass: EliminarGanadoUseCase,
 });
+container.register("ActualizarGanadoUseCase", {
+	useClass: ActualizarGanadoUseCase,
+});
 
 // Módulo Ganado - Controladores
 container.register("RegistrarGanadoController", {
@@ -419,6 +424,9 @@ container.register("ListarGanadosController", {
 });
 container.register("EliminarGanadoController", {
 	useClass: EliminarGanadoController,
+});
+container.register("ActualizarGanadoController", {
+	useClass: ActualizarGanadoController,
 });
 
 container.register(

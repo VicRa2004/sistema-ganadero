@@ -8,6 +8,7 @@ import type { TrasladarGanadoController } from "../controllers/TrasladarGanadoCo
 import type { ObtenerFichaGanadoController } from "../controllers/ObtenerFichaGanadoController";
 import type { ListarGanadosController } from "../controllers/ListarGanadosController";
 import type { EliminarGanadoController } from "../controllers/EliminarGanadoController";
+import type { ActualizarGanadoController } from "../controllers/ActualizarGanadoController";
 
 @injectable()
 export class GanadoRouter {
@@ -30,6 +31,8 @@ export class GanadoRouter {
 		private readonly listarController: ListarGanadosController,
 		@inject("EliminarGanadoController")
 		private readonly eliminarController: EliminarGanadoController,
+		@inject("ActualizarGanadoController")
+		private readonly actualizarController: ActualizarGanadoController,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -70,6 +73,13 @@ export class GanadoRouter {
 			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.trasladoController.run.bind(this.trasladoController),
+		);
+
+		this.router.put(
+			"/:id",
+			this.authMiddleware.handle,
+			this.requirePermissionMiddleware.handle("ganado", "update"),
+			this.actualizarController.run.bind(this.actualizarController),
 		);
 
 		this.router.delete(

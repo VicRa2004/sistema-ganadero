@@ -18,6 +18,8 @@ export const registrarGanadoSchema = z.object({
 	propietarioId: z.number().int().positive("El propietario es requerido"),
 });
 
+export const actualizarGanadoSchema = registrarGanadoSchema.partial();
+
 export const registrarPesajeSchema = z.object({
 	peso: z.number().positive("El peso debe ser un número positivo"),
 });

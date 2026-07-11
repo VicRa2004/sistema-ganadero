@@ -142,4 +142,44 @@ export class Ganado extends Entity {
 		}
 		this.ranchoId = nuevoRanchoId;
 	}
+
+	public actualizar(
+		identificador: string,
+		peso: number,
+		edadEnMeses: number,
+		sexo: SexoGanado,
+		razaId: number,
+		ranchoId: number,
+		propietarioId: number,
+	): void {
+		if (!identificador || identificador.trim() === "") {
+			throw new Error("El identificador del ganado no puede estar vacío");
+		}
+		if (peso <= 0) {
+			throw new Error("El peso debe ser mayor que cero");
+		}
+		if (edadEnMeses < 0) {
+			throw new Error("La edad en meses no puede ser negativa");
+		}
+		if (sexo !== "MACHO" && sexo !== "HEMBRA") {
+			throw new Error("El sexo del ganado debe ser MACHO o HEMBRA");
+		}
+		if (razaId <= 0) {
+			throw new Error("La raza especificada no es válida");
+		}
+		if (ranchoId <= 0) {
+			throw new Error("El rancho especificado no es válido");
+		}
+		if (propietarioId <= 0) {
+			throw new Error("El propietario especificado no es válido");
+		}
+
+		this.identificador = identificador;
+		this.peso = peso;
+		this.edadEnMeses = edadEnMeses;
+		this.sexo = sexo;
+		this.razaId = razaId;
+		this.ranchoId = ranchoId;
+		this.propietarioId = propietarioId;
+	}
 }

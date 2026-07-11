@@ -3,14 +3,9 @@ import { useState } from "react";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useObtenerDetallePropietario } from "@/modules/propietario/hooks/useObtenerDetallePropietario";
 import { PropietarioFormDialog } from "@/components/propietario/PropietarioFormDialog";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-} from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
 	Table,
@@ -71,12 +66,16 @@ function DetallePropietarioComponent() {
 	if (isError || !propietario) {
 		return (
 			<div className="space-y-4 py-6 animate-fade-in">
-				<Button variant="ghost" asChild className="gap-2 -ml-2 mb-4">
-					<Link to="/dashboard/propietarios">
-						<ArrowLeft className="size-4" />
-						Volver a Propietarios
-					</Link>
-				</Button>
+				<Link
+					to="/dashboard/propietarios"
+					className={cn(
+						buttonVariants({ variant: "ghost" }),
+						"gap-2 -ml-2 mb-4",
+					)}
+				>
+					<ArrowLeft className="size-4" />
+					Volver a Propietarios
+				</Link>
 				<div className="p-4 text-sm text-red-700 bg-red-500/10 border border-red-500/30 rounded-xl dark:text-red-400 dark:bg-red-500/15">
 					No se pudo cargar la información del propietario. Verifica que exista
 					o regresa a la lista.
@@ -89,12 +88,16 @@ function DetallePropietarioComponent() {
 		<div className="space-y-8 py-6 animate-fade-in">
 			{/* Encabezado con navegación */}
 			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-				<Button variant="ghost" asChild className="gap-2 -ml-2 w-fit">
-					<Link to="/dashboard/propietarios">
-						<ArrowLeft className="size-4" />
-						Volver a Propietarios
-					</Link>
-				</Button>
+				<Link
+					to="/dashboard/propietarios"
+					className={cn(
+						buttonVariants({ variant: "ghost" }),
+						"gap-2 -ml-2 w-fit",
+					)}
+				>
+					<ArrowLeft className="size-4" />
+					Volver a Propietarios
+				</Link>
 
 				{canUpdate && (
 					<Button
@@ -119,9 +122,6 @@ function DetallePropietarioComponent() {
 						<CardTitle className="text-2xl font-extrabold tracking-tight text-foreground">
 							{propietario.nombre}
 						</CardTitle>
-						<CardDescription className="text-sm text-muted-foreground">
-							ID: #{propietario.id}
-						</CardDescription>
 						<div className="flex flex-wrap gap-2 pt-1">
 							<Badge variant="secondary" className="gap-1.5">
 								<Sprout className="size-3" />

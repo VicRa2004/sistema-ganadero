@@ -7,7 +7,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Pencil, Trash2, Phone, Mail, User } from "lucide-react";
 import type { PropietarioDto } from "@/modules/propietario/types";
@@ -101,20 +102,17 @@ export function PropietariosTable({
 							</TableCell>
 							<TableCell className="text-right">
 								<div className="flex items-center justify-end gap-2">
-									<Button
-										asChild
-										variant="ghost"
-										size="sm"
-										className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+									<Link
+										to="/dashboard/propietarios/$id"
+										params={{ id: String(p.id) }}
+										className={cn(
+											buttonVariants({ variant: "ghost", size: "sm" }),
+											"h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary",
+										)}
 									>
-										<Link
-											to="/dashboard/propietarios/$id"
-											params={{ id: String(p.id) }}
-										>
-											<Eye className="size-4" />
-											<span className="sr-only">Ver detalle</span>
-										</Link>
-									</Button>
+										<Eye className="size-4" />
+										<span className="sr-only">Ver detalle</span>
+									</Link>
 
 									{canUpdate && (
 										<Button

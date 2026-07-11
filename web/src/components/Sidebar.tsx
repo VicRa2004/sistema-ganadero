@@ -243,15 +243,17 @@ export function MobileSidebarTrigger() {
 
 	return (
 		<Sheet open={open} onOpenChange={setOpen}>
-			<SheetTrigger asChild>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="md:hidden text-muted-foreground hover:text-foreground cursor-pointer"
-					aria-label="Abrir menú de navegación"
-				>
-					<Menu className="h-5 w-5" />
-				</Button>
+			<SheetTrigger
+				render={
+					<Button
+						variant="ghost"
+						size="icon"
+						className="md:hidden text-muted-foreground hover:text-foreground cursor-pointer"
+						aria-label="Abrir menú de navegación"
+					/>
+				}
+			>
+				<Menu className="h-5 w-5" />
 			</SheetTrigger>
 			<SheetContent side="left" className="w-64 p-0 flex flex-col">
 				<SheetHeader className="px-4 py-4 border-b border-border">

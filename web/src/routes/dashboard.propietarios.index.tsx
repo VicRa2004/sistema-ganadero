@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { PropietarioDto } from "@/modules/propietario/types";
 
-export const Route = createFileRoute("/dashboard/propietarios")({
+export const Route = createFileRoute("/dashboard/propietarios/")({
 	beforeLoad: ({ context }) => {
 		if (!context.auth.isAuthenticated) {
 			throw redirect({ to: "/login" });
@@ -105,50 +105,50 @@ function PropietariosComponent() {
 				)}
 
 				{!isLoading && !isError && propietarios && (
-				<PropietariosTable
-					propietarios={propietarios.data}
-					canUpdate={canUpdate}
-					canDelete={canDelete}
-					onEdit={handleEdit}
-					onDelete={(p) => setPropietarioEliminar(p)}
-				/>
-			)}
+					<PropietariosTable
+						propietarios={propietarios.data}
+						canUpdate={canUpdate}
+						canDelete={canDelete}
+						onEdit={handleEdit}
+						onDelete={(p) => setPropietarioEliminar(p)}
+					/>
+				)}
 			</section>
 
 			{/* Paginación */}
 			{!isLoading && propietarios && propietarios.data.length > 0 && (
-			<div className="flex items-center justify-between pt-2">
-				<p className="text-sm text-muted-foreground">
-					Página{" "}
-					<span className="font-semibold text-foreground">{page}</span> de{" "}
-					<span className="font-semibold text-foreground">
-						{propietarios.totalPages}
-					</span>
-				</p>
-				<div className="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1}
-						className="gap-1"
-					>
-						<ChevronLeft className="size-4" />
-						Anterior
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setPage((p) => p + 1)}
-						disabled={page >= propietarios.totalPages}
-						className="gap-1"
-					>
-						Siguiente
-						<ChevronRight className="size-4" />
-					</Button>
+				<div className="flex items-center justify-between pt-2">
+					<p className="text-sm text-muted-foreground">
+						Página <span className="font-semibold text-foreground">{page}</span>{" "}
+						de{" "}
+						<span className="font-semibold text-foreground">
+							{propietarios.totalPages}
+						</span>
+					</p>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setPage((p) => Math.max(1, p - 1))}
+							disabled={page === 1}
+							className="gap-1"
+						>
+							<ChevronLeft className="size-4" />
+							Anterior
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setPage((p) => p + 1)}
+							disabled={page >= propietarios.totalPages}
+							className="gap-1"
+						>
+							Siguiente
+							<ChevronRight className="size-4" />
+						</Button>
+					</div>
 				</div>
-			</div>
-		)}
+			)}
 
 			{/* Dialogs */}
 			<PropietarioFormDialog

@@ -11,6 +11,7 @@ export class RanchoMapper {
 			ubicacion: rancho.getUbicacion(),
 			extensionHectareas: rancho.getExtensionHectareas(),
 			capacidadMaxima: rancho.getCapacidadMaxima(),
+			usuarioId: rancho.getUsuarioId(),
 		};
 	}
 }

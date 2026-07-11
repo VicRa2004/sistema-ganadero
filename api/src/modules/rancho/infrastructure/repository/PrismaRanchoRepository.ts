@@ -12,6 +12,7 @@ interface PrismaRanchoRecord {
 	ubicacion: string;
 	extensionHectareas: number;
 	capacidadMaxima: number;
+	usuarioId: number;
 	deletedAt: Date | null;
 }
 
@@ -24,6 +25,7 @@ export class PrismaRanchoRepository implements RanchoRepository {
 			record.ubicacion,
 			record.extensionHectareas,
 			record.capacidadMaxima,
+			record.usuarioId,
 		);
 	}
 
@@ -44,6 +46,10 @@ export class PrismaRanchoRepository implements RanchoRepository {
 				contains: filters.nombre,
 				mode: "insensitive",
 			};
+		}
+
+		if (filters.usuarioId !== undefined) {
+			whereClause.usuarioId = filters.usuarioId;
 		}
 
 		const [records, totalItems] = await Promise.all([
@@ -76,6 +82,7 @@ export class PrismaRanchoRepository implements RanchoRepository {
 					ubicacion: rancho.getUbicacion(),
 					extensionHectareas: rancho.getExtensionHectareas(),
 					capacidadMaxima: rancho.getCapacidadMaxima(),
+					usuarioId: rancho.getUsuarioId(),
 				},
 			});
 			return this.toDomain(record);
@@ -88,6 +95,7 @@ export class PrismaRanchoRepository implements RanchoRepository {
 				ubicacion: rancho.getUbicacion(),
 				extensionHectareas: rancho.getExtensionHectareas(),
 				capacidadMaxima: rancho.getCapacidadMaxima(),
+				usuarioId: rancho.getUsuarioId(),
 			},
 		});
 		return this.toDomain(record);

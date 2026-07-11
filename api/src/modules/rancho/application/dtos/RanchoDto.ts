@@ -3,6 +3,7 @@ export interface RegistrarRanchoInputDto {
 	ubicacion: string;
 	extensionHectareas: number;
 	capacidadMaxima: number;
+	usuarioId: number;
 }
 
 export interface ActualizarRanchoInputDto {
@@ -10,6 +11,7 @@ export interface ActualizarRanchoInputDto {
 	ubicacion?: string;
 	extensionHectareas?: number;
 	capacidadMaxima?: number;
+	usuarioId?: number;
 }
 
 export interface RanchoOutputDto {
@@ -18,6 +20,7 @@ export interface RanchoOutputDto {
 	ubicacion: string;
 	extensionHectareas: number;
 	capacidadMaxima: number;
+	usuarioId: number;
 }
 
 export interface RanchoCapacidadOutputDto {

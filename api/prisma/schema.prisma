@@ -24,6 +24,7 @@ model User {
   roles             UserRole[]
   directPermissions UserPermission[]
   refreshTokens     RefreshToken[]
+  ranchos           Rancho[]
 
   @@map("user")
 }
@@ -174,11 +175,13 @@ model Rancho {
   ubicacion          String    @map("rnch_ubicacion") @db.VarChar(255)
   extensionHectareas Float     @map("rnch_extension")
   capacidadMaxima    Int       @map("rnch_capacidad_max")
+  usuarioId          Int       @map("rnch_fkusuario")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime? @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
 
-  ganados Ganado[]
+  usuario            User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ganados            Ganado[]
 
   @@map("rancho")
 }

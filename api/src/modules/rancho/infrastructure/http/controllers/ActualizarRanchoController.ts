@@ -18,11 +18,17 @@ export class ActualizarRanchoController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const idParam = c.req.param("id");
 			const { id } = validate(ranchoIdSchema, { id: idParam });
+			const user = c.get("user");
 
 			const body = await c.req.json();
 			const dto = validate(updateRanchoSchema, body);
 
-			const result = await this.actualizarRanchoUseCase.run(id, dto);
+			const result = await this.actualizarRanchoUseCase.run(
+				id,
+				dto,
+				user.id,
+				user.role,
+			);
 			return this.ok(c, result);
 		});
 	};

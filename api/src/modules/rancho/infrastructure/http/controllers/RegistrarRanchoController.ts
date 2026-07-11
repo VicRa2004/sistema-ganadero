@@ -18,7 +18,11 @@ export class RegistrarRanchoController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const body = await c.req.json();
 			const dto = validate(createRanchoSchema, body);
-			const result = await this.registrarRanchoUseCase.run(dto);
+			const user = c.get("user");
+			const result = await this.registrarRanchoUseCase.run({
+				...dto,
+				usuarioId: user.id,
+			});
 			return this.created(c, result);
 		});
 	};

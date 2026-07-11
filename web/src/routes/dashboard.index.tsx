@@ -53,13 +53,13 @@ const OPERATIONS_DATA: OperationCard[] = [
 		href: "#",
 	},
 	{
-		resource: "ranchos",
+		resource: "rancho",
 		title: "Control de Ranchos",
 		description: "Asignación de potreros y administración de sedes.",
 		icon: Warehouse,
 		readAction: "read",
 		badge: "Infraestructura",
-		href: "#",
+		href: "/dashboard/ranchos",
 	},
 	{
 		resource: "propietario",

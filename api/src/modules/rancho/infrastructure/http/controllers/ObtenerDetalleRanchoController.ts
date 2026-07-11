@@ -18,8 +18,13 @@ export class ObtenerDetalleRanchoController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const idParam = c.req.param("id");
 			const { id } = validate(ranchoIdSchema, { id: idParam });
+			const user = c.get("user");
 
-			const result = await this.obtenerDetalleRanchoUseCase.run(id);
+			const result = await this.obtenerDetalleRanchoUseCase.run(
+				id,
+				user.id,
+				user.role,
+			);
 			return this.ok(c, result);
 		});
 	};

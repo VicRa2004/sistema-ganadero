@@ -18,7 +18,12 @@ export class ListarRanchosController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const query = c.req.query();
 			const dto = validate(listarRanchosQuerySchema, query);
-			const result = await this.listarRanchosUseCase.run(dto);
+			const user = c.get("user");
+			const filters = {
+				...dto,
+				usuarioId: user.role !== "ADMIN" ? user.id : undefined,
+			};
+			const result = await this.listarRanchosUseCase.run(filters);
 			return this.ok(c, result);
 		});
 	};

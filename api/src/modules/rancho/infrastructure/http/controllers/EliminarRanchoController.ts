@@ -18,8 +18,9 @@ export class EliminarRanchoController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const idParam = c.req.param("id");
 			const { id } = validate(ranchoIdSchema, { id: idParam });
+			const user = c.get("user");
 
-			await this.eliminarRanchoUseCase.run(id);
+			await this.eliminarRanchoUseCase.run(id, user.id, user.role);
 			return this.ok(c, { success: true });
 		});
 	};

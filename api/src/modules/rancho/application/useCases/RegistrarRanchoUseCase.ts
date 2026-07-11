@@ -22,6 +22,7 @@ export class RegistrarRanchoUseCase {
 			dto.ubicacion,
 			dto.extensionHectareas,
 			dto.capacidadMaxima,
+			dto.usuarioId,
 		);
 
 		const saved = await this.ranchoRepository.save(rancho);

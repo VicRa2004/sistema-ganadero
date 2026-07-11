@@ -6,6 +6,7 @@ export class Rancho extends Entity {
 	private ubicacion: string;
 	private extensionHectareas: number;
 	private capacidadMaxima: number;
+	private usuarioId: number;
 
 	private constructor(
 		id: EntityId,
@@ -13,12 +14,14 @@ export class Rancho extends Entity {
 		ubicacion: string,
 		extensionHectareas: number,
 		capacidadMaxima: number,
+		usuarioId: number,
 	) {
 		super(id);
 		this.nombre = nombre;
 		this.ubicacion = ubicacion;
 		this.extensionHectareas = extensionHectareas;
 		this.capacidadMaxima = capacidadMaxima;
+		this.usuarioId = usuarioId;
 	}
 
 	public static create(
@@ -26,6 +29,7 @@ export class Rancho extends Entity {
 		ubicacion: string,
 		extensionHectareas: number,
 		capacidadMaxima: number,
+		usuarioId: number,
 	): Rancho {
 		if (!nombre || nombre.trim() === "") {
 			throw new Error("El nombre del rancho no puede estar vacío");
@@ -46,6 +50,7 @@ export class Rancho extends Entity {
 			ubicacion,
 			extensionHectareas,
 			capacidadMaxima,
+			usuarioId,
 		);
 	}
 
@@ -55,6 +60,7 @@ export class Rancho extends Entity {
 		ubicacion: string,
 		extensionHectareas: number,
 		capacidadMaxima: number,
+		usuarioId: number,
 	): Rancho {
 		return new Rancho(
 			new EntityId(id),
@@ -62,6 +68,7 @@ export class Rancho extends Entity {
 			ubicacion,
 			extensionHectareas,
 			capacidadMaxima,
+			usuarioId,
 		);
 	}
 
@@ -79,6 +86,10 @@ export class Rancho extends Entity {
 
 	public getCapacidadMaxima(): number {
 		return this.capacidadMaxima;
+	}
+
+	public getUsuarioId(): number {
+		return this.usuarioId;
 	}
 
 	public esNuevo(): boolean {

@@ -33,7 +33,7 @@ async function main() {
 		"users",
 		"permissions",
 		"ganado",
-		"ranchos",
+		"rancho",
 		"inventario-insumos",
 		"propietario",
 		"razas",
@@ -72,7 +72,7 @@ async function main() {
 		USER: [
 			// Lectura de todo el negocio
 			"ganado:read",
-			"ranchos:read",
+			"rancho:read",
 			"inventario-insumos:read",
 			"propietario:read",
 			"propietario:create",
@@ -80,9 +80,12 @@ async function main() {
 			"propietario:delete",
 			"sesiones-sanitarias:read",
 			"tratamientos-medicos:read",
-			// Operación básica (creación y actualización)
+			// Operación básica (creación, actualización, eliminación)
 			"ganado:create",
 			"ganado:update",
+			"rancho:create",
+			"rancho:update",
+			"rancho:delete",
 			"inventario-insumos:create",
 			"inventario-insumos:update",
 			"sesiones-sanitarias:create",

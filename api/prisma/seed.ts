@@ -199,6 +199,52 @@ async function main() {
 	console.log(
 		"   - user@dev.com  (USER)  → lectura global y operaciones de negocio",
 	);
+
+	// ─── 5. Semillas de Razas de Ganado ──────────────────────────────────────────
+	const razasData = [
+		{
+			nombre: "Angus",
+			descripcion:
+				"Raza productora de carne de alta calidad, originaria de Escocia.",
+		},
+		{
+			nombre: "Hereford",
+			descripcion:
+				"Excelente adaptabilidad y docilidad, carne de gran calidad.",
+		},
+		{
+			nombre: "Charolais",
+			descripcion:
+				"Raza francesa de gran tamaño y musculatura, excelente rendimiento.",
+		},
+		{
+			nombre: "Holstein",
+			descripcion: "Raza lechera por excelencia, gran volumen de producción.",
+		},
+		{
+			nombre: "Brahman",
+			descripcion:
+				"Raza tolerante al calor y parásitos, ideal para climas cálidos.",
+		},
+		{
+			nombre: "Nelore",
+			descripcion:
+				"Muy resistente a climas tropicales y pasturas de baja calidad.",
+		},
+		{
+			nombre: "Simmental",
+			descripcion: "Doble propósito (carne y leche), gran crecimiento.",
+		},
+	];
+
+	for (const raza of razasData) {
+		await prisma.raza.upsert({
+			where: { nombre: raza.nombre },
+			update: { descripcion: raza.descripcion },
+			create: raza,
+		});
+	}
+	console.log("✅ Razas de ganado inicializadas");
 }
 
 main()

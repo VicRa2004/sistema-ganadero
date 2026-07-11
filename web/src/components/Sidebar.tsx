@@ -66,7 +66,6 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 				href: "/dashboard/propietarios",
 				icon: Users,
 			},
-			{ label: "Razas", resource: "razas", href: "#", icon: Dna },
 		],
 	},
 	{
@@ -108,6 +107,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 				href: "#",
 				icon: KeyRound,
 			},
+			{ label: "Razas", resource: "razas", href: "#", icon: Dna },
 		],
 	},
 ];

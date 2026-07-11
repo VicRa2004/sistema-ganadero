@@ -71,15 +71,6 @@ const OPERATIONS_DATA: OperationCard[] = [
 		href: "/dashboard/propietarios",
 	},
 	{
-		resource: "razas",
-		title: "Razas",
-		description: "Catálogo de razas bovinas registradas en el sistema.",
-		icon: Dna,
-		readAction: "read",
-		badge: "Catálogo",
-		href: "#",
-	},
-	{
 		resource: "inventario-insumos",
 		title: "Inventario de Insumos",
 		description: "Stock de vacunas, alimentos y herramientas.",
@@ -226,7 +217,7 @@ function DashboardIndexComponent() {
 						Panel de Administración del Sistema
 					</h2>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 						{/* Gestión de Usuarios */}
 						<Card className="border border-border bg-amber-500/5 shadow-sm relative overflow-hidden group">
 							<div className="absolute top-0 left-0 w-full h-[3px] bg-amber-500/40" />
@@ -291,6 +282,41 @@ function DashboardIndexComponent() {
 										disabled
 									>
 										Ver Matriz de Permisos
+										<ArrowUpRight className="h-3 w-3" />
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+
+						{/* Gestión de Razas */}
+						<Card className="border border-border bg-amber-500/5 shadow-sm relative overflow-hidden group">
+							<div className="absolute top-0 left-0 w-full h-[3px] bg-amber-500/40" />
+							<CardHeader className="flex flex-row items-center gap-3 pb-2">
+								<div className="size-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+									<Dna className="size-5" />
+								</div>
+								<div className="text-left">
+									<CardTitle className="text-base font-bold text-foreground">
+										Catálogo de Razas
+									</CardTitle>
+									<CardDescription className="text-xs text-muted-foreground">
+										Parámetro global de la app
+									</CardDescription>
+								</div>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<p className="text-muted-foreground text-sm text-left leading-relaxed">
+									Administra el catálogo de razas bovinas permitidas en el
+									sistema para homogeneizar el registro de animales.
+								</p>
+								<div className="flex justify-end pt-2">
+									<Button
+										variant="outline"
+										size="sm"
+										className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed border-amber-500/30 text-amber-600 dark:text-amber-400"
+										disabled
+									>
+										Gestionar Razas
 										<ArrowUpRight className="h-3 w-3" />
 									</Button>
 								</div>

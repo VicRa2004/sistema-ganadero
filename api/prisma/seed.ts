@@ -78,7 +78,6 @@ async function main() {
 			"propietario:create",
 			"propietario:update",
 			"propietario:delete",
-			"razas:read",
 			"sesiones-sanitarias:read",
 			"tratamientos-medicos:read",
 			// Operación básica (creación y actualización)

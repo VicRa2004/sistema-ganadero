@@ -118,36 +118,42 @@ Antes de elaborar cualquier plan de desarrollo o proponer instalaciones:
 
 ## 7. Rutas Anidadas con TanStack Router (File-based)
 
-Esta es una fuente crítica de bugs. Las rutas con notación de punto crean jerarquías de layout que DEBEN ser manejadas explícitamente.
+Esta es una fuente crítica de bugs. Las rutas con notación de punto crean jerarquías de layout y subrutas que deben estructurarse correctamente para evitar que una vista engulla a otra.
 
-### 7.1 Patrón Layout + Index (OBLIGATORIO)
-Cuando un módulo vive bajo `/dashboard/<modulo>`, el archivo `dashboard.tsx` actúa como **layout padre** y DEBE renderizar `<Outlet />`. El contenido propio del dashboard debe estar en `dashboard.index.tsx`:
+### 7.1 Diferenciación entre Layouts, Vista de Lista y Detalle (Evitar visualización congelada)
+Si un módulo tiene una vista de listado (`/dashboard/mi-modulo`) y una vista de detalle (`/dashboard/mi-modulo/$id`), hay dos formas correctas de organizarlo según si requieren un layout interno de módulo o no:
 
+#### Opción A: Sin Layout del Módulo (Recomendado para páginas independientes)
+Si la lista y el detalle no comparten menús internos del módulo y deben verse como pantallas totalmente diferentes bajo el layout global del dashboard:
+1. **No crees** un archivo `dashboard.mi-modulo.tsx`.
+2. Crea `dashboard.mi-modulo.index.tsx` para la lista exacta y usa `createFileRoute("/dashboard/mi-modulo/")`.
+3. Crea `dashboard.mi-modulo.$id.tsx` para el detalle y usa `createFileRoute("/dashboard/mi-modulo/$id")`.
+
+Estructura de archivos:
 ```
 src/routes/
-├── dashboard.tsx                    # Layout puro: solo beforeLoad + <Outlet />
-├── dashboard.index.tsx              # Página principal /dashboard (ruta exacta)
-├── dashboard.mi-modulo.tsx          # Página /dashboard/mi-modulo (hija del layout)
-└── dashboard.mi-modulo.$id.tsx     # Página /dashboard/mi-modulo/:id
+├── dashboard.tsx                    # Layout global del dashboard (con <Outlet />)
+├── dashboard.mi-modulo.index.tsx    # Lista exacta: /dashboard/mi-modulo
+└── dashboard.mi-modulo.$id.tsx     # Detalle exacto: /dashboard/mi-modulo/:id
 ```
 
-```typescript
-// dashboard.tsx — SIEMPRE así, nunca con componente propio:
-import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
-export const Route = createFileRoute("/dashboard")({
-    beforeLoad: ({ context }) => {
-        if (!context.auth.isAuthenticated) throw redirect({ to: "/login" });
-    },
-    component: () => <Outlet />,  // ← obligatorio para que las rutas hijas funcionen
-});
+#### Opción B: Con Layout de Módulo (Si comparten elementos de interfaz comunes)
+Si el módulo requiere elementos visuales que se mantengan tanto en la lista como en el detalle (ej. una pestaña de navegación superior del módulo):
+1. Crea `dashboard.mi-modulo.tsx` que actuará únicamente como layout y **debe contener** `<Outlet />`.
+2. Crea `dashboard.mi-modulo.index.tsx` para el contenido de la lista.
+3. Crea `dashboard.mi-modulo.$id.tsx` para el detalle.
 
-// dashboard.index.tsx — contenido de /dashboard exacto:
-export const Route = createFileRoute("/dashboard/")({  // ← notar la barra al final
-    component: DashboardIndexPage,
-});
+Estructura de archivos:
+```
+src/routes/
+├── dashboard.mi-modulo.tsx          # Layout interno del módulo: solo renderiza <Outlet /> y elementos comunes
+├── dashboard.mi-modulo.index.tsx    # Lista dentro del layout del módulo
+└── dashboard.mi-modulo.$id.tsx     # Detalle dentro del layout del módulo
 ```
 
-> **Síntoma del bug:** Al navegar a `/dashboard/mi-modulo` se muestra el contenido del dashboard principal en lugar del módulo. Causa: `dashboard.tsx` no tiene `<Outlet />`.
+> [!IMPORTANT]
+> **Síntoma del bug:** Al navegar a `/dashboard/mi-modulo/1` la pantalla se queda congelada mostrando la lista del módulo y no cambia al detalle.
+> **Causa:** Creaste un archivo `dashboard.mi-modulo.tsx` con el componente de la lista y no tiene `<Outlet />`, por lo que el router lo trata como un layout padre de `$id` y no sabe dónde renderizar el detalle. Para solucionarlo, renombra `dashboard.mi-modulo.tsx` a `dashboard.mi-modulo.index.tsx` y actualiza la ruta a `"/dashboard/mi-modulo/"`.
 
 ---
 
@@ -211,4 +217,51 @@ El nombre del recurso en `api/prisma/seed.ts` **debe ser idéntico** al string u
 3. Si hay discrepancia (ej. `"propietarios"` vs `"propietario"`), corregir el seed.
 4. Re-ejecutar: `pnpm --filter api exec bun run prisma/seed.ts`
 5. Informar al usuario que debe **cerrar sesión y volver a iniciar sesión** para que el token de permisos se actualice.
+
+---
+
+## 11. Composición y Compatibilidad con Base UI (@base-ui/react)
+
+El proyecto utiliza `@base-ui/react` como biblioteca headless en lugar de Radix UI. Esto impone ciertas restricciones al combinar componentes de UI de Shadcn con librerías externas como TanStack Router.
+
+### 11.1 Prohibido usar `asChild`
+A diferencia de Radix UI, los componentes de Base UI (y los componentes de UI locales que los envuelven, como `<Button>`, `<SheetTrigger>`, etc.) **no soportan la propiedad `asChild`**. El uso de `asChild` generará errores de compilación de TypeScript (ej. `Property 'asChild' does not exist`).
+
+### 11.2 Uso de la propiedad `render`
+Para realizar composición en Base UI (por ejemplo, cambiar el elemento que actúa como disparador de un menú o diálogo), se utiliza la propiedad `render`:
+```tsx
+// ✅ Correcto (Base UI style):
+<SheetTrigger
+    render={
+        <Button
+            variant="ghost"
+            size="icon"
+            className="cursor-pointer"
+        />
+    }
+>
+    <Menu className="h-5 w-5" />
+</SheetTrigger>
+```
+
+### 11.3 Enlaces de navegación con apariencia de botón (TanStack Router + Button)
+Para enlaces que deben navegar utilizando el enrutador de TanStack y lucir como un botón de Shadcn, **evita anidar un `<Link>` dentro de un `<Button asChild>`**.
+En su lugar, utiliza directamente el componente `<Link>` de TanStack Router y aplícale las clases de botón importando `buttonVariants` y usando `cn()`:
+
+```tsx
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+// ✅ Correcto:
+<Link
+    to="/dashboard/mi-modulo"
+    className={cn(
+        buttonVariants({ variant: "ghost", size: "sm" }),
+        "gap-2 -ml-2 mb-4"
+    )}
+>
+    <ArrowLeft className="size-4" />
+    Volver
+</Link>
+```
 

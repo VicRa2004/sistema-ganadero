@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
-import { Sun, Moon, LogOut, Loader2 } from "lucide-react";
+import { Sun, Moon, LogOut, Loader2, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -64,6 +64,18 @@ export function Navbar() {
 
 					{isAuthenticated ? (
 						<div className="flex items-center gap-4">
+							<Link to="/dashboard">
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="gap-1.5 cursor-pointer h-9 text-xs"
+								>
+									<LayoutDashboard className="h-3.5 w-3.5" />
+									<span>Dashboard</span>
+								</Button>
+							</Link>
+
 							{/* Perfil del usuario */}
 							<div className="flex items-center gap-2.5">
 								<div className="hidden sm:flex flex-col items-end text-right leading-none gap-0.5">

@@ -17,6 +17,7 @@ La entidad principal `TratamientoMedico` define la receta y el estado de la inte
 - `activo` (boolean): Estatus del tratamiento.
 - `insumoId` (string): Medicamento del inventario recetado.
 - `dosisDiaria` (number): Cantidad diaria recomendada.
+- `veterinarioId` (number | null): Referencia opcional al médico veterinario que asignó el tratamiento.
 
 ### Métodos (Español - Sin Getters/Setters Nativos)
 - `getId(): string`
@@ -27,6 +28,7 @@ La entidad principal `TratamientoMedico` define la receta y el estado de la inte
 - `esActivo(): boolean`
 - `getInsumoId(): string`
 - `getDosisDiaria(): number`
+- `getVeterinarioId(): number | null`
 - `finalizarTratamiento(): void` — Cambia el estatus `activo` a false.
 
 ---
@@ -34,7 +36,7 @@ La entidad principal `TratamientoMedico` define la receta y el estado de la inte
 ## 2. Casos de Uso (Application)
 
 * **`RecetarTratamientoUseCase`**
-  - **Entrada:** ganadoId, diagnostico, fechaInicio, fechaFin, insumoId, dosisDiaria.
+  - **Entrada:** ganadoId, diagnostico, fechaInicio, fechaFin, insumoId, dosisDiaria, veterinarioId (opcional).
   - **Salida:** DTO del tratamiento médico programado.
   - **Flujo:** Comprueba la existencia del animal y del insumo. Valida que las fechas sean lógicas. Registra el tratamiento activo.
 
@@ -56,20 +58,22 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model TratamientoMedico {
-  id          Int       @id @default(autoincrement()) @map("trt_id")
-  ganadoId    Int       @map("trt_fkganado")
-  diagnostico String    @map("trt_diagnostico") @db.VarChar(255)
-  fechaInicio DateTime  @map("trt_fecha_inicio")
-  fechaFin    DateTime  @map("trt_fecha_fin")
-  activo      Boolean   @default(true) @map("trt_activo")
-  insumoId    Int       @map("trt_fkinsumo")
-  dosisDiaria Float     @map("trt_dosis_diaria")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id            Int       @id @default(autoincrement()) @map("trt_id")
+  ganadoId      Int       @map("trt_fkganado")
+  diagnostico   String    @map("trt_diagnostico") @db.VarChar(255)
+  fechaInicio   DateTime  @map("trt_fecha_inicio")
+  fechaFin      DateTime  @map("trt_fecha_fin")
+  activo        Boolean   @default(true) @map("trt_activo")
+  insumoId      Int       @map("trt_fkinsumo")
+  dosisDiaria   Float     @map("trt_dosis_diaria")
+  veterinarioId Int?      @map("trt_fkveterinario")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
-  ganado      Ganado    @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
-  insumo      Insumo    @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  ganado      Ganado       @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+  insumo      Insumo       @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  veterinario Veterinario? @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
 
   @@map("tratamiento_medico")
 }

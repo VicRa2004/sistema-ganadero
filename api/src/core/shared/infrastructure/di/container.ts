@@ -120,6 +120,21 @@ import { ListarGanadosController } from "@/modules/ganado/infrastructure/http/co
 import { EliminarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/EliminarGanadoController";
 import { ActualizarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ActualizarGanadoController";
 
+// Veterinario
+import { PrismaVeterinarioRepository } from "@/modules/veterinario/infrastructure/repository/PrismaVeterinarioRepository";
+import { VeterinarioMapper } from "@/modules/veterinario/application/mappers/VeterinarioMapper";
+import { RegistrarVeterinarioUseCase } from "@/modules/veterinario/application/useCases/RegistrarVeterinarioUseCase";
+import { ObtenerDetalleVeterinarioUseCase } from "@/modules/veterinario/application/useCases/ObtenerDetalleVeterinarioUseCase";
+import { ListarVeterinariosUseCase } from "@/modules/veterinario/application/useCases/ListarVeterinariosUseCase";
+import { ActualizarVeterinarioUseCase } from "@/modules/veterinario/application/useCases/ActualizarVeterinarioUseCase";
+import { EliminarVeterinarioUseCase } from "@/modules/veterinario/application/useCases/EliminarVeterinarioUseCase";
+import { RegistrarVeterinarioController } from "@/modules/veterinario/infrastructure/http/controllers/RegistrarVeterinarioController";
+import { ObtenerDetalleVeterinarioController } from "@/modules/veterinario/infrastructure/http/controllers/ObtenerDetalleVeterinarioController";
+import { ListarVeterinariosController } from "@/modules/veterinario/infrastructure/http/controllers/ListarVeterinariosController";
+import { ActualizarVeterinarioController } from "@/modules/veterinario/infrastructure/http/controllers/ActualizarVeterinarioController";
+import { EliminarVeterinarioController } from "@/modules/veterinario/infrastructure/http/controllers/EliminarVeterinarioController";
+import { VeterinarioRouter } from "@/modules/veterinario/infrastructure/http/routes/VeterinarioRouter";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -428,6 +443,49 @@ container.register("EliminarGanadoController", {
 container.register("ActualizarGanadoController", {
 	useClass: ActualizarGanadoController,
 });
+
+// Módulo Veterinario - Repositorio & Mapper
+container.register("VeterinarioRepository", {
+	useClass: PrismaVeterinarioRepository,
+});
+container.register("VeterinarioMapper", { useClass: VeterinarioMapper });
+
+// Módulo Veterinario - Use Cases
+container.register("RegistrarVeterinarioUseCase", {
+	useClass: RegistrarVeterinarioUseCase,
+});
+container.register("ObtenerDetalleVeterinarioUseCase", {
+	useClass: ObtenerDetalleVeterinarioUseCase,
+});
+container.register("ListarVeterinariosUseCase", {
+	useClass: ListarVeterinariosUseCase,
+});
+container.register("ActualizarVeterinarioUseCase", {
+	useClass: ActualizarVeterinarioUseCase,
+});
+container.register("EliminarVeterinarioUseCase", {
+	useClass: EliminarVeterinarioUseCase,
+});
+
+// Módulo Veterinario - Controladores
+container.register("RegistrarVeterinarioController", {
+	useClass: RegistrarVeterinarioController,
+});
+container.register("ObtenerDetalleVeterinarioController", {
+	useClass: ObtenerDetalleVeterinarioController,
+});
+container.register("ListarVeterinariosController", {
+	useClass: ListarVeterinariosController,
+});
+container.register("ActualizarVeterinarioController", {
+	useClass: ActualizarVeterinarioController,
+});
+container.register("EliminarVeterinarioController", {
+	useClass: EliminarVeterinarioController,
+});
+
+// Módulo Veterinario - Router
+container.register("VeterinarioRouter", { useClass: VeterinarioRouter });
 
 container.register(
 	"EventBus",

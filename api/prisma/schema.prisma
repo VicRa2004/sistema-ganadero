@@ -228,16 +228,17 @@ model Insumo {
 }
 
 model SesionSanitaria {
-  id          Int       @id @default(autoincrement()) @map("ses_id")
-  fecha       DateTime  @map("ses_fecha")
-  veterinario String    @map("ses_veterinario") @db.VarChar(150)
-  descripcion String    @map("ses_descripcion") @db.Text
-  insumoId    Int       @map("ses_fkinsumo")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id            Int       @id @default(autoincrement()) @map("ses_id")
+  fecha         DateTime  @map("ses_fecha")
+  veterinarioId Int       @map("ses_fkveterinario")
+  descripcion   String    @map("ses_descripcion") @db.Text
+  insumoId      Int       @map("ses_fkinsumo")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   insumo       Insumo                @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  veterinario  Veterinario           @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
   aplicaciones AplicacionSanitaria[]
 
   @@map("sesion_sanitaria")
@@ -260,20 +261,38 @@ model AplicacionSanitaria {
 }
 
 model TratamientoMedico {
-  id          Int       @id @default(autoincrement()) @map("trt_id")
-  ganadoId    Int       @map("trt_fkganado")
-  diagnostico String    @map("trt_diagnostico") @db.VarChar(255)
-  fechaInicio DateTime  @map("trt_fecha_inicio")
-  fechaFin    DateTime  @map("trt_fecha_fin")
-  activo      Boolean   @default(true) @map("trt_activo")
-  insumoId    Int       @map("trt_fkinsumo")
-  dosisDiaria Float     @map("trt_dosis_diaria")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id            Int       @id @default(autoincrement()) @map("trt_id")
+  ganadoId      Int       @map("trt_fkganado")
+  diagnostico   String    @map("trt_diagnostico") @db.VarChar(255)
+  fechaInicio   DateTime  @map("trt_fecha_inicio")
+  fechaFin      DateTime  @map("trt_fecha_fin")
+  activo        Boolean   @default(true) @map("trt_activo")
+  insumoId      Int       @map("trt_fkinsumo")
+  dosisDiaria   Float     @map("trt_dosis_diaria")
+  veterinarioId Int?      @map("trt_fkveterinario")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
-  ganado Ganado @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
-  insumo Insumo @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  ganado      Ganado       @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+  insumo      Insumo       @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  veterinario Veterinario? @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
 
   @@map("tratamiento_medico")
+}
+
+model Veterinario {
+  id                Int       @id @default(autoincrement()) @map("vet_id")
+  nombre            String    @map("vet_nombre") @db.VarChar(255)
+  telefono          String    @map("vet_telefono") @db.VarChar(20)
+  cedulaProfesional String    @unique @map("vet_cedula") @db.VarChar(50)
+  especialidad      String?   @map("vet_especialidad") @db.VarChar(100)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime? @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  sesionesSanitarias  SesionSanitaria[]
+  tratamientosMedicos TratamientoMedico[]
+
+  @@map("veterinario")
 }

@@ -70,7 +70,9 @@ El sistema distingue entre módulos transversales de la aplicación y módulos d
    Definición y capacidad de las fincas/ranchos de producción.
 5. **[Raza](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/raza.md)** (`src/modules/raza/`) — *Por implementar*  
    Catálogo de razas de ganado y sus características.
-6. **[Sesión Sanitaria](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/sesion-sanitaria.md)** (`src/modules/sesion-sanitaria/`) — *Por implementar*  
+6. [Sesión Sanitaria](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/sesion-sanitaria.md) (`src/modules/sesion-sanitaria/`) — *Por implementar*  
    Jornadas de atención médica masiva (vacunaciones, desparasitaciones conjuntas).
-7. **[Tratamiento Médico](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/tratamiento-medico.md)** (`src/modules/tratamiento-medico/`) — *Por implementar*  
+7. [Tratamiento Médico](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/tratamiento-medico.md) (`src/modules/tratamiento-medico/`) — *Por implementar*  
    Recetas, aplicaciones diarias de medicamentos y seguimiento a animales enfermos de forma individual.
+8. [Veterinario](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/veterinario.md) (`src/modules/veterinario/`) — *Implementado*  
+   Catálogo y gestión de los médicos veterinarios del sistema.

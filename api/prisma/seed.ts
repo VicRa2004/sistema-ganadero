@@ -39,6 +39,7 @@ async function main() {
 		"razas",
 		"sesiones-sanitarias",
 		"tratamientos-medicos",
+		"veterinarios",
 	];
 	const actions = ["create", "read", "update", "delete"];
 
@@ -80,6 +81,7 @@ async function main() {
 			"propietario:delete",
 			"sesiones-sanitarias:read",
 			"tratamientos-medicos:read",
+			"veterinarios:read",
 			// Operación básica (creación, actualización, eliminación)
 			"ganado:create",
 			"ganado:update",
@@ -92,6 +94,9 @@ async function main() {
 			"sesiones-sanitarias:update",
 			"tratamientos-medicos:create",
 			"tratamientos-medicos:update",
+			"veterinarios:create",
+			"veterinarios:update",
+			"veterinarios:delete",
 		],
 	};
 
@@ -245,6 +250,35 @@ async function main() {
 		});
 	}
 	console.log("✅ Razas de ganado inicializadas");
+
+	// ─── 6. Semillas de Veterinarios ─────────────────────────────────────────────
+	const veterinariosData = [
+		{
+			nombre: "Dr. Juan Pérez",
+			telefono: "555-0199",
+			cedulaProfesional: "VET-12345",
+			especialidad: "Cirugía y Reproducción",
+		},
+		{
+			nombre: "Dra. María López",
+			telefono: "555-0188",
+			cedulaProfesional: "VET-67890",
+			especialidad: "Nutrición y Epidemiología",
+		},
+	];
+
+	for (const vet of veterinariosData) {
+		await prisma.veterinario.upsert({
+			where: { cedulaProfesional: vet.cedulaProfesional },
+			update: {
+				nombre: vet.nombre,
+				telefono: vet.telefono,
+				especialidad: vet.especialidad,
+			},
+			create: vet,
+		});
+	}
+	console.log("✅ Veterinarios inicializados");
 }
 
 main()

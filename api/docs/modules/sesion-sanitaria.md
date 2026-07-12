@@ -14,14 +14,14 @@ Representa el evento o jornada de trabajo.
 #### Atributos (Español)
 - `id` (string): Identificador único de la sesión (UUID).
 - `fecha` (Date): Día en que se ejecuta la jornada.
-- `veterinario` (string): Nombre del responsable médico.
+- `veterinarioId` (number): ID del médico veterinario responsable.
 - `descripcion` (string): Diagnóstico o motivo de la sesión (ej: "Vacunación Anual contra Brucelosis").
 - `insumoId` (string): Insumo del inventario consumido en la sesión (ej: vacunas, desparasitante).
 
 #### Métodos (Español - Sin Getters/Setters Nativos)
 - `getId(): string`
 - `getFecha(): Date`
-- `getVeterinario(): string`
+- `getVeterinarioId(): number`
 - `getDescripcion(): string`
 - `getInsumoId(): string`
 
@@ -49,7 +49,7 @@ Representa la dosis e historial sanitario atómico de un animal específico part
 ## 2. Casos de Uso (Application)
 
 * **`ProgramarSesionSanitariaUseCase`**
-  - **Entrada:** Fecha, veterinario, descripción, insumoId, cantidadInsumoTotal.
+  - **Entrada:** Fecha, veterinarioId, descripción, insumoId, cantidadInsumoTotal.
   - **Salida:** DTO de la sesión sanitaria creada.
   - **Flujo:** Valida la existencia del insumo en inventario. Descuenta del inventario el stock total consumido en la jornada (interactúa con `ConsumirInsumoUseCase`).
 
@@ -70,16 +70,17 @@ Mapeo propuesto para el archivo `schema.prisma` (a implementar):
 
 ```prisma
 model SesionSanitaria {
-  id          Int       @id @default(autoincrement()) @map("ses_id")
-  fecha       DateTime  @map("ses_fecha")
-  veterinario String    @map("ses_veterinario") @db.VarChar(150)
-  descripcion String    @map("ses_descripcion") @db.Text
-  insumoId    Int       @map("ses_fkinsumo")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id            Int       @id @default(autoincrement()) @map("ses_id")
+  fecha         DateTime  @map("ses_fecha")
+  veterinarioId Int       @map("ses_fkveterinario")
+  descripcion   String    @map("ses_descripcion") @db.Text
+  insumoId      Int       @map("ses_fkinsumo")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   insumo       Insumo                @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  veterinario  Veterinario           @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
   aplicaciones AplicacionSanitaria[]
 
   @@map("sesion_sanitaria")

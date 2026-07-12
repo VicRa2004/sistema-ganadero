@@ -21,13 +21,13 @@ import {
 } from "lucide-react";
 import type { GanadoDto } from "@/modules/ganado/types";
 import type { RazaDto } from "@/modules/raza/types";
-import type { RanchoDto } from "@/modules/rancho/types";
+import type { TerrenoDto } from "@/modules/terreno/types";
 import type { PropietarioDto } from "@/modules/propietario/types";
 
 interface GanadoTableProps {
 	ganados: GanadoDto[];
 	razas: RazaDto[];
-	ranchos: RanchoDto[];
+	terrenos: TerrenoDto[];
 	propietarios: PropietarioDto[];
 	canUpdate: boolean;
 	canDelete: boolean;
@@ -40,7 +40,7 @@ interface GanadoTableProps {
 export function GanadoTable({
 	ganados,
 	razas,
-	ranchos,
+	terrenos,
 	propietarios,
 	canUpdate,
 	canDelete,
@@ -67,8 +67,8 @@ export function GanadoTable({
 
 	const getRazaNombre = (id: number) =>
 		razas.find((r) => r.id === id)?.nombre || `Raza: ${id}`;
-	const getRanchoNombre = (id: number) =>
-		ranchos.find((r) => r.id === id)?.nombre || `Rancho: ${id}`;
+	const getTerrenoNombre = (id: number) =>
+		terrenos.find((r) => r.id === id)?.nombre || `Terreno: ${id}`;
 	const getPropietarioNombre = (id: number) =>
 		propietarios.find((p) => p.id === id)?.nombre || `Prop: ${id}`;
 
@@ -87,7 +87,7 @@ export function GanadoTable({
 							Raza
 						</TableHead>
 						<TableHead className="font-semibold text-foreground">
-							Rancho
+							Terreno
 						</TableHead>
 						<TableHead className="font-semibold text-foreground">
 							Propietario
@@ -128,7 +128,7 @@ export function GanadoTable({
 							<TableCell>
 								<span className="flex items-center gap-1 text-muted-foreground text-sm">
 									<Warehouse className="size-3.5" />
-									{getRanchoNombre(g.ranchoId)}
+									{getTerrenoNombre(g.terrenoId)}
 								</span>
 							</TableCell>
 							<TableCell>
@@ -173,7 +173,7 @@ export function GanadoTable({
 												size="sm"
 												className="h-8 w-8 p-0 hover:bg-blue-500/10 hover:text-blue-500 cursor-pointer"
 												onClick={() => onTraslado(g)}
-												title="Trasladar de rancho"
+												title="Trasladar de terreno"
 											>
 												<TrendingUp className="size-4" />
 												<span className="sr-only">Trasladar</span>

@@ -13,15 +13,15 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { formatApiError } from "@/lib/utils";
 import { useTrasladarGanado } from "@/modules/ganado/hooks/useTrasladarGanado";
-import type { RanchoDto } from "@/modules/rancho/types";
+import type { TerrenoDto } from "@/modules/terreno/types";
 
 interface GanadoTrasladoDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	ganadoId: number;
 	arete: string;
-	ranchoActualId: number;
-	ranchos: RanchoDto[];
+	terrenoActualId: number;
+	terrenos: TerrenoDto[];
 }
 
 export function GanadoTrasladoDialog({
@@ -29,24 +29,24 @@ export function GanadoTrasladoDialog({
 	onOpenChange,
 	ganadoId,
 	arete,
-	ranchoActualId,
-	ranchos,
+	terrenoActualId,
+	terrenos,
 }: GanadoTrasladoDialogProps) {
 	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: trasladar, isPending } = useTrasladarGanado(ganadoId);
 
-	// Filtrar ranchos disponibles para no incluir el rancho actual
-	const ranchosDisponibles = ranchos.filter((r) => r.id !== ranchoActualId);
-	const ranchoActual = ranchos.find((r) => r.id === ranchoActualId);
+	// Filtrar terrenos disponibles para no incluir el terreno actual
+	const terrenosDisponibles = terrenos.filter((r) => r.id !== terrenoActualId);
+	const terrenoActual = terrenos.find((r) => r.id === terrenoActualId);
 
 	const form = useForm({
 		defaultValues: {
-			ranchoId: "" as string | number,
+			terrenoId: "" as string | number,
 		},
 		onSubmit: async ({ value }) => {
 			setApiError(null);
 			trasladar(
-				{ ranchoId: Number(value.ranchoId) },
+				{ terrenoId: Number(value.terrenoId) },
 				{
 					onSuccess: () => {
 						form.reset();
@@ -78,7 +78,7 @@ export function GanadoTrasladoDialog({
 					<DialogDescription>
 						Registra el traslado del animal con arete{" "}
 						<span className="font-semibold text-foreground">{arete}</span> a
-						otro rancho.
+						otro terreno.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -98,20 +98,20 @@ export function GanadoTrasladoDialog({
 
 					<div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-sm text-left">
 						<span className="text-muted-foreground block text-xs uppercase font-semibold">
-							Rancho de Origen
+							Terreno de Origen
 						</span>
 						<span className="text-sm font-semibold text-foreground">
-							{ranchoActual
-								? `${ranchoActual.nombre} (${ranchoActual.ubicacion})`
-								: `Rancho ID: ${ranchoActualId}`}
+							{terrenoActual
+								? `${terrenoActual.nombre} (${terrenoActual.ubicacion})`
+								: `Terreno ID: ${terrenoActualId}`}
 						</span>
 					</div>
 
 					<form.Field
-						name="ranchoId"
+						name="terrenoId"
 						validators={{
 							onChange: ({ value }) => {
-								if (!value) return "El rancho destino es requerido.";
+								if (!value) return "El terreno destino es requerido.";
 								return undefined;
 							},
 						}}
@@ -119,7 +119,7 @@ export function GanadoTrasladoDialog({
 						{(field) => (
 							<div className="space-y-1.5 text-left">
 								<Label htmlFor={field.name}>
-									Rancho Destino <span className="text-destructive">*</span>
+									Terreno Destino <span className="text-destructive">*</span>
 								</Label>
 								<select
 									id={field.name}
@@ -131,11 +131,11 @@ export function GanadoTrasladoDialog({
 											e.target.value === "" ? "" : Number(e.target.value),
 										)
 									}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
 									disabled={isPending}
 								>
-									<option value="">Seleccione el rancho destino...</option>
-									{ranchosDisponibles.map((r) => (
+									<option value="">Seleccione el terreno destino...</option>
+									{terrenosDisponibles.map((r) => (
 										<option key={r.id} value={r.id}>
 											{r.nombre} ({r.ubicacion})
 										</option>
@@ -167,9 +167,9 @@ export function GanadoTrasladoDialog({
 								<Button
 									type="submit"
 									disabled={
-										isPending || !canSubmit || ranchosDisponibles.length === 0
+										isPending || !canSubmit || terrenosDisponibles.length === 0
 									}
-									className="min-w-[120px]"
+									className="min-w-[120px] cursor-pointer"
 								>
 									{isPending ? (
 										<>

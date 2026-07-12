@@ -18,7 +18,7 @@ export const ganadoService = {
 				limit: filters.limit,
 				identificador: filters.identificador || undefined,
 				razaId: filters.razaId || undefined,
-				ranchoId: filters.ranchoId || undefined,
+				terrenoId: filters.terrenoId || undefined,
 				propietarioId: filters.propietarioId || undefined,
 			},
 		});

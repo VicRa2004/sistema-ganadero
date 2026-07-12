@@ -139,7 +139,7 @@ function DetallePropietarioComponent() {
 							</Badge>
 							<Badge variant="secondary" className="gap-1.5">
 								<Warehouse className="size-3" />
-								{propietario.cantidadRanchos} ranchos
+								{propietario.cantidadTerrenos} terrenos
 							</Badge>
 						</div>
 					</div>
@@ -240,47 +240,49 @@ function DetallePropietarioComponent() {
 				)}
 			</section>
 
-			{/* Tabla de Ranchos Asociados */}
+			{/* Tabla de Terrenos Asociados */}
 			<section className="space-y-4">
 				<h2 className="text-lg font-bold tracking-tight flex items-center gap-2 text-foreground">
 					<Warehouse className="size-5 text-primary" />
-					Ranchos Asociados
+					Terrenos Asociados
 					<Badge variant="outline" className="ml-1">
-						{propietario.cantidadRanchos}
+						{propietario.cantidadTerrenos}
 					</Badge>
 				</h2>
 
-				{propietario.ranchos.length === 0 ? (
+				{propietario.terrenos.length === 0 ? (
 					<p className="text-sm text-muted-foreground py-6 text-center border border-dashed border-border rounded-xl">
-						Este propietario no tiene ranchos asignados.
+						Este propietario no tiene terrenos asignados.
 					</p>
 				) : (
 					<div className="rounded-xl border border-border overflow-hidden shadow-sm">
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-muted/40 hover:bg-muted/40">
-									<TableHead className="font-semibold text-foreground">
+									<TableHead className="font-semibold text-foreground text-left">
 										ID
 									</TableHead>
-									<TableHead className="font-semibold text-foreground">
+									<TableHead className="font-semibold text-foreground text-left">
 										Nombre
 									</TableHead>
-									<TableHead className="font-semibold text-foreground">
+									<TableHead className="font-semibold text-foreground text-left">
 										Ubicación
 									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{propietario.ranchos.map((r) => (
+								{propietario.terrenos.map((r) => (
 									<TableRow
 										key={r.id}
 										className="hover:bg-muted/20 transition-colors"
 									>
-										<TableCell className="text-muted-foreground text-sm">
+										<TableCell className="text-muted-foreground text-sm text-left">
 											#{r.id}
 										</TableCell>
-										<TableCell className="font-medium">{r.nombre}</TableCell>
-										<TableCell className="text-muted-foreground text-sm">
+										<TableCell className="font-medium text-left">
+											{r.nombre}
+										</TableCell>
+										<TableCell className="text-muted-foreground text-sm text-left">
 											{r.ubicacion}
 										</TableCell>
 									</TableRow>

@@ -86,21 +86,21 @@ import { ListarInsumosController } from "@/modules/inventario-insumos/infrastruc
 import { ObtenerDetalleInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerDetalleInsumoController";
 import { EliminarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/EliminarInsumoController";
 
-// Rancho
-import { PrismaRanchoRepository } from "@/modules/rancho/infrastructure/repository/PrismaRanchoRepository";
-import { RanchoMapper } from "@/modules/rancho/application/mappers/RanchoMapper";
-import { RegistrarRanchoUseCase } from "@/modules/rancho/application/useCases/RegistrarRanchoUseCase";
-import { ActualizarRanchoUseCase } from "@/modules/rancho/application/useCases/ActualizarRanchoUseCase";
-import { ObtenerCapacidadRanchoUseCase } from "@/modules/rancho/application/useCases/ObtenerCapacidadRanchoUseCase";
-import { ListarRanchosUseCase } from "@/modules/rancho/application/useCases/ListarRanchosUseCase";
-import { ObtenerDetalleRanchoUseCase } from "@/modules/rancho/application/useCases/ObtenerDetalleRanchoUseCase";
-import { EliminarRanchoUseCase } from "@/modules/rancho/application/useCases/EliminarRanchoUseCase";
-import { RegistrarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/RegistrarRanchoController";
-import { ActualizarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ActualizarRanchoController";
-import { ObtenerCapacidadRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ObtenerCapacidadRanchoController";
-import { ListarRanchosController } from "@/modules/rancho/infrastructure/http/controllers/ListarRanchosController";
-import { ObtenerDetalleRanchoController } from "@/modules/rancho/infrastructure/http/controllers/ObtenerDetalleRanchoController";
-import { EliminarRanchoController } from "@/modules/rancho/infrastructure/http/controllers/EliminarRanchoController";
+// Terreno
+import { PrismaTerrenoRepository } from "@/modules/terreno/infrastructure/repository/PrismaTerrenoRepository";
+import { TerrenoMapper } from "@/modules/terreno/application/mappers/TerrenoMapper";
+import { RegistrarTerrenoUseCase } from "@/modules/terreno/application/useCases/RegistrarTerrenoUseCase";
+import { ActualizarTerrenoUseCase } from "@/modules/terreno/application/useCases/ActualizarTerrenoUseCase";
+import { ObtenerCapacidadTerrenoUseCase } from "@/modules/terreno/application/useCases/ObtenerCapacidadTerrenoUseCase";
+import { ListarTerrenosUseCase } from "@/modules/terreno/application/useCases/ListarTerrenosUseCase";
+import { ObtenerDetalleTerrenoUseCase } from "@/modules/terreno/application/useCases/ObtenerDetalleTerrenoUseCase";
+import { EliminarTerrenoUseCase } from "@/modules/terreno/application/useCases/EliminarTerrenoUseCase";
+import { RegistrarTerrenoController } from "@/modules/terreno/infrastructure/http/controllers/RegistrarTerrenoController";
+import { ActualizarTerrenoController } from "@/modules/terreno/infrastructure/http/controllers/ActualizarTerrenoController";
+import { ObtenerCapacidadTerrenoController } from "@/modules/terreno/infrastructure/http/controllers/ObtenerCapacidadTerrenoController";
+import { ListarTerrenosController } from "@/modules/terreno/infrastructure/http/controllers/ListarTerrenosController";
+import { ObtenerDetalleTerrenoController } from "@/modules/terreno/infrastructure/http/controllers/ObtenerDetalleTerrenoController";
+import { EliminarTerrenoController } from "@/modules/terreno/infrastructure/http/controllers/EliminarTerrenoController";
 
 // Ganado
 import { PrismaGanadoRepository } from "@/modules/ganado/infrastructure/repository/PrismaGanadoRepository";
@@ -352,46 +352,48 @@ container.register("EliminarInsumoController", {
 	useClass: EliminarInsumoController,
 });
 
-// Módulo Rancho - Repositorio & Mapper
-container.register("RanchoRepository", { useClass: PrismaRanchoRepository });
-container.register("RanchoMapper", { useClass: RanchoMapper });
+// Módulo Terreno - Repositorio & Mapper
+container.register("TerrenoRepository", { useClass: PrismaTerrenoRepository });
+container.register("TerrenoMapper", { useClass: TerrenoMapper });
 
-// Módulo Rancho - Casos de Uso
-container.register("RegistrarRanchoUseCase", {
-	useClass: RegistrarRanchoUseCase,
+// Módulo Terreno - Casos de Uso
+container.register("RegistrarTerrenoUseCase", {
+	useClass: RegistrarTerrenoUseCase,
 });
-container.register("ActualizarRanchoUseCase", {
-	useClass: ActualizarRanchoUseCase,
+container.register("ActualizarTerrenoUseCase", {
+	useClass: ActualizarTerrenoUseCase,
 });
-container.register("ObtenerCapacidadRanchoUseCase", {
-	useClass: ObtenerCapacidadRanchoUseCase,
+container.register("ObtenerCapacidadTerrenoUseCase", {
+	useClass: ObtenerCapacidadTerrenoUseCase,
 });
-container.register("ListarRanchosUseCase", { useClass: ListarRanchosUseCase });
-container.register("ObtenerDetalleRanchoUseCase", {
-	useClass: ObtenerDetalleRanchoUseCase,
+container.register("ListarTerrenosUseCase", {
+	useClass: ListarTerrenosUseCase,
 });
-container.register("EliminarRanchoUseCase", {
-	useClass: EliminarRanchoUseCase,
+container.register("ObtenerDetalleTerrenoUseCase", {
+	useClass: ObtenerDetalleTerrenoUseCase,
+});
+container.register("EliminarTerrenoUseCase", {
+	useClass: EliminarTerrenoUseCase,
 });
 
-// Módulo Rancho - Controladores
-container.register("RegistrarRanchoController", {
-	useClass: RegistrarRanchoController,
+// Módulo Terreno - Controladores
+container.register("RegistrarTerrenoController", {
+	useClass: RegistrarTerrenoController,
 });
-container.register("ActualizarRanchoController", {
-	useClass: ActualizarRanchoController,
+container.register("ActualizarTerrenoController", {
+	useClass: ActualizarTerrenoController,
 });
-container.register("ObtenerCapacidadRanchoController", {
-	useClass: ObtenerCapacidadRanchoController,
+container.register("ObtenerCapacidadTerrenoController", {
+	useClass: ObtenerCapacidadTerrenoController,
 });
-container.register("ListarRanchosController", {
-	useClass: ListarRanchosController,
+container.register("ListarTerrenosController", {
+	useClass: ListarTerrenosController,
 });
-container.register("ObtenerDetalleRanchoController", {
-	useClass: ObtenerDetalleRanchoController,
+container.register("ObtenerDetalleTerrenoController", {
+	useClass: ObtenerDetalleTerrenoController,
 });
-container.register("EliminarRanchoController", {
-	useClass: EliminarRanchoController,
+container.register("EliminarTerrenoController", {
+	useClass: EliminarTerrenoController,
 });
 
 // Módulo Ganado - Repositorio, Query & Mapper

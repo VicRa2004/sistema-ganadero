@@ -9,7 +9,7 @@ export class Ganado extends Entity {
 	private edadEnMeses: number;
 	private sexo: SexoGanado;
 	private razaId: number;
-	private ranchoId: number;
+	private terrenoId: number;
 	private propietarioId: number;
 
 	private constructor(
@@ -19,7 +19,7 @@ export class Ganado extends Entity {
 		edadEnMeses: number,
 		sexo: SexoGanado,
 		razaId: number,
-		ranchoId: number,
+		terrenoId: number,
 		propietarioId: number,
 	) {
 		super(id);
@@ -28,7 +28,7 @@ export class Ganado extends Entity {
 		this.edadEnMeses = edadEnMeses;
 		this.sexo = sexo;
 		this.razaId = razaId;
-		this.ranchoId = ranchoId;
+		this.terrenoId = terrenoId;
 		this.propietarioId = propietarioId;
 	}
 
@@ -38,7 +38,7 @@ export class Ganado extends Entity {
 		edadEnMeses: number,
 		sexo: SexoGanado,
 		razaId: number,
-		ranchoId: number,
+		terrenoId: number,
 		propietarioId: number,
 	): Ganado {
 		if (!identificador || identificador.trim() === "") {
@@ -56,8 +56,8 @@ export class Ganado extends Entity {
 		if (razaId <= 0) {
 			throw new Error("La raza especificada no es válida");
 		}
-		if (ranchoId <= 0) {
-			throw new Error("El rancho especificado no es válido");
+		if (terrenoId <= 0) {
+			throw new Error("El terreno especificado no es válido");
 		}
 		if (propietarioId <= 0) {
 			throw new Error("El propietario especificado no es válido");
@@ -70,7 +70,7 @@ export class Ganado extends Entity {
 			edadEnMeses,
 			sexo,
 			razaId,
-			ranchoId,
+			terrenoId,
 			propietarioId,
 		);
 	}
@@ -82,7 +82,7 @@ export class Ganado extends Entity {
 		edadEnMeses: number,
 		sexo: SexoGanado,
 		razaId: number,
-		ranchoId: number,
+		terrenoId: number,
 		propietarioId: number,
 	): Ganado {
 		return new Ganado(
@@ -92,7 +92,7 @@ export class Ganado extends Entity {
 			edadEnMeses,
 			sexo,
 			razaId,
-			ranchoId,
+			terrenoId,
 			propietarioId,
 		);
 	}
@@ -117,8 +117,8 @@ export class Ganado extends Entity {
 		return this.razaId;
 	}
 
-	public getRanchoId(): number {
-		return this.ranchoId;
+	public getTerrenoId(): number {
+		return this.terrenoId;
 	}
 
 	public getPropietarioId(): number {
@@ -136,11 +136,11 @@ export class Ganado extends Entity {
 		this.peso = nuevoPeso;
 	}
 
-	public cambiarDeRancho(nuevoRanchoId: number): void {
-		if (nuevoRanchoId <= 0) {
-			throw new Error("El rancho destino no es válido");
+	public cambiarDeTerreno(nuevoTerrenoId: number): void {
+		if (nuevoTerrenoId <= 0) {
+			throw new Error("El terreno destino no es válido");
 		}
-		this.ranchoId = nuevoRanchoId;
+		this.terrenoId = nuevoTerrenoId;
 	}
 
 	public actualizar(
@@ -149,7 +149,7 @@ export class Ganado extends Entity {
 		edadEnMeses: number,
 		sexo: SexoGanado,
 		razaId: number,
-		ranchoId: number,
+		terrenoId: number,
 		propietarioId: number,
 	): void {
 		if (!identificador || identificador.trim() === "") {
@@ -167,8 +167,8 @@ export class Ganado extends Entity {
 		if (razaId <= 0) {
 			throw new Error("La raza especificada no es válida");
 		}
-		if (ranchoId <= 0) {
-			throw new Error("El rancho especificado no es válido");
+		if (terrenoId <= 0) {
+			throw new Error("El terreno especificado no es válido");
 		}
 		if (propietarioId <= 0) {
 			throw new Error("El propietario especificado no es válido");
@@ -179,7 +179,7 @@ export class Ganado extends Entity {
 		this.edadEnMeses = edadEnMeses;
 		this.sexo = sexo;
 		this.razaId = razaId;
-		this.ranchoId = ranchoId;
+		this.terrenoId = terrenoId;
 		this.propietarioId = propietarioId;
 	}
 }

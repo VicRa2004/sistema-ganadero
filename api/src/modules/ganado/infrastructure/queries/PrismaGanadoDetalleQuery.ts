@@ -13,7 +13,7 @@ interface PrismaGanadoDetalleRecord {
 		id: number;
 		nombre: string;
 	};
-	rancho: {
+	terreno: {
 		id: number;
 		nombre: string;
 		ubicacion: string;
@@ -39,10 +39,10 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 				id: record.raza.id,
 				nombre: record.raza.nombre,
 			},
-			rancho: {
-				id: record.rancho.id,
-				nombre: record.rancho.nombre,
-				ubicacion: record.rancho.ubicacion,
+			terreno: {
+				id: record.terreno.id,
+				nombre: record.terreno.nombre,
+				ubicacion: record.terreno.ubicacion,
 			},
 			propietario: {
 				id: record.propietario.id,
@@ -58,7 +58,7 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 			where: { id, deletedAt: null },
 			include: {
 				raza: true,
-				rancho: true,
+				terreno: true,
 				propietario: true,
 			},
 		});
@@ -74,7 +74,7 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 			where: { identificador, deletedAt: null },
 			include: {
 				raza: true,
-				rancho: true,
+				terreno: true,
 				propietario: true,
 			},
 		});

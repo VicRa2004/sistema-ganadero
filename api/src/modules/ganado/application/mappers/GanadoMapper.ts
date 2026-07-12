@@ -12,7 +12,7 @@ export class GanadoMapper {
 			edadEnMeses: ganado.getEdadEnMeses(),
 			sexo: ganado.getSexo(),
 			razaId: ganado.getRazaId(),
-			ranchoId: ganado.getRanchoId(),
+			terrenoId: ganado.getTerrenoId(),
 			propietarioId: ganado.getPropietarioId(),
 		};
 	}

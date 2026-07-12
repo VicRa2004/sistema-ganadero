@@ -17,7 +17,7 @@ import { useRegistrarGanado } from "@/modules/ganado/hooks/useRegistrarGanado";
 import { useActualizarGanado } from "@/modules/ganado/hooks/useActualizarGanado";
 import type { GanadoDto } from "@/modules/ganado/types";
 import type { RazaDto } from "@/modules/raza/types";
-import type { RanchoDto } from "@/modules/rancho/types";
+import type { TerrenoDto } from "@/modules/terreno/types";
 import type { PropietarioDto } from "@/modules/propietario/types";
 
 interface GanadoFormDialogProps {
@@ -26,7 +26,7 @@ interface GanadoFormDialogProps {
 	/** Si se pasa, el formulario funciona en modo edición */
 	ganado?: GanadoDto;
 	razas: RazaDto[];
-	ranchos: RanchoDto[];
+	terrenos: TerrenoDto[];
 	propietarios: PropietarioDto[];
 }
 
@@ -35,7 +35,7 @@ export function GanadoFormDialog({
 	onOpenChange,
 	ganado,
 	razas,
-	ranchos,
+	terrenos,
 	propietarios,
 }: GanadoFormDialogProps) {
 	const isEditing = !!ganado;
@@ -55,7 +55,7 @@ export function GanadoFormDialog({
 			edadEnMeses: ganado?.edadEnMeses ?? "",
 			sexo: (ganado?.sexo ?? "") as "" | "MACHO" | "HEMBRA",
 			razaId: ganado?.razaId ?? "",
-			ranchoId: ganado?.ranchoId ?? "",
+			terrenoId: ganado?.terrenoId ?? "",
 			propietarioId: ganado?.propietarioId ?? "",
 		},
 		onSubmit: async ({ value }) => {
@@ -67,7 +67,7 @@ export function GanadoFormDialog({
 				edadEnMeses: Number(value.edadEnMeses),
 				sexo: value.sexo as "MACHO" | "HEMBRA",
 				razaId: Number(value.razaId),
-				ranchoId: Number(value.ranchoId),
+				terrenoId: Number(value.terrenoId),
 				propietarioId: Number(value.propietarioId),
 			};
 
@@ -104,7 +104,7 @@ export function GanadoFormDialog({
 				(ganado?.sexo ?? "") as "" | "MACHO" | "HEMBRA",
 			);
 			form.setFieldValue("razaId", ganado?.razaId ?? "");
-			form.setFieldValue("ranchoId", ganado?.ranchoId ?? "");
+			form.setFieldValue("terrenoId", ganado?.terrenoId ?? "");
 			form.setFieldValue("propietarioId", ganado?.propietarioId ?? "");
 		}
 	}, [open, ganado, form]);
@@ -371,12 +371,12 @@ export function GanadoFormDialog({
 						)}
 					</form.Field>
 
-					{/* Campo Rancho */}
+					{/* Campo Terreno */}
 					<form.Field
-						name="ranchoId"
+						name="terrenoId"
 						validators={{
 							onChange: ({ value }) => {
-								if (!value) return "El rancho es requerido.";
+								if (!value) return "El terreno es requerido.";
 								return undefined;
 							},
 						}}
@@ -384,7 +384,7 @@ export function GanadoFormDialog({
 						{(field) => (
 							<div className="space-y-1.5 text-left">
 								<Label htmlFor={field.name}>
-									Rancho <span className="text-destructive">*</span>
+									Terreno <span className="text-destructive">*</span>
 								</Label>
 								<select
 									id={field.name}
@@ -396,11 +396,11 @@ export function GanadoFormDialog({
 											e.target.value === "" ? "" : Number(e.target.value),
 										)
 									}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
 									disabled={isPending}
 								>
-									<option value="">Seleccione un rancho...</option>
-									{ranchos.map((r) => (
+									<option value="">Seleccione un terreno...</option>
+									{terrenos.map((r) => (
 										<option key={r.id} value={r.id}>
 											{r.nombre} ({r.ubicacion})
 										</option>

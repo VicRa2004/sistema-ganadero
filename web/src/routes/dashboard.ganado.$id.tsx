@@ -8,7 +8,7 @@ import {
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useObtenerFichaGanado } from "@/modules/ganado/hooks/useObtenerFichaGanado";
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
-import { useListarRanchos } from "@/modules/rancho/hooks/useListarRanchos";
+import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { useListarPropietarios } from "@/modules/propietario/hooks/useListarPropietarios";
 import { GanadoFormDialog } from "@/components/ganado/GanadoFormDialog";
 import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
@@ -64,11 +64,11 @@ function DetalleGanadoComponent() {
 
 	// Catálogos para el modal de edición
 	const { data: razasData = [] } = useListarRazas();
-	const { data: ranchosData } = useListarRanchos(1, 100);
+	const { data: terrenosData } = useListarTerrenos(1, 100);
 	const { data: propietariosData } = useListarPropietarios(1, 100);
 
 	const razas = razasData;
-	const ranchos = ranchosData?.data ?? [];
+	const terrenos = terrenosData?.data ?? [];
 	const propietarios = propietariosData?.data ?? [];
 
 	if (isLoading) {
@@ -109,7 +109,7 @@ function DetalleGanadoComponent() {
 		edadEnMeses: ganado.edadEnMeses,
 		sexo: ganado.sexo,
 		razaId: ganado.raza.id,
-		ranchoId: ganado.rancho.id,
+		terrenoId: ganado.terreno.id,
 		propietarioId: ganado.propietario.id,
 	};
 
@@ -217,18 +217,18 @@ function DetalleGanadoComponent() {
 							</div>
 						</div>
 
-						{/* Rancho */}
+						{/* Terreno */}
 						<div className="flex items-center gap-3 p-4 rounded-xl bg-muted/30 border border-border/50 text-left">
 							<Warehouse className="size-5 text-primary shrink-0" />
 							<div>
 								<p className="text-xs text-muted-foreground uppercase font-semibold">
-									Rancho Actual
+									Terreno Actual
 								</p>
 								<p className="text-base font-bold text-foreground">
-									{ganado.rancho.nombre}
+									{ganado.terreno.nombre}
 								</p>
 								<p className="text-xs text-muted-foreground">
-									{ganado.rancho.ubicacion}
+									{ganado.terreno.ubicacion}
 								</p>
 							</div>
 						</div>
@@ -255,7 +255,7 @@ function DetalleGanadoComponent() {
 				onOpenChange={setIsEditOpen}
 				ganado={ganadoSimple}
 				razas={razas}
-				ranchos={ranchos}
+				terrenos={terrenos}
 				propietarios={propietarios}
 			/>
 
@@ -275,8 +275,8 @@ function DetalleGanadoComponent() {
 					onOpenChange={setIsTrasladoOpen}
 					ganadoId={ganado.id}
 					arete={ganado.identificador}
-					ranchoActualId={ganado.rancho.id}
-					ranchos={ranchos}
+					terrenoActualId={ganado.terreno.id}
+					terrenos={terrenos}
 				/>
 			)}
 

@@ -72,7 +72,7 @@ function PropietariosComponent() {
 							Propietarios
 						</h1>
 						<p className="text-sm text-muted-foreground">
-							Gestión de propietarios de ganado y ranchos
+							Gestión de propietarios de ganado y terrenos
 						</p>
 					</div>
 				</div>

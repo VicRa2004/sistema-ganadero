@@ -66,9 +66,9 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 				icon: Sprout,
 			},
 			{
-				label: "Ranchos",
-				resource: "rancho",
-				href: "/dashboard/ranchos",
+				label: "Terrenos",
+				resource: "terreno",
+				href: "/dashboard/terrenos",
 				icon: Warehouse,
 			},
 			{

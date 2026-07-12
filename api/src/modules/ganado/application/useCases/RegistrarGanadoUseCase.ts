@@ -10,12 +10,12 @@ import type { GanadoMapper } from "../mappers/GanadoMapper";
 
 // Repositorios externos para validación
 import type { RazaRepository } from "@/modules/raza/domain/repository/RazaRepository";
-import type { RanchoRepository } from "@/modules/rancho/domain/repository/RanchoRepository";
+import type { TerrenoRepository } from "@/modules/terreno/domain/repository/TerrenoRepository";
 import type { PropietarioRepository } from "@/modules/propietario/domain/repository/PropietarioRepository";
 
 // Errores externos
 import { RazaNotFoundError } from "@/modules/raza/domain/error/RazaNotFoundError";
-import { RanchoNotFoundError } from "@/modules/rancho/domain/error/RanchoNotFoundError";
+import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
 import { PropietarioNotFoundError } from "@/modules/propietario/domain/error/PropietarioNotFoundError";
 
 @injectable()
@@ -25,8 +25,8 @@ export class RegistrarGanadoUseCase {
 		private readonly ganadoRepository: GanadoRepository,
 		@inject("RazaRepository")
 		private readonly razaRepository: RazaRepository,
-		@inject("RanchoRepository")
-		private readonly ranchoRepository: RanchoRepository,
+		@inject("TerrenoRepository")
+		private readonly terrenoRepository: TerrenoRepository,
 		@inject("PropietarioRepository")
 		private readonly propietarioRepository: PropietarioRepository,
 		@inject("GanadoMapper")
@@ -48,10 +48,10 @@ export class RegistrarGanadoUseCase {
 			throw new RazaNotFoundError(dto.razaId);
 		}
 
-		// 3. Validar que el rancho exista
-		const rancho = await this.ranchoRepository.findById(dto.ranchoId);
-		if (!rancho) {
-			throw new RanchoNotFoundError(dto.ranchoId);
+		// 3. Validar que el terreno exista
+		const terreno = await this.terrenoRepository.findById(dto.terrenoId);
+		if (!terreno) {
+			throw new TerrenoNotFoundError(dto.terrenoId);
 		}
 
 		// 4. Validar que el propietario exista
@@ -69,7 +69,7 @@ export class RegistrarGanadoUseCase {
 			dto.edadEnMeses,
 			dto.sexo,
 			dto.razaId,
-			dto.ranchoId,
+			dto.terrenoId,
 			dto.propietarioId,
 		);
 

@@ -24,7 +24,7 @@ model User {
   roles             UserRole[]
   directPermissions UserPermission[]
   refreshTokens     RefreshToken[]
-  ranchos           Rancho[]
+  terrenos          Terreno[]
   veterinarios      Veterinario[]
 
   @@map("user")
@@ -171,13 +171,14 @@ model Propietario {
   @@map("propietario")
 }
 
-model Rancho {
-  id                 Int       @id @default(autoincrement()) @map("rnch_id")
-  nombre             String    @map("rnch_nombre") @db.VarChar(150)
-  ubicacion          String    @map("rnch_ubicacion") @db.VarChar(255)
-  extensionHectareas Float     @map("rnch_extension")
-  capacidadMaxima    Int       @map("rnch_capacidad_max")
-  usuarioId          Int       @map("rnch_fkusuario")
+model Terreno {
+  id                 Int       @id @default(autoincrement()) @map("terr_id")
+  nombre             String    @map("terr_nombre") @db.VarChar(150)
+  ubicacion          String    @map("terr_ubicacion") @db.VarChar(255)
+  extensionHectareas Float     @map("terr_extension")
+  capacidadMaxima    Int       @map("terr_capacidad_max")
+  imagenTerreno      String?   @map("terr_imagen") @db.VarChar(255)
+  usuarioId          Int       @map("terr_fkusuario")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime? @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
@@ -185,7 +186,7 @@ model Rancho {
   usuario            User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   ganados            Ganado[]
 
-  @@map("rancho")
+  @@map("terreno")
 }
 
 model Ganado {
@@ -195,14 +196,14 @@ model Ganado {
   edadEnMeses   Int        @map("gan_edad_meses")
   sexo          SexoGanado @map("gan_sexo")
   razaId        Int        @map("gan_fkraza")
-  ranchoId      Int        @map("gan_fkrancho")
+  terrenoId     Int        @map("gan_fkterreno")
   propietarioId Int        @map("gan_fkpropietario")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime?  @updatedAt @map("updated_at")
   deletedAt     DateTime?  @map("deleted_at")
 
   raza                   Raza                  @relation(fields: [razaId], references: [id], onDelete: Restrict)
-  rancho                 Rancho                @relation(fields: [ranchoId], references: [id], onDelete: Restrict)
+  terreno                Terreno               @relation(fields: [terrenoId], references: [id], onDelete: Restrict)
   propietario            Propietario           @relation(fields: [propietarioId], references: [id], onDelete: Restrict)
   aplicacionesSanitarias AplicacionSanitaria[]
   tratamientosMedicos    TratamientoMedico[]

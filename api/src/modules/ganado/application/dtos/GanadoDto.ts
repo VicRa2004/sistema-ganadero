@@ -6,7 +6,7 @@ export interface RegistrarGanadoInputDto {
 	edadEnMeses: number;
 	sexo: SexoGanado;
 	razaId: number;
-	ranchoId: number;
+	terrenoId: number;
 	propietarioId: number;
 }
 
@@ -16,7 +16,7 @@ export interface ActualizarGanadoInputDto {
 	edadEnMeses?: number;
 	sexo?: SexoGanado;
 	razaId?: number;
-	ranchoId?: number;
+	terrenoId?: number;
 	propietarioId?: number;
 }
 
@@ -25,7 +25,7 @@ export interface RegistrarPesajeInputDto {
 }
 
 export interface TrasladarGanadoInputDto {
-	ranchoId: number;
+	terrenoId: number;
 }
 
 export interface GanadoOutputDto {
@@ -35,7 +35,7 @@ export interface GanadoOutputDto {
 	edadEnMeses: number;
 	sexo: SexoGanado;
 	razaId: number;
-	ranchoId: number;
+	terrenoId: number;
 	propietarioId: number;
 }
 
@@ -49,7 +49,7 @@ export interface GanadoDetalleOutputDto {
 		id: number;
 		nombre: string;
 	};
-	rancho: {
+	terreno: {
 		id: number;
 		nombre: string;
 		ubicacion: string;

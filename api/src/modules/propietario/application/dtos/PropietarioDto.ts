@@ -27,14 +27,14 @@ export interface PropietarioDetalleOutputDto {
 	correo: string | null;
 	imagenMarca: string | null;
 	cantidadGanado: number;
-	cantidadRanchos: number;
+	cantidadTerrenos: number;
 	ganados: {
 		id: number;
 		identificador: string;
 		peso: number;
 		sexo: string;
 	}[];
-	ranchos: {
+	terrenos: {
 		id: number;
 		nombre: string;
 		ubicacion: string;

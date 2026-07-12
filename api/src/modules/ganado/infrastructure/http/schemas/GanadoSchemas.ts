@@ -14,7 +14,7 @@ export const registrarGanadoSchema = z.object({
 		message: "El sexo debe ser MACHO o HEMBRA",
 	}),
 	razaId: z.number().int().positive("La raza es requerida"),
-	ranchoId: z.number().int().positive("El rancho es requerido"),
+	terrenoId: z.number().int().positive("El terreno es requerido"),
 	propietarioId: z.number().int().positive("El propietario es requerido"),
 });
 
@@ -25,7 +25,7 @@ export const registrarPesajeSchema = z.object({
 });
 
 export const trasladarGanadoSchema = z.object({
-	ranchoId: z.number().int().positive("El rancho destino es requerido"),
+	terrenoId: z.number().int().positive("El terreno destino es requerido"),
 });
 
 export const ganadoIdSchema = z.object({
@@ -57,7 +57,7 @@ export const listarGanadoQuerySchema = z.object({
 			return Number.isNaN(n) || n < 1 ? 10 : n;
 		}),
 	identificador: z.string().optional(),
-	ranchoId: z
+	terrenoId: z
 		.string()
 		.optional()
 		.transform((v) => (v ? Number(v) : undefined)),

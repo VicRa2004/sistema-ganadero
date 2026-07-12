@@ -14,7 +14,7 @@ export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 				ganados: {
 					where: { deletedAt: null },
 					include: {
-						rancho: true,
+						terreno: true,
 					},
 				},
 			},
@@ -30,21 +30,21 @@ export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 			sexo: g.sexo,
 		}));
 
-		// Obtener ranchos únicos asociados a través del ganado
-		const ranchosMap = new Map<
+		// Obtener terrenos únicos asociados a través del ganado
+		const terrenosMap = new Map<
 			number,
 			{ id: number; nombre: string; ubicacion: string }
 		>();
 		for (const g of record.ganados) {
-			if (g.rancho && !g.rancho.deletedAt) {
-				ranchosMap.set(g.rancho.id, {
-					id: g.rancho.id,
-					nombre: g.rancho.nombre,
-					ubicacion: g.rancho.ubicacion,
+			if (g.terreno && !g.terreno.deletedAt) {
+				terrenosMap.set(g.terreno.id, {
+					id: g.terreno.id,
+					nombre: g.terreno.nombre,
+					ubicacion: g.terreno.ubicacion,
 				});
 			}
 		}
-		const ranchos = Array.from(ranchosMap.values());
+		const terrenos = Array.from(terrenosMap.values());
 
 		return {
 			id: record.id,
@@ -53,9 +53,9 @@ export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 			correo: record.correo,
 			imagenMarca: record.imagenMarca,
 			cantidadGanado: ganados.length,
-			cantidadRanchos: ranchos.length,
+			cantidadTerrenos: terrenos.length,
 			ganados,
-			ranchos,
+			terrenos,
 		};
 	}
 }

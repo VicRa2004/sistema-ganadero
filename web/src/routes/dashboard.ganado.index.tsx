@@ -3,7 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useListarGanado } from "@/modules/ganado/hooks/useListarGanado";
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
-import { useListarRanchos } from "@/modules/rancho/hooks/useListarRanchos";
+import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { useListarPropietarios } from "@/modules/propietario/hooks/useListarPropietarios";
 import { GanadoTable } from "@/components/ganado/GanadoTable";
 import { GanadoFormDialog } from "@/components/ganado/GanadoFormDialog";
@@ -52,7 +52,7 @@ function GanadosComponent() {
 	const [filterRazaId, setFilterRazaId] = useState<number | undefined>(
 		undefined,
 	);
-	const [filterRanchoId, setFilterRanchoId] = useState<number | undefined>(
+	const [filterTerrenoId, setFilterTerrenoId] = useState<number | undefined>(
 		undefined,
 	);
 	const [filterPropietarioId, setFilterPropietarioId] = useState<
@@ -68,11 +68,11 @@ function GanadosComponent() {
 
 	// Cargar catálogos
 	const { data: razasData = [] } = useListarRazas();
-	const { data: ranchosData } = useListarRanchos(1, 100);
+	const { data: terrenosData } = useListarTerrenos(1, 100);
 	const { data: propietariosData } = useListarPropietarios(1, 100);
 
 	const razas = razasData;
-	const ranchos = ranchosData?.data ?? [];
+	const terrenos = terrenosData?.data ?? [];
 	const propietarios = propietariosData?.data ?? [];
 
 	// Query principal con filtros aplicados
@@ -85,7 +85,7 @@ function GanadosComponent() {
 		limit: PAGE_SIZE,
 		identificador: filterIdentificador,
 		razaId: filterRazaId,
-		ranchoId: filterRanchoId,
+		terrenoId: filterTerrenoId,
 		propietarioId: filterPropietarioId,
 	});
 
@@ -108,7 +108,7 @@ function GanadosComponent() {
 	function handleResetFilters() {
 		setFilterIdentificador("");
 		setFilterRazaId(undefined);
-		setFilterRanchoId(undefined);
+		setFilterTerrenoId(undefined);
 		setFilterPropietarioId(undefined);
 		setPage(1);
 	}
@@ -189,20 +189,20 @@ function GanadosComponent() {
 						</select>
 					</div>
 
-					<div className="space-y-1.5">
-						<Label htmlFor="filtro-rancho">Filtrar por Rancho</Label>
+					<div className="space-y-1.5 text-left">
+						<Label htmlFor="filtro-terreno">Filtrar por Terreno</Label>
 						<select
-							id="filtro-rancho"
-							value={filterRanchoId ?? ""}
+							id="filtro-terreno"
+							value={filterTerrenoId ?? ""}
 							onChange={(e) => {
 								const val = e.target.value;
-								setFilterRanchoId(val === "" ? undefined : Number(val));
+								setFilterTerrenoId(val === "" ? undefined : Number(val));
 								setPage(1);
 							}}
-							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
 						>
-							<option value="">Todos los ranchos</option>
-							{ranchos.map((r) => (
+							<option value="">Todos los terrenos</option>
+							{terrenos.map((r) => (
 								<option key={r.id} value={r.id}>
 									{r.nombre}
 								</option>
@@ -233,7 +233,7 @@ function GanadosComponent() {
 				</div>
 				{(filterIdentificador ||
 					filterRazaId ||
-					filterRanchoId ||
+					filterTerrenoId ||
 					filterPropietarioId) && (
 					<div className="flex justify-end pt-2">
 						<Button
@@ -269,7 +269,7 @@ function GanadosComponent() {
 					<GanadoTable
 						ganados={paginado.data}
 						razas={razas}
-						ranchos={ranchos}
+						terrenos={terrenos}
 						propietarios={propietarios}
 						canUpdate={canUpdate}
 						canDelete={canDelete}
@@ -322,7 +322,7 @@ function GanadosComponent() {
 				onOpenChange={handleCloseForm}
 				ganado={ganadoEditar ?? undefined}
 				razas={razas}
-				ranchos={ranchos}
+				terrenos={terrenos}
 				propietarios={propietarios}
 			/>
 
@@ -348,8 +348,8 @@ function GanadosComponent() {
 					}}
 					ganadoId={ganadoTraslado.id}
 					arete={ganadoTraslado.identificador}
-					ranchoActualId={ganadoTraslado.ranchoId}
-					ranchos={ranchos}
+					terrenoActualId={ganadoTraslado.terrenoId}
+					terrenos={terrenos}
 				/>
 			)}
 

@@ -24,7 +24,7 @@ export interface GanadoResumenDto {
 	sexo: string;
 }
 
-export interface RanchoResumenDto {
+export interface TerrenoResumenDto {
 	id: number;
 	nombre: string;
 	ubicacion: string;
@@ -32,9 +32,9 @@ export interface RanchoResumenDto {
 
 export interface PropietarioDetalleDto extends PropietarioDto {
 	cantidadGanado: number;
-	cantidadRanchos: number;
+	cantidadTerrenos: number;
 	ganados: GanadoResumenDto[];
-	ranchos: RanchoResumenDto[];
+	terrenos: TerrenoResumenDto[];
 }
 
 // ---- Input DTOs (payloads para el API) ----

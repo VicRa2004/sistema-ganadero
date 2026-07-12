@@ -14,7 +14,7 @@ interface PrismaGanadoRecord {
 	edadEnMeses: number;
 	sexo: SexoGanado;
 	razaId: number;
-	ranchoId: number;
+	terrenoId: number;
 	propietarioId: number;
 	deletedAt: Date | null;
 }
@@ -29,7 +29,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			record.edadEnMeses,
 			record.sexo,
 			record.razaId,
-			record.ranchoId,
+			record.terrenoId,
 			record.propietarioId,
 		);
 	}
@@ -65,8 +65,8 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			};
 		}
 
-		if (filters.ranchoId !== undefined && filters.ranchoId > 0) {
-			whereClause.ranchoId = filters.ranchoId;
+		if (filters.terrenoId !== undefined && filters.terrenoId > 0) {
+			whereClause.terrenoId = filters.terrenoId;
 		}
 
 		if (filters.razaId !== undefined && filters.razaId > 0) {
@@ -110,7 +110,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 					edadEnMeses: ganado.getEdadEnMeses(),
 					sexo: ganado.getSexo(),
 					razaId: ganado.getRazaId(),
-					ranchoId: ganado.getRanchoId(),
+					terrenoId: ganado.getTerrenoId(),
 					propietarioId: ganado.getPropietarioId(),
 				},
 			})) as PrismaGanadoRecord;
@@ -125,7 +125,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 				edadEnMeses: ganado.getEdadEnMeses(),
 				sexo: ganado.getSexo(),
 				razaId: ganado.getRazaId(),
-				ranchoId: ganado.getRanchoId(),
+				terrenoId: ganado.getTerrenoId(),
 				propietarioId: ganado.getPropietarioId(),
 			},
 		})) as PrismaGanadoRecord;

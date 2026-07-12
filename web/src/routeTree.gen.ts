@@ -15,10 +15,10 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardVeterinariosIndexRouteImport } from './routes/dashboard.veterinarios.index'
-import { Route as DashboardRanchosIndexRouteImport } from './routes/dashboard.ranchos.index'
+import { Route as DashboardTerrenosIndexRouteImport } from './routes/dashboard.terrenos.index'
 import { Route as DashboardPropietariosIndexRouteImport } from './routes/dashboard.propietarios.index'
 import { Route as DashboardGanadoIndexRouteImport } from './routes/dashboard.ganado.index'
-import { Route as DashboardRanchosIdRouteImport } from './routes/dashboard.ranchos.$id'
+import { Route as DashboardTerrenosIdRouteImport } from './routes/dashboard.terrenos.$id'
 import { Route as DashboardPropietariosIdRouteImport } from './routes/dashboard.propietarios.$id'
 import { Route as DashboardGanadoIdRouteImport } from './routes/dashboard.ganado.$id'
 
@@ -53,9 +53,9 @@ const DashboardVeterinariosIndexRoute =
     path: '/veterinarios/',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardRanchosIndexRoute = DashboardRanchosIndexRouteImport.update({
-  id: '/ranchos/',
-  path: '/ranchos/',
+const DashboardTerrenosIndexRoute = DashboardTerrenosIndexRouteImport.update({
+  id: '/terrenos/',
+  path: '/terrenos/',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPropietariosIndexRoute =
@@ -69,9 +69,9 @@ const DashboardGanadoIndexRoute = DashboardGanadoIndexRouteImport.update({
   path: '/ganado/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardRanchosIdRoute = DashboardRanchosIdRouteImport.update({
-  id: '/ranchos/$id',
-  path: '/ranchos/$id',
+const DashboardTerrenosIdRoute = DashboardTerrenosIdRouteImport.update({
+  id: '/terrenos/$id',
+  path: '/terrenos/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPropietariosIdRoute = DashboardPropietariosIdRouteImport.update({
@@ -93,10 +93,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
-  '/dashboard/ranchos/$id': typeof DashboardRanchosIdRoute
+  '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
-  '/dashboard/ranchos/': typeof DashboardRanchosIndexRoute
+  '/dashboard/terrenos/': typeof DashboardTerrenosIndexRoute
   '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -106,10 +106,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
-  '/dashboard/ranchos/$id': typeof DashboardRanchosIdRoute
+  '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/ganado': typeof DashboardGanadoIndexRoute
   '/dashboard/propietarios': typeof DashboardPropietariosIndexRoute
-  '/dashboard/ranchos': typeof DashboardRanchosIndexRoute
+  '/dashboard/terrenos': typeof DashboardTerrenosIndexRoute
   '/dashboard/veterinarios': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRoutesById {
@@ -121,10 +121,10 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
-  '/dashboard/ranchos/$id': typeof DashboardRanchosIdRoute
+  '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
-  '/dashboard/ranchos/': typeof DashboardRanchosIndexRoute
+  '/dashboard/terrenos/': typeof DashboardTerrenosIndexRoute
   '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRouteTypes {
@@ -137,10 +137,10 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
-    | '/dashboard/ranchos/$id'
+    | '/dashboard/terrenos/$id'
     | '/dashboard/ganado/'
     | '/dashboard/propietarios/'
-    | '/dashboard/ranchos/'
+    | '/dashboard/terrenos/'
     | '/dashboard/veterinarios/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -150,10 +150,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
-    | '/dashboard/ranchos/$id'
+    | '/dashboard/terrenos/$id'
     | '/dashboard/ganado'
     | '/dashboard/propietarios'
-    | '/dashboard/ranchos'
+    | '/dashboard/terrenos'
     | '/dashboard/veterinarios'
   id:
     | '__root__'
@@ -164,10 +164,10 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
-    | '/dashboard/ranchos/$id'
+    | '/dashboard/terrenos/$id'
     | '/dashboard/ganado/'
     | '/dashboard/propietarios/'
-    | '/dashboard/ranchos/'
+    | '/dashboard/terrenos/'
     | '/dashboard/veterinarios/'
   fileRoutesById: FileRoutesById
 }
@@ -222,11 +222,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardVeterinariosIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/ranchos/': {
-      id: '/dashboard/ranchos/'
-      path: '/ranchos'
-      fullPath: '/dashboard/ranchos/'
-      preLoaderRoute: typeof DashboardRanchosIndexRouteImport
+    '/dashboard/terrenos/': {
+      id: '/dashboard/terrenos/'
+      path: '/terrenos'
+      fullPath: '/dashboard/terrenos/'
+      preLoaderRoute: typeof DashboardTerrenosIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/propietarios/': {
@@ -243,11 +243,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGanadoIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/ranchos/$id': {
-      id: '/dashboard/ranchos/$id'
-      path: '/ranchos/$id'
-      fullPath: '/dashboard/ranchos/$id'
-      preLoaderRoute: typeof DashboardRanchosIdRouteImport
+    '/dashboard/terrenos/$id': {
+      id: '/dashboard/terrenos/$id'
+      path: '/terrenos/$id'
+      fullPath: '/dashboard/terrenos/$id'
+      preLoaderRoute: typeof DashboardTerrenosIdRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/propietarios/$id': {
@@ -271,10 +271,10 @@ interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardGanadoIdRoute: typeof DashboardGanadoIdRoute
   DashboardPropietariosIdRoute: typeof DashboardPropietariosIdRoute
-  DashboardRanchosIdRoute: typeof DashboardRanchosIdRoute
+  DashboardTerrenosIdRoute: typeof DashboardTerrenosIdRoute
   DashboardGanadoIndexRoute: typeof DashboardGanadoIndexRoute
   DashboardPropietariosIndexRoute: typeof DashboardPropietariosIndexRoute
-  DashboardRanchosIndexRoute: typeof DashboardRanchosIndexRoute
+  DashboardTerrenosIndexRoute: typeof DashboardTerrenosIndexRoute
   DashboardVeterinariosIndexRoute: typeof DashboardVeterinariosIndexRoute
 }
 
@@ -282,10 +282,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardGanadoIdRoute: DashboardGanadoIdRoute,
   DashboardPropietariosIdRoute: DashboardPropietariosIdRoute,
-  DashboardRanchosIdRoute: DashboardRanchosIdRoute,
+  DashboardTerrenosIdRoute: DashboardTerrenosIdRoute,
   DashboardGanadoIndexRoute: DashboardGanadoIndexRoute,
   DashboardPropietariosIndexRoute: DashboardPropietariosIndexRoute,
-  DashboardRanchosIndexRoute: DashboardRanchosIndexRoute,
+  DashboardTerrenosIndexRoute: DashboardTerrenosIndexRoute,
   DashboardVeterinariosIndexRoute: DashboardVeterinariosIndexRoute,
 }
 

@@ -5,33 +5,33 @@ import type { GanadoOutputDto } from "../dtos/GanadoDto";
 import type { GanadoMapper } from "../mappers/GanadoMapper";
 
 // Repositorio y errores externos
-import type { RanchoRepository } from "@/modules/rancho/domain/repository/RanchoRepository";
-import { RanchoNotFoundError } from "@/modules/rancho/domain/error/RanchoNotFoundError";
+import type { TerrenoRepository } from "@/modules/terreno/domain/repository/TerrenoRepository";
+import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
 
 @injectable()
 export class TrasladarGanadoUseCase {
 	constructor(
 		@inject("GanadoRepository")
 		private readonly ganadoRepository: GanadoRepository,
-		@inject("RanchoRepository")
-		private readonly ranchoRepository: RanchoRepository,
+		@inject("TerrenoRepository")
+		private readonly terrenoRepository: TerrenoRepository,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 	) {}
 
-	public async run(id: number, ranchoId: number): Promise<GanadoOutputDto> {
+	public async run(id: number, terrenoId: number): Promise<GanadoOutputDto> {
 		const ganado = await this.ganadoRepository.findById(id);
 		if (!ganado) {
 			throw new GanadoNotFoundError(id);
 		}
 
-		// Validar que el rancho destino exista
-		const rancho = await this.ranchoRepository.findById(ranchoId);
-		if (!rancho) {
-			throw new RanchoNotFoundError(ranchoId);
+		// Validar que el terreno destino exista
+		const terreno = await this.terrenoRepository.findById(terrenoId);
+		if (!terreno) {
+			throw new TerrenoNotFoundError(terrenoId);
 		}
 
-		ganado.cambiarDeRancho(ranchoId);
+		ganado.cambiarDeTerreno(terrenoId);
 
 		const saved = await this.ganadoRepository.save(ganado);
 		return this.mapper.toDto(saved);

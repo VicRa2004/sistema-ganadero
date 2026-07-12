@@ -3,4 +3,5 @@ export interface VeterinarioFilters {
 	limit: number;
 	nombre?: string;
 	especialidad?: string;
+	usuarioId?: number;
 }

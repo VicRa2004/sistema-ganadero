@@ -6,18 +6,21 @@ export class Veterinario extends Entity {
 	private telefono: string;
 	private cedulaProfesional: string;
 	private especialidad: string | null;
+	private usuarioId: number;
 
 	private constructor(
 		id: EntityId,
 		nombre: string,
 		telefono: string,
 		cedulaProfesional: string,
+		usuarioId: number,
 		especialidad: string | null = null,
 	) {
 		super(id);
 		this.nombre = nombre;
 		this.telefono = telefono;
 		this.cedulaProfesional = cedulaProfesional;
+		this.usuarioId = usuarioId;
 		this.especialidad = especialidad;
 	}
 
@@ -25,6 +28,7 @@ export class Veterinario extends Entity {
 		nombre: string,
 		telefono: string,
 		cedulaProfesional: string,
+		usuarioId: number,
 		especialidad: string | null = null,
 	): Veterinario {
 		if (!nombre || nombre.trim() === "") {
@@ -38,11 +42,15 @@ export class Veterinario extends Entity {
 				"La cédula profesional del veterinario no puede estar vacía",
 			);
 		}
+		if (!usuarioId || usuarioId <= 0) {
+			throw new Error("El ID de usuario asociado es inválido");
+		}
 		return new Veterinario(
 			new EntityId(),
 			nombre,
 			telefono,
 			cedulaProfesional,
+			usuarioId,
 			especialidad,
 		);
 	}
@@ -52,6 +60,7 @@ export class Veterinario extends Entity {
 		nombre: string,
 		telefono: string,
 		cedulaProfesional: string,
+		usuarioId: number,
 		especialidad: string | null = null,
 	): Veterinario {
 		return new Veterinario(
@@ -59,6 +68,7 @@ export class Veterinario extends Entity {
 			nombre,
 			telefono,
 			cedulaProfesional,
+			usuarioId,
 			especialidad,
 		);
 	}
@@ -77,6 +87,10 @@ export class Veterinario extends Entity {
 
 	public getEspecialidad(): string | null {
 		return this.especialidad;
+	}
+
+	public getUsuarioId(): number {
+		return this.usuarioId;
 	}
 
 	public esNuevo(): boolean {

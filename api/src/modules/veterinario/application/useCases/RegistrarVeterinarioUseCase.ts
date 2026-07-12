@@ -29,6 +29,7 @@ export class RegistrarVeterinarioUseCase {
 			dto.nombre,
 			dto.telefono,
 			dto.cedulaProfesional,
+			dto.usuarioId,
 			dto.especialidad ?? null,
 		);
 

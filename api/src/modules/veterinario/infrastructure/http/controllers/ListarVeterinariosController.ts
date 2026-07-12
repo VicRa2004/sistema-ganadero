@@ -16,8 +16,16 @@ export class ListarVeterinariosController extends BaseController {
 
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const queryParams = validate(listarVeterinariosQuerySchema, c.req.query());
-			const result = await this.listarUseCase.run(queryParams);
+			const queryParams = validate(
+				listarVeterinariosQuerySchema,
+				c.req.query(),
+			);
+			const user = c.get("user");
+			const filters = {
+				...queryParams,
+				usuarioId: user.role !== "ADMIN" ? user.id : undefined,
+			};
+			const result = await this.listarUseCase.run(filters);
 			return this.ok(c, result);
 		});
 	};

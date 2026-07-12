@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
 import { VeterinarioNotFoundError } from "../../domain/error/VeterinarioNotFoundError";
 import { VeterinarioDuplicateCedulaError } from "../../domain/error/VeterinarioDuplicateCedulaError";
 import type { VeterinarioRepository } from "../../domain/repository/VeterinarioRepository";
@@ -20,10 +21,19 @@ export class ActualizarVeterinarioUseCase {
 	public async run(
 		id: number,
 		dto: ActualizarVeterinarioInputDto,
+		usuarioId: number,
+		rol: string,
 	): Promise<VeterinarioOutputDto> {
 		const veterinario = await this.repository.findById(id);
 		if (!veterinario) {
 			throw new VeterinarioNotFoundError(id);
+		}
+
+		if (rol !== "ADMIN" && veterinario.getUsuarioId() !== usuarioId) {
+			throw new BaseError(
+				"No tienes permiso para actualizar este veterinario",
+				403,
+			);
 		}
 
 		const cedulaNueva =

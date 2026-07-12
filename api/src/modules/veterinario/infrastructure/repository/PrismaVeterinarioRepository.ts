@@ -12,6 +12,7 @@ interface PrismaVeterinarioRecord {
 	telefono: string;
 	cedulaProfesional: string;
 	especialidad: string | null;
+	usuarioId: number;
 	deletedAt: Date | null;
 }
 
@@ -23,6 +24,7 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 			record.nombre,
 			record.telefono,
 			record.cedulaProfesional,
+			record.usuarioId,
 			record.especialidad,
 		);
 	}
@@ -66,6 +68,10 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 			};
 		}
 
+		if (filters.usuarioId !== undefined) {
+			whereClause.usuarioId = filters.usuarioId;
+		}
+
 		const [records, totalItems] = await Promise.all([
 			prisma.veterinario.findMany({
 				where: whereClause,
@@ -96,6 +102,7 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 					telefono: veterinario.getTelefono(),
 					cedulaProfesional: veterinario.getCedulaProfesional(),
 					especialidad: veterinario.getEspecialidad(),
+					usuarioId: veterinario.getUsuarioId(),
 				},
 			});
 			return this.toDomain(record);
@@ -108,6 +115,7 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 				telefono: veterinario.getTelefono(),
 				cedulaProfesional: veterinario.getCedulaProfesional(),
 				especialidad: veterinario.getEspecialidad(),
+				usuarioId: veterinario.getUsuarioId(),
 			},
 		});
 		return this.toDomain(record);

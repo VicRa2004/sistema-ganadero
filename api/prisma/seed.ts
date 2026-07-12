@@ -252,18 +252,27 @@ async function main() {
 	console.log("✅ Razas de ganado inicializadas");
 
 	// ─── 6. Semillas de Veterinarios ─────────────────────────────────────────────
+	const dbAdmin = await prisma.user.findFirst({
+		where: { email: "admin@dev.com" },
+	});
+	const dbUser = await prisma.user.findFirst({
+		where: { email: "user@dev.com" },
+	});
+
 	const veterinariosData = [
 		{
 			nombre: "Dr. Juan Pérez",
 			telefono: "555-0199",
 			cedulaProfesional: "VET-12345",
 			especialidad: "Cirugía y Reproducción",
+			usuarioId: dbAdmin?.id ?? 1,
 		},
 		{
 			nombre: "Dra. María López",
 			telefono: "555-0188",
 			cedulaProfesional: "VET-67890",
 			especialidad: "Nutrición y Epidemiología",
+			usuarioId: dbUser?.id ?? 2,
 		},
 	];
 
@@ -274,6 +283,7 @@ async function main() {
 				nombre: vet.nombre,
 				telefono: vet.telefono,
 				especialidad: vet.especialidad,
+				usuarioId: vet.usuarioId,
 			},
 			create: vet,
 		});

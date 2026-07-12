@@ -2,6 +2,7 @@ export interface RegistrarVeterinarioInputDto {
 	nombre: string;
 	telefono: string;
 	cedulaProfesional: string;
+	usuarioId: number;
 	especialidad?: string | null;
 }
 

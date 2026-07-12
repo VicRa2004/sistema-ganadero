@@ -21,9 +21,21 @@ export const registrarVeterinarioSchema = z.object({
 });
 
 export const actualizarVeterinarioSchema = z.object({
-	nombre: z.string().min(1, "El nombre no puede estar vacío").max(255, "El nombre es demasiado largo").optional(),
-	telefono: z.string().min(1, "El teléfono no puede estar vacío").max(20, "El teléfono es demasiado largo").optional(),
-	cedulaProfesional: z.string().min(1, "La cédula profesional no puede estar vacía").max(50, "La cédula profesional es demasiado larga").optional(),
+	nombre: z
+		.string()
+		.min(1, "El nombre no puede estar vacío")
+		.max(255, "El nombre es demasiado largo")
+		.optional(),
+	telefono: z
+		.string()
+		.min(1, "El teléfono no puede estar vacío")
+		.max(20, "El teléfono es demasiado largo")
+		.optional(),
+	cedulaProfesional: z
+		.string()
+		.min(1, "La cédula profesional no puede estar vacía")
+		.max(50, "La cédula profesional es demasiado larga")
+		.optional(),
 	especialidad: z
 		.string()
 		.max(100, "La especialidad es demasiado larga")

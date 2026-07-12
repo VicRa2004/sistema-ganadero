@@ -25,6 +25,7 @@ model User {
   directPermissions UserPermission[]
   refreshTokens     RefreshToken[]
   ranchos           Rancho[]
+  veterinarios      Veterinario[]
 
   @@map("user")
 }
@@ -287,10 +288,12 @@ model Veterinario {
   telefono          String    @map("vet_telefono") @db.VarChar(20)
   cedulaProfesional String    @unique @map("vet_cedula") @db.VarChar(50)
   especialidad      String?   @map("vet_especialidad") @db.VarChar(100)
+  usuarioId         Int       @map("vet_fkusuario")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime? @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
 
+  usuario             User                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
 

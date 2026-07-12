@@ -17,8 +17,12 @@ export class RegistrarVeterinarioController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const body = await c.req.json();
 			const validatedData = registrarVeterinarioSchema.parse(body);
+			const user = c.get("user");
 
-			const result = await this.registrarVeterinarioUseCase.run(validatedData);
+			const result = await this.registrarVeterinarioUseCase.run({
+				...validatedData,
+				usuarioId: user.id,
+			});
 			return this.created(c, result);
 		});
 	};

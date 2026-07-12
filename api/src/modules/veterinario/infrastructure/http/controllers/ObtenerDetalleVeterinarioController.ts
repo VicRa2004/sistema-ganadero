@@ -17,7 +17,12 @@ export class ObtenerDetalleVeterinarioController extends BaseController {
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
 			const { id } = validate(veterinarioIdSchema, { id: c.req.param("id") });
-			const result = await this.obtenerDetalleUseCase.run(id);
+			const user = c.get("user");
+			const result = await this.obtenerDetalleUseCase.run(
+				id,
+				user.id,
+				user.role,
+			);
 			return this.ok(c, result);
 		});
 	};

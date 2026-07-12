@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardVeterinariosIndexRouteImport } from './routes/dashboard.veterinarios.index'
 import { Route as DashboardRanchosIndexRouteImport } from './routes/dashboard.ranchos.index'
 import { Route as DashboardPropietariosIndexRouteImport } from './routes/dashboard.propietarios.index'
 import { Route as DashboardGanadoIndexRouteImport } from './routes/dashboard.ganado.index'
@@ -46,6 +47,12 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardVeterinariosIndexRoute =
+  DashboardVeterinariosIndexRouteImport.update({
+    id: '/veterinarios/',
+    path: '/veterinarios/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardRanchosIndexRoute = DashboardRanchosIndexRouteImport.update({
   id: '/ranchos/',
   path: '/ranchos/',
@@ -90,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
   '/dashboard/ranchos/': typeof DashboardRanchosIndexRoute
+  '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +110,7 @@ export interface FileRoutesByTo {
   '/dashboard/ganado': typeof DashboardGanadoIndexRoute
   '/dashboard/propietarios': typeof DashboardPropietariosIndexRoute
   '/dashboard/ranchos': typeof DashboardRanchosIndexRoute
+  '/dashboard/veterinarios': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +125,7 @@ export interface FileRoutesById {
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
   '/dashboard/ranchos/': typeof DashboardRanchosIndexRoute
+  '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/'
     | '/dashboard/propietarios/'
     | '/dashboard/ranchos/'
+    | '/dashboard/veterinarios/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/dashboard/ganado'
     | '/dashboard/propietarios'
     | '/dashboard/ranchos'
+    | '/dashboard/veterinarios'
   id:
     | '__root__'
     | '/'
@@ -156,6 +168,7 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/'
     | '/dashboard/propietarios/'
     | '/dashboard/ranchos/'
+    | '/dashboard/veterinarios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/veterinarios/': {
+      id: '/dashboard/veterinarios/'
+      path: '/veterinarios'
+      fullPath: '/dashboard/veterinarios/'
+      preLoaderRoute: typeof DashboardVeterinariosIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/ranchos/': {
@@ -255,6 +275,7 @@ interface DashboardRouteChildren {
   DashboardGanadoIndexRoute: typeof DashboardGanadoIndexRoute
   DashboardPropietariosIndexRoute: typeof DashboardPropietariosIndexRoute
   DashboardRanchosIndexRoute: typeof DashboardRanchosIndexRoute
+  DashboardVeterinariosIndexRoute: typeof DashboardVeterinariosIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -265,6 +286,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardGanadoIndexRoute: DashboardGanadoIndexRoute,
   DashboardPropietariosIndexRoute: DashboardPropietariosIndexRoute,
   DashboardRanchosIndexRoute: DashboardRanchosIndexRoute,
+  DashboardVeterinariosIndexRoute: DashboardVeterinariosIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

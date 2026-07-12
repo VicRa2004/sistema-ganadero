@@ -17,7 +17,8 @@ export class EliminarVeterinarioController extends BaseController {
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
 			const { id } = validate(veterinarioIdSchema, { id: c.req.param("id") });
-			await this.eliminarUseCase.run(id);
+			const user = c.get("user");
+			await this.eliminarUseCase.run(id, user.id, user.role);
 			return this.ok(c, { success: true });
 		});
 	};

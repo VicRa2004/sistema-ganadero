@@ -1,6 +1,7 @@
 import { Lifecycle, container } from "tsyringe";
 
 // Import implementations
+import { LocalImageStorageService } from "@/core/shared/infrastructure/libs/LocalImageStorageService";
 import { PrismaUserRepository } from "@/core/user/infrastructure/repository/PrismaUserRepository";
 import { CreateUserUseCase } from "@/core/user/application/useCases/CreateUserUseCase";
 import { GetAllUsersUseCase } from "@/core/user/application/useCases/GetAllUsersUseCase";
@@ -494,6 +495,10 @@ container.register(
 	},
 	{ lifecycle: Lifecycle.Singleton },
 );
+
+container.register("ImageStorageService", {
+	useClass: LocalImageStorageService,
+});
 
 function bootstrapSubscribers() {
 	const welcomeEmailSubscriber = container.resolve(SendWelcomeEmail);

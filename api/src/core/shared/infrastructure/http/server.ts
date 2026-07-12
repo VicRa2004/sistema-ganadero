@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { serveStatic } from "hono/bun";
 import { secureHeaders } from "hono/secure-headers";
 import { swaggerUI } from "@hono/swagger-ui";
 import { swaggerSpec } from "@/core/config/swagger";
@@ -19,7 +20,7 @@ import { VeterinarioRouter } from "@/modules/veterinario/infrastructure/http/rou
 const app = new Hono();
 
 // 1. Middlewares Nativos (Reemplazan a helmet, morgan y cors)
-app.use("*", secureHeaders());
+app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
 app.use(
 	"*",
 	cors({
@@ -28,6 +29,10 @@ app.use(
 	}),
 );
 app.use("*", logger());
+
+// Servir la carpeta de subidas (uploads) de manera estática
+app.use("/uploads/*", serveStatic({ root: "./" }));
+
 // Nota: express.json() desaparece. Hono procesa el JSON automáticamente
 // cuando llamas a c.req.json() en tus controladores.
 

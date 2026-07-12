@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { Propietario } from "../../domain/Propietario";
 import { PropietarioDuplicateEmailError } from "../../domain/error/PropietarioDuplicateEmailError";
 import type { PropietarioRepository } from "../../domain/repository/PropietarioRepository";
@@ -15,6 +16,8 @@ export class RegistrarPropietarioUseCase {
 		private readonly propietarioRepository: PropietarioRepository,
 		@inject("PropietarioMapper")
 		private readonly mapper: PropietarioMapper,
+		@inject("ImageStorageService")
+		private readonly imageStorageService: ImageStorageService,
 	) {}
 
 	public async run(
@@ -27,10 +30,19 @@ export class RegistrarPropietarioUseCase {
 			}
 		}
 
+		let imagenMarcaPath: string | null = null;
+		if (dto.imagenMarca && dto.imagenMarca instanceof File) {
+			imagenMarcaPath = await this.imageStorageService.upload(
+				dto.imagenMarca,
+				"propietarios",
+			);
+		}
+
 		const propietario = Propietario.create(
 			dto.nombre,
 			dto.telefono ?? null,
 			dto.correo ?? null,
+			imagenMarcaPath,
 		);
 
 		const saved = await this.propietarioRepository.save(propietario);

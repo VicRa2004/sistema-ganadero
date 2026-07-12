@@ -69,7 +69,24 @@ export function PropietariosTable({
 							key={p.id}
 							className="hover:bg-muted/20 transition-colors duration-150"
 						>
-							<TableCell className="font-medium">{p.nombre}</TableCell>
+							<TableCell className="font-medium">
+								<div className="flex items-center gap-3">
+									{p.imagenMarca ? (
+										<div className="relative group size-12 rounded-lg border border-border bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+											<img
+												src={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3000"}${p.imagenMarca}`}
+												alt={`Marca de ${p.nombre}`}
+												className="size-full object-contain transition-transform duration-200 group-hover:scale-125"
+											/>
+										</div>
+									) : (
+										<div className="size-12 rounded-lg bg-muted flex items-center justify-center border text-muted-foreground text-xs font-semibold shrink-0">
+											{p.nombre.substring(0, 2).toUpperCase()}
+										</div>
+									)}
+									<span>{p.nombre}</span>
+								</div>
+							</TableCell>
 							<TableCell>
 								{p.telefono ? (
 									<span className="flex items-center gap-1.5 text-sm text-muted-foreground">

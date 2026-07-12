@@ -5,28 +5,38 @@ export class Propietario extends Entity {
 	private nombre: string;
 	private telefono: string | null;
 	private correo: string | null;
+	private imagenMarca: string | null;
 
 	private constructor(
 		id: EntityId,
 		nombre: string,
 		telefono: string | null = null,
 		correo: string | null = null,
+		imagenMarca: string | null = null,
 	) {
 		super(id);
 		this.nombre = nombre;
 		this.telefono = telefono;
 		this.correo = correo;
+		this.imagenMarca = imagenMarca;
 	}
 
 	public static create(
 		nombre: string,
 		telefono: string | null = null,
 		correo: string | null = null,
+		imagenMarca: string | null = null,
 	): Propietario {
 		if (!nombre || nombre.trim() === "") {
 			throw new Error("El nombre del propietario no puede estar vacío");
 		}
-		return new Propietario(new EntityId(), nombre, telefono, correo);
+		return new Propietario(
+			new EntityId(),
+			nombre,
+			telefono,
+			correo,
+			imagenMarca,
+		);
 	}
 
 	public static reconstitute(
@@ -34,8 +44,15 @@ export class Propietario extends Entity {
 		nombre: string,
 		telefono: string | null = null,
 		correo: string | null = null,
+		imagenMarca: string | null = null,
 	): Propietario {
-		return new Propietario(new EntityId(id), nombre, telefono, correo);
+		return new Propietario(
+			new EntityId(id),
+			nombre,
+			telefono,
+			correo,
+			imagenMarca,
+		);
 	}
 
 	public getNombre(): string {
@@ -50,6 +67,10 @@ export class Propietario extends Entity {
 		return this.correo;
 	}
 
+	public getImagenMarca(): string | null {
+		return this.imagenMarca;
+	}
+
 	public esNuevo(): boolean {
 		return this.id.isNew();
 	}
@@ -58,6 +79,7 @@ export class Propietario extends Entity {
 		nombre: string,
 		telefono: string | null,
 		correo: string | null,
+		imagenMarca: string | null,
 	): void {
 		if (!nombre || nombre.trim() === "") {
 			throw new Error("El nombre del propietario no puede estar vacío");
@@ -65,6 +87,7 @@ export class Propietario extends Entity {
 		this.nombre = nombre;
 		this.telefono = telefono;
 		this.correo = correo;
+		this.imagenMarca = imagenMarca;
 	}
 
 	public actualizarDatosContacto(

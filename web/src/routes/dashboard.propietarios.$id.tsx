@@ -115,9 +115,19 @@ function DetallePropietarioComponent() {
 			<Card className="border border-border bg-card/60 shadow-sm relative overflow-hidden">
 				<div className="absolute top-0 left-0 w-full h-[3px] bg-primary/60" />
 				<CardHeader className="flex flex-row items-start gap-4 pb-4">
-					<div className="size-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-						<User className="size-7" />
-					</div>
+					{propietario.imagenMarca ? (
+						<div className="size-14 rounded-xl border border-border bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden shadow-sm">
+							<img
+								src={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3000"}${propietario.imagenMarca}`}
+								alt={`Marca de ${propietario.nombre}`}
+								className="size-full object-contain"
+							/>
+						</div>
+					) : (
+						<div className="size-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+							<User className="size-7" />
+						</div>
+					)}
 					<div className="text-left space-y-1">
 						<CardTitle className="text-2xl font-extrabold tracking-tight text-foreground">
 							{propietario.nombre}

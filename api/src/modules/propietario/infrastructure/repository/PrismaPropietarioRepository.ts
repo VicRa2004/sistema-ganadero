@@ -11,6 +11,7 @@ interface PrismaPropietarioRecord {
 	nombre: string;
 	telefono: string | null;
 	correo: string | null;
+	imagenMarca: string | null;
 	deletedAt: Date | null;
 }
 
@@ -22,6 +23,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 			record.nombre,
 			record.telefono,
 			record.correo,
+			record.imagenMarca,
 		);
 	}
 
@@ -86,6 +88,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 					nombre: propietario.getNombre(),
 					telefono: propietario.getTelefono(),
 					correo: propietario.getCorreo(),
+					imagenMarca: propietario.getImagenMarca(),
 				},
 			});
 			return this.toDomain(record);
@@ -97,6 +100,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 				nombre: propietario.getNombre(),
 				telefono: propietario.getTelefono(),
 				correo: propietario.getCorreo(),
+				imagenMarca: propietario.getImagenMarca(),
 			},
 		});
 		return this.toDomain(record);

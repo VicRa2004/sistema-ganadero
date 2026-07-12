@@ -17,6 +17,10 @@ export const createPropietarioSchema = z.object({
 		.optional()
 		.nullable()
 		.or(z.literal("")), // Permite strings vacíos
+	imagenMarca: z
+		.custom<File>((val) => val instanceof File, "Debe ser un archivo válido")
+		.optional()
+		.nullable(),
 });
 
 export const updatePropietarioSchema = z.object({
@@ -37,6 +41,16 @@ export const updatePropietarioSchema = z.object({
 		.optional()
 		.nullable()
 		.or(z.literal("")), // Permite strings vacíos
+	imagenMarca: z
+		.union([
+			z.custom<File>(
+				(val) => val instanceof File,
+				"Debe ser un archivo válido",
+			),
+			z.string(),
+		])
+		.optional()
+		.nullable(),
 });
 
 export const propietarioIdSchema = z.object({

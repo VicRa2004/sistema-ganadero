@@ -27,7 +27,19 @@ export const propietarioService = {
 	},
 
 	async registrar(input: RegistrarPropietarioInput): Promise<PropietarioDto> {
-		const { data } = await api.post<PropietarioDto>("/propietarios", input);
+		const formData = new FormData();
+		formData.append("nombre", input.nombre);
+		if (input.telefono) formData.append("telefono", input.telefono);
+		if (input.correo) formData.append("correo", input.correo);
+		if (input.imagenMarca) {
+			formData.append("imagenMarca", input.imagenMarca);
+		}
+
+		const { data } = await api.post<PropietarioDto>("/propietarios", formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		});
 		return data;
 	},
 
@@ -35,9 +47,30 @@ export const propietarioService = {
 		id: number,
 		input: ActualizarPropietarioInput,
 	): Promise<PropietarioDto> {
+		const formData = new FormData();
+		if (input.nombre !== undefined) formData.append("nombre", input.nombre);
+		if (input.telefono !== undefined) {
+			formData.append("telefono", input.telefono ?? "");
+		}
+		if (input.correo !== undefined) {
+			formData.append("correo", input.correo ?? "");
+		}
+		if (input.imagenMarca !== undefined) {
+			if (input.imagenMarca instanceof File) {
+				formData.append("imagenMarca", input.imagenMarca);
+			} else if (input.imagenMarca === null) {
+				formData.append("imagenMarca", "null");
+			}
+		}
+
 		const { data } = await api.put<PropietarioDto>(
 			`/propietarios/${id}`,
-			input,
+			formData,
+			{
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			},
 		);
 		return data;
 	},

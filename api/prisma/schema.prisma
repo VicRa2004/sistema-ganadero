@@ -157,13 +157,14 @@ model Raza {
 }
 
 model Propietario {
-  id        Int       @id @default(autoincrement()) @map("prop_id")
-  nombre    String    @map("prop_nombre") @db.VarChar(255)
-  telefono  String?   @map("prop_telefono") @db.VarChar(20)
-  correo    String?   @map("prop_correo") @db.VarChar(128)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id          Int       @id @default(autoincrement()) @map("prop_id")
+  nombre      String    @map("prop_nombre") @db.VarChar(255)
+  telefono    String?   @map("prop_telefono") @db.VarChar(20)
+  correo      String?   @map("prop_correo") @db.VarChar(128)
+  imagenMarca String?   @map("prop_imagen_marca") @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   ganados Ganado[]
 

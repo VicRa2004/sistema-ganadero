@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { PropietarioDuplicateEmailError } from "../../domain/error/PropietarioDuplicateEmailError";
 import { PropietarioNotFoundError } from "../../domain/error/PropietarioNotFoundError";
 import type { PropietarioRepository } from "../../domain/repository/PropietarioRepository";
@@ -15,6 +16,8 @@ export class ActualizarDatosPropietarioUseCase {
 		private readonly propietarioRepository: PropietarioRepository,
 		@inject("PropietarioMapper")
 		private readonly mapper: PropietarioMapper,
+		@inject("ImageStorageService")
+		private readonly imageStorageService: ImageStorageService,
 	) {}
 
 	public async run(
@@ -37,6 +40,26 @@ export class ActualizarDatosPropietarioUseCase {
 			}
 		}
 
+		let imagenMarcaPath = propietario.getImagenMarca();
+
+		if (dto.imagenMarca && dto.imagenMarca instanceof File) {
+			// Si tiene una imagen previa, la eliminamos
+			if (imagenMarcaPath) {
+				await this.imageStorageService.delete(imagenMarcaPath);
+			}
+			// Subimos la nueva imagen
+			imagenMarcaPath = await this.imageStorageService.upload(
+				dto.imagenMarca,
+				"propietarios",
+			);
+		} else if (dto.imagenMarca === null) {
+			// Si el cliente pide explícitamente borrar la marca
+			if (imagenMarcaPath) {
+				await this.imageStorageService.delete(imagenMarcaPath);
+			}
+			imagenMarcaPath = null;
+		}
+
 		const nombre =
 			dto.nombre !== undefined ? dto.nombre : propietario.getNombre();
 		const telefono =
@@ -44,7 +67,7 @@ export class ActualizarDatosPropietarioUseCase {
 		const correo =
 			dto.correo !== undefined ? dto.correo : propietario.getCorreo();
 
-		propietario.actualizar(nombre, telefono, correo);
+		propietario.actualizar(nombre, telefono, correo, imagenMarcaPath);
 
 		const updated = await this.propietarioRepository.save(propietario);
 		return this.mapper.toDto(updated);

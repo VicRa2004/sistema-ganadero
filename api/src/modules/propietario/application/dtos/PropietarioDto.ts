@@ -2,12 +2,14 @@ export interface RegistrarPropietarioInputDto {
 	nombre: string;
 	telefono?: string | null;
 	correo?: string | null;
+	imagenMarca?: File | null;
 }
 
 export interface ActualizarPropietarioInputDto {
 	nombre?: string;
 	telefono?: string | null;
 	correo?: string | null;
+	imagenMarca?: File | string | null;
 }
 
 export interface PropietarioOutputDto {
@@ -15,6 +17,7 @@ export interface PropietarioOutputDto {
 	nombre: string;
 	telefono: string | null;
 	correo: string | null;
+	imagenMarca: string | null;
 }
 
 export interface PropietarioDetalleOutputDto {
@@ -22,6 +25,7 @@ export interface PropietarioDetalleOutputDto {
 	nombre: string;
 	telefono: string | null;
 	correo: string | null;
+	imagenMarca: string | null;
 	cantidadGanado: number;
 	cantidadRanchos: number;
 	ganados: {

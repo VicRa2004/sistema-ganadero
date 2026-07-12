@@ -10,6 +10,7 @@ export class PropietarioMapper {
 			nombre: propietario.getNombre(),
 			telefono: propietario.getTelefono(),
 			correo: propietario.getCorreo(),
+			imagenMarca: propietario.getImagenMarca(),
 		};
 	}
 }

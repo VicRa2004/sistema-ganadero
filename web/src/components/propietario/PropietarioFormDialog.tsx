@@ -32,6 +32,32 @@ export function PropietarioFormDialog({
 	const isEditing = !!propietario;
 	const [apiError, setApiError] = useState<string | null>(null);
 
+	const [imagenMarcaFile, setImagenMarcaFile] = useState<File | null>(null);
+	const [eliminarImagenMarca, setEliminarImagenMarca] = useState(false);
+
+	const baseApiUrl =
+		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
+		"http://localhost:3000";
+	const [previewUrl, setPreviewUrl] = useState<string | null>(
+		propietario?.imagenMarca ? `${baseApiUrl}${propietario.imagenMarca}` : null,
+	);
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!isPending) {
+			setApiError(null);
+			if (nextOpen) {
+				setImagenMarcaFile(null);
+				setEliminarImagenMarca(false);
+				setPreviewUrl(
+					propietario?.imagenMarca
+						? `${baseApiUrl}${propietario.imagenMarca}`
+						: null,
+				);
+			}
+			onOpenChange(nextOpen);
+		}
+	};
+
 	const { mutate: registrar, isPending: isRegistrando } =
 		useRegistrarPropietario();
 	const { mutate: actualizar, isPending: isActualizando } =
@@ -52,6 +78,7 @@ export function PropietarioFormDialog({
 				nombre: value.nombre.trim(),
 				telefono: value.telefono?.trim() || null,
 				correo: value.correo?.trim() || null,
+				imagenMarca: eliminarImagenMarca ? null : imagenMarcaFile || undefined,
 			};
 
 			// biome-ignore lint/suspicious/noExplicitAny: error cast for API error extraction
@@ -61,14 +88,14 @@ export function PropietarioFormDialog({
 
 			if (isEditing) {
 				actualizar(payload, {
-					onSuccess: () => onOpenChange(false),
+					onSuccess: () => handleOpenChange(false),
 					onError: handleError,
 				});
 			} else {
 				registrar(payload, {
 					onSuccess: () => {
 						form.reset();
-						onOpenChange(false);
+						handleOpenChange(false);
 					},
 					onError: handleError,
 				});
@@ -77,15 +104,7 @@ export function PropietarioFormDialog({
 	});
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={(nextOpen) => {
-				if (!isPending) {
-					setApiError(null);
-					onOpenChange(nextOpen);
-				}
-			}}
-		>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-bold">
@@ -232,11 +251,68 @@ export function PropietarioFormDialog({
 						)}
 					</form.Field>
 
+					{/* Campo Imagen de Marca (Fierro) */}
+					<div className="space-y-1.5 text-left">
+						<Label htmlFor="imagenMarca" className="text-sm font-semibold">
+							Fierro para marcar ganado (Imagen)
+						</Label>
+						{previewUrl && !eliminarImagenMarca ? (
+							<div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/80">
+								<img
+									src={previewUrl}
+									alt="Vista previa de marca"
+									className="size-16 rounded-md object-contain border bg-background"
+								/>
+								<div className="flex flex-col gap-1">
+									<span className="text-xs text-muted-foreground">
+										Marca actual cargada
+									</span>
+									<Button
+										type="button"
+										variant="destructive"
+										size="sm"
+										className="h-7 text-xs px-2.5 w-fit"
+										onClick={() => {
+											setEliminarImagenMarca(true);
+											setImagenMarcaFile(null);
+										}}
+									>
+										Eliminar marca
+									</Button>
+								</div>
+							</div>
+						) : (
+							<div className="space-y-2">
+								<Input
+									id="imagenMarca"
+									type="file"
+									accept="image/*"
+									disabled={isPending}
+									onChange={(e) => {
+										const file = e.target.files?.[0] || null;
+										setImagenMarcaFile(file);
+										setEliminarImagenMarca(false);
+										if (file) {
+											setPreviewUrl(URL.createObjectURL(file));
+										} else {
+											setPreviewUrl(null);
+										}
+									}}
+								/>
+								{eliminarImagenMarca && (
+									<p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+										Se eliminará el fierro de marca al guardar.
+									</p>
+								)}
+							</div>
+						)}
+					</div>
+
 					<DialogFooter className="pt-2">
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => onOpenChange(false)}
+							onClick={() => handleOpenChange(false)}
 							disabled={isPending}
 						>
 							Cancelar

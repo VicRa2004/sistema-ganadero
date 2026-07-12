@@ -51,6 +51,7 @@ export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 			nombre: record.nombre,
 			telefono: record.telefono,
 			correo: record.correo,
+			imagenMarca: record.imagenMarca,
 			cantidadGanado: ganados.length,
 			cantidadRanchos: ranchos.length,
 			ganados,

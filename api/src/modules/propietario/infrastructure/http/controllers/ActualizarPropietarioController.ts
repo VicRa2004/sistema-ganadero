@@ -20,12 +20,25 @@ export class ActualizarPropietarioController extends BaseController {
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
 			const { id } = validate(propietarioIdSchema, { id: c.req.param("id") });
-			const body = await c.req.json();
-			const dto = validate(updatePropietarioSchema, body);
+			const body = await c.req.parseBody();
 
-			if (dto.correo === "") {
-				dto.correo = null;
+			const dataToValidate: Record<string, any> = {};
+			if (body.nombre !== undefined) dataToValidate.nombre = body.nombre;
+			if (body.telefono !== undefined) dataToValidate.telefono = body.telefono;
+			if (body.correo !== undefined) {
+				dataToValidate.correo = body.correo === "" ? null : body.correo;
 			}
+			if (body.imagenMarca !== undefined) {
+				if (body.imagenMarca === "") {
+					dataToValidate.imagenMarca = undefined;
+				} else if (body.imagenMarca === "null") {
+					dataToValidate.imagenMarca = null;
+				} else {
+					dataToValidate.imagenMarca = body.imagenMarca;
+				}
+			}
+
+			const dto = validate(updatePropietarioSchema, dataToValidate);
 
 			const result = await this.actualizarUseCase.run(id, dto);
 			return this.ok(c, result);

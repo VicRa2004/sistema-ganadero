@@ -16,13 +16,19 @@ export class RegistrarPropietarioController extends BaseController {
 
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const body = await c.req.json();
-			const dto = validate(createPropietarioSchema, body);
+			const body = await c.req.parseBody();
 
-			// Si el correo viene como string vacío, lo normalizamos a undefined o null
-			if (dto.correo === "") {
-				dto.correo = null;
-			}
+			const dataToValidate = {
+				nombre: body.nombre,
+				telefono: body.telefono,
+				correo: body.correo === "" ? null : body.correo,
+				imagenMarca:
+					body.imagenMarca === "" || typeof body.imagenMarca === "string"
+						? undefined
+						: body.imagenMarca,
+			};
+
+			const dto = validate(createPropietarioSchema, dataToValidate);
 
 			const result = await this.registrarPropietarioUseCase.run(dto);
 			return this.created(c, result);

@@ -14,6 +14,7 @@ export interface PropietarioDto {
 	nombre: string;
 	telefono: string | null;
 	correo: string | null;
+	imagenMarca: string | null;
 }
 
 export interface GanadoResumenDto {
@@ -42,10 +43,12 @@ export interface RegistrarPropietarioInput {
 	nombre: string;
 	telefono?: string | null;
 	correo?: string | null;
+	imagenMarca?: File | null;
 }
 
 export interface ActualizarPropietarioInput {
 	nombre?: string;
 	telefono?: string | null;
 	correo?: string | null;
+	imagenMarca?: File | string | null;
 }

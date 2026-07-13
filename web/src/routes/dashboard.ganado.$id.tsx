@@ -50,18 +50,22 @@ export const Route = createFileRoute("/dashboard/ganado/$id")({
 	component: DetalleGanadoComponent,
 });
 
-/** Calcula la edad legible desde la fecha de nacimiento */
+const baseApiUrl =
+	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
+	"http://localhost:3000";
+
+/** Calcula la edad legible en meses desde la fecha de nacimiento */
 function calcularEdad(fechaNacimiento: string): string {
 	const nacimiento = new Date(fechaNacimiento);
 	const hoy = new Date();
-	const totalMeses =
+	let totalMeses =
 		(hoy.getFullYear() - nacimiento.getFullYear()) * 12 +
 		(hoy.getMonth() - nacimiento.getMonth());
-	const años = Math.floor(totalMeses / 12);
-	const meses = totalMeses % 12;
-	if (años > 0)
-		return meses > 0 ? `${años} año(s) y ${meses} mes(es)` : `${años} año(s)`;
-	return `${meses} mes(es)`;
+	if (hoy.getDate() < nacimiento.getDate()) {
+		totalMeses--;
+	}
+	if (totalMeses < 0) totalMeses = 0;
+	return totalMeses === 1 ? "1 mes" : `${totalMeses} meses`;
 }
 
 function DetalleGanadoComponent() {
@@ -238,7 +242,7 @@ function DetalleGanadoComponent() {
 					{/* Imagen o icono */}
 					{ganado.imagenGanado ? (
 						<img
-							src={ganado.imagenGanado}
+							src={`${baseApiUrl}${ganado.imagenGanado}`}
 							alt={`Ganado ${ganado.identificador}`}
 							className="size-24 rounded-xl object-cover border border-border shrink-0"
 						/>

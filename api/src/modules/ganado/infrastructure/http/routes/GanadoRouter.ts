@@ -54,6 +54,15 @@ export class GanadoRouter {
 		);
 
 		this.router.get(
+			"/motivos-baja",
+			this.authMiddleware.handle,
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.listarMotivosBajaController.run.bind(
+				this.listarMotivosBajaController,
+			),
+		);
+
+		this.router.get(
 			"/:idOrIdentificador",
 			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "read"),
@@ -100,15 +109,6 @@ export class GanadoRouter {
 			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.darDeBajaController.run.bind(this.darDeBajaController),
-		);
-
-		this.router.get(
-			"/motivos-baja",
-			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("ganado", "read"),
-			this.listarMotivosBajaController.run.bind(
-				this.listarMotivosBajaController,
-			),
 		);
 	}
 }

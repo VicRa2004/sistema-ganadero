@@ -39,17 +39,22 @@ interface GanadoTableProps {
 	onBaja: (g: GanadoDto) => void;
 }
 
-/** Calcula la edad en años/meses a partir de la fecha de nacimiento */
+const baseApiUrl =
+	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
+	"http://localhost:3000";
+
+/** Calcula la edad en meses a partir de la fecha de nacimiento */
 function calcularEdad(fechaNacimiento: string): string {
 	const nacimiento = new Date(fechaNacimiento);
 	const hoy = new Date();
-	const totalMeses =
+	let totalMeses =
 		(hoy.getFullYear() - nacimiento.getFullYear()) * 12 +
 		(hoy.getMonth() - nacimiento.getMonth());
-	const años = Math.floor(totalMeses / 12);
-	const meses = totalMeses % 12;
-	if (años > 0) return meses > 0 ? `${años}a ${meses}m` : `${años} año(s)`;
-	return `${meses} mes(es)`;
+	if (hoy.getDate() < nacimiento.getDate()) {
+		totalMeses--;
+	}
+	if (totalMeses < 0) totalMeses = 0;
+	return totalMeses === 1 ? "1 mes" : `${totalMeses} meses`;
 }
 
 export function GanadoTable({
@@ -95,7 +100,7 @@ export function GanadoTable({
 					<TableRow className="bg-muted/40 hover:bg-muted/40">
 						<TableHead className="font-semibold text-foreground w-20" />
 						<TableHead className="font-semibold text-foreground">
-							Arete / Identificador
+							Arete
 						</TableHead>
 						<TableHead className="font-semibold text-foreground">
 							Sexo
@@ -133,7 +138,7 @@ export function GanadoTable({
 							<TableCell>
 								{g.imagenGanado ? (
 									<img
-										src={g.imagenGanado}
+										src={`${baseApiUrl}${g.imagenGanado}`}
 										alt={`Ganado ${g.identificador}`}
 										className="size-10 rounded-lg object-cover border border-border"
 									/>

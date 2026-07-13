@@ -36,7 +36,6 @@ export class RegistrarGanadoUseCase {
 		private readonly mapper: GanadoMapper,
 		@inject("ImageStorageService")
 		private readonly imageStorageService: ImageStorageService,
-
 	) {}
 
 	public async run(dto: RegistrarGanadoInputDto): Promise<GanadoOutputDto> {

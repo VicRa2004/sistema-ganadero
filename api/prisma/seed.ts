@@ -85,6 +85,7 @@ async function main() {
 			// Operación básica (creación, actualización, eliminación)
 			"ganado:create",
 			"ganado:update",
+			"ganado:delete",
 			"terreno:create",
 			"terreno:update",
 			"terreno:delete",

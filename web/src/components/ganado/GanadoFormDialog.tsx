@@ -43,6 +43,23 @@ interface GanadoFormDialogProps {
 	ganadosList?: GanadoDto[];
 }
 
+const baseApiUrl =
+	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
+	"http://localhost:3000";
+
+const getImagenUrl = (path: string | null) => {
+	if (!path) return null;
+	if (
+		path.startsWith("blob:") ||
+		path.startsWith("data:") ||
+		path.startsWith("http:") ||
+		path.startsWith("https:")
+	) {
+		return path;
+	}
+	return `${baseApiUrl}${path}`;
+};
+
 export function GanadoFormDialog({
 	open,
 	onOpenChange,
@@ -578,7 +595,7 @@ export function GanadoFormDialog({
 						<div className="flex items-start gap-4">
 							{imagenPreview && (
 								<img
-									src={imagenPreview}
+									src={getImagenUrl(imagenPreview) || ""}
 									alt="Preview del ganado"
 									className="size-20 rounded-lg object-cover border border-border shrink-0"
 								/>

@@ -23,9 +23,34 @@ export class ActualizarGanadoController extends BaseController {
 				throw new BaseError("El ID de ganado no es válido", 400);
 			}
 
-			const body = await c.req.json();
-			const dto = validate(actualizarGanadoSchema, body);
-			const result = await this.actualizarGanadoUseCase.run(id, dto);
+			const body = await c.req.parseBody();
+
+			const dataToValidate: Record<string, unknown> = {};
+			if (body.identificador) dataToValidate.identificador = body.identificador;
+			if (body.peso !== undefined && body.peso !== "")
+				dataToValidate.peso = Number(body.peso);
+			if (body.fechaNacimiento)
+				dataToValidate.fechaNacimiento = body.fechaNacimiento;
+			if (body.sexo) dataToValidate.sexo = body.sexo;
+			if (body.razaId !== undefined && body.razaId !== "")
+				dataToValidate.razaId = Number(body.razaId);
+			if (body.terrenoId !== undefined && body.terrenoId !== "")
+				dataToValidate.terrenoId = Number(body.terrenoId);
+			if (body.propietarioId !== undefined && body.propietarioId !== "")
+				dataToValidate.propietarioId = Number(body.propietarioId);
+			if (body.padreId !== undefined)
+				dataToValidate.padreId =
+					body.padreId === "" ? null : Number(body.padreId);
+			if (body.madreId !== undefined)
+				dataToValidate.madreId =
+					body.madreId === "" ? null : Number(body.madreId);
+
+			const dto = validate(actualizarGanadoSchema, dataToValidate);
+			const result = await this.actualizarGanadoUseCase.run(id, {
+				...dto,
+				imagenGanado:
+					body.imagenGanado instanceof File ? body.imagenGanado : undefined,
+			});
 			return this.ok(c, result);
 		});
 	};

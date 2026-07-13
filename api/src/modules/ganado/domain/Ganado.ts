@@ -6,40 +6,58 @@ export type SexoGanado = "MACHO" | "HEMBRA";
 export class Ganado extends Entity {
 	private identificador: string;
 	private peso: number;
-	private edadEnMeses: number;
+	private fechaNacimiento: Date;
 	private sexo: SexoGanado;
+	private imagenGanado: string | null;
 	private razaId: number;
 	private terrenoId: number;
 	private propietarioId: number;
+	private padreId: number | null;
+	private madreId: number | null;
+	private fechaBaja: Date | null;
+	private motivoBajaId: number | null;
 
 	private constructor(
 		id: EntityId,
 		identificador: string,
 		peso: number,
-		edadEnMeses: number,
+		fechaNacimiento: Date,
 		sexo: SexoGanado,
+		imagenGanado: string | null,
 		razaId: number,
 		terrenoId: number,
 		propietarioId: number,
+		padreId: number | null,
+		madreId: number | null,
+		fechaBaja: Date | null,
+		motivoBajaId: number | null,
 	) {
 		super(id);
 		this.identificador = identificador;
 		this.peso = peso;
-		this.edadEnMeses = edadEnMeses;
+		this.fechaNacimiento = fechaNacimiento;
 		this.sexo = sexo;
+		this.imagenGanado = imagenGanado;
 		this.razaId = razaId;
 		this.terrenoId = terrenoId;
 		this.propietarioId = propietarioId;
+		this.padreId = padreId;
+		this.madreId = madreId;
+		this.fechaBaja = fechaBaja;
+		this.motivoBajaId = motivoBajaId;
 	}
 
 	public static create(
 		identificador: string,
 		peso: number,
-		edadEnMeses: number,
+		fechaNacimiento: Date,
 		sexo: SexoGanado,
+		imagenGanado: string | null,
 		razaId: number,
 		terrenoId: number,
 		propietarioId: number,
+		padreId: number | null,
+		madreId: number | null,
 	): Ganado {
 		if (!identificador || identificador.trim() === "") {
 			throw new Error("El identificador del ganado no puede estar vacío");
@@ -47,8 +65,14 @@ export class Ganado extends Entity {
 		if (peso <= 0) {
 			throw new Error("El peso inicial debe ser mayor que cero");
 		}
-		if (edadEnMeses < 0) {
-			throw new Error("La edad en meses no puede ser negativa");
+		if (
+			!(fechaNacimiento instanceof Date) ||
+			Number.isNaN(fechaNacimiento.getTime())
+		) {
+			throw new Error("La fecha de nacimiento no es válida");
+		}
+		if (fechaNacimiento > new Date()) {
+			throw new Error("La fecha de nacimiento no puede ser futura");
 		}
 		if (sexo !== "MACHO" && sexo !== "HEMBRA") {
 			throw new Error("El sexo del ganado debe ser MACHO o HEMBRA");
@@ -67,11 +91,16 @@ export class Ganado extends Entity {
 			new EntityId(),
 			identificador,
 			peso,
-			edadEnMeses,
+			fechaNacimiento,
 			sexo,
+			imagenGanado,
 			razaId,
 			terrenoId,
 			propietarioId,
+			padreId,
+			madreId,
+			null,
+			null,
 		);
 	}
 
@@ -79,21 +108,31 @@ export class Ganado extends Entity {
 		id: number,
 		identificador: string,
 		peso: number,
-		edadEnMeses: number,
+		fechaNacimiento: Date,
 		sexo: SexoGanado,
+		imagenGanado: string | null,
 		razaId: number,
 		terrenoId: number,
 		propietarioId: number,
+		padreId: number | null,
+		madreId: number | null,
+		fechaBaja: Date | null,
+		motivoBajaId: number | null,
 	): Ganado {
 		return new Ganado(
 			new EntityId(id),
 			identificador,
 			peso,
-			edadEnMeses,
+			fechaNacimiento,
 			sexo,
+			imagenGanado,
 			razaId,
 			terrenoId,
 			propietarioId,
+			padreId,
+			madreId,
+			fechaBaja,
+			motivoBajaId,
 		);
 	}
 
@@ -105,12 +144,16 @@ export class Ganado extends Entity {
 		return this.peso;
 	}
 
-	public getEdadEnMeses(): number {
-		return this.edadEnMeses;
+	public getFechaNacimiento(): Date {
+		return this.fechaNacimiento;
 	}
 
 	public getSexo(): SexoGanado {
 		return this.sexo;
+	}
+
+	public getImagenGanado(): string | null {
+		return this.imagenGanado;
 	}
 
 	public getRazaId(): number {
@@ -125,8 +168,32 @@ export class Ganado extends Entity {
 		return this.propietarioId;
 	}
 
+	public getPadreId(): number | null {
+		return this.padreId;
+	}
+
+	public getMadreId(): number | null {
+		return this.madreId;
+	}
+
+	public getFechaBaja(): Date | null {
+		return this.fechaBaja;
+	}
+
+	public getMotivoBajaId(): number | null {
+		return this.motivoBajaId;
+	}
+
+	public estaActivo(): boolean {
+		return this.fechaBaja === null;
+	}
+
 	public esNuevo(): boolean {
 		return this.id.isNew();
+	}
+
+	public setImagenGanado(ruta: string | null): void {
+		this.imagenGanado = ruta;
 	}
 
 	public registrarPesaje(nuevoPeso: number): void {
@@ -143,14 +210,30 @@ export class Ganado extends Entity {
 		this.terrenoId = nuevoTerrenoId;
 	}
 
+	public darDeBaja(fecha: Date, motivoBajaId: number): void {
+		if (!this.estaActivo()) {
+			throw new Error("El ganado ya se encuentra dado de baja");
+		}
+		if (!(fecha instanceof Date) || Number.isNaN(fecha.getTime())) {
+			throw new Error("La fecha de baja no es válida");
+		}
+		if (motivoBajaId <= 0) {
+			throw new Error("El motivo de baja no es válido");
+		}
+		this.fechaBaja = fecha;
+		this.motivoBajaId = motivoBajaId;
+	}
+
 	public actualizar(
 		identificador: string,
 		peso: number,
-		edadEnMeses: number,
+		fechaNacimiento: Date,
 		sexo: SexoGanado,
 		razaId: number,
 		terrenoId: number,
 		propietarioId: number,
+		padreId: number | null,
+		madreId: number | null,
 	): void {
 		if (!identificador || identificador.trim() === "") {
 			throw new Error("El identificador del ganado no puede estar vacío");
@@ -158,8 +241,14 @@ export class Ganado extends Entity {
 		if (peso <= 0) {
 			throw new Error("El peso debe ser mayor que cero");
 		}
-		if (edadEnMeses < 0) {
-			throw new Error("La edad en meses no puede ser negativa");
+		if (
+			!(fechaNacimiento instanceof Date) ||
+			Number.isNaN(fechaNacimiento.getTime())
+		) {
+			throw new Error("La fecha de nacimiento no es válida");
+		}
+		if (fechaNacimiento > new Date()) {
+			throw new Error("La fecha de nacimiento no puede ser futura");
 		}
 		if (sexo !== "MACHO" && sexo !== "HEMBRA") {
 			throw new Error("El sexo del ganado debe ser MACHO o HEMBRA");
@@ -176,10 +265,12 @@ export class Ganado extends Entity {
 
 		this.identificador = identificador;
 		this.peso = peso;
-		this.edadEnMeses = edadEnMeses;
+		this.fechaNacimiento = fechaNacimiento;
 		this.sexo = sexo;
 		this.razaId = razaId;
 		this.terrenoId = terrenoId;
 		this.propietarioId = propietarioId;
+		this.padreId = padreId;
+		this.madreId = madreId;
 	}
 }

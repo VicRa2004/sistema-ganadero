@@ -10,6 +10,7 @@ import { GanadoFormDialog } from "@/components/ganado/GanadoFormDialog";
 import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
+import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,9 @@ export const Route = createFileRoute("/dashboard/ganado/")({
 
 const PAGE_SIZE = 10;
 
+const SELECT_CLASS =
+	"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
+
 function GanadosComponent() {
 	const permissions = useAuthStore((state) => state.permissions) ?? [];
 	const hasPermission = (resource: string, action: string) =>
@@ -47,7 +51,7 @@ function GanadosComponent() {
 
 	const [page, setPage] = useState(1);
 
-	// Filtros locales
+	// Filtros
 	const [filterIdentificador, setFilterIdentificador] = useState("");
 	const [filterRazaId, setFilterRazaId] = useState<number | undefined>(
 		undefined,
@@ -58,6 +62,7 @@ function GanadosComponent() {
 	const [filterPropietarioId, setFilterPropietarioId] = useState<
 		number | undefined
 	>(undefined);
+	const [soloActivos, setSoloActivos] = useState(true);
 
 	// Controles de modales
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -65,6 +70,7 @@ function GanadosComponent() {
 	const [ganadoEliminar, setGanadoEliminar] = useState<GanadoDto | null>(null);
 	const [ganadoPesaje, setGanadoPesaje] = useState<GanadoDto | null>(null);
 	const [ganadoTraslado, setGanadoTraslado] = useState<GanadoDto | null>(null);
+	const [ganadoBaja, setGanadoBaja] = useState<GanadoDto | null>(null);
 
 	// Cargar catálogos
 	const { data: razasData = [] } = useListarRazas();
@@ -75,7 +81,7 @@ function GanadosComponent() {
 	const terrenos = terrenosData?.data ?? [];
 	const propietarios = propietariosData?.data ?? [];
 
-	// Query principal con filtros aplicados
+	// Query principal
 	const {
 		data: paginado,
 		isLoading,
@@ -87,7 +93,16 @@ function GanadosComponent() {
 		razaId: filterRazaId,
 		terrenoId: filterTerrenoId,
 		propietarioId: filterPropietarioId,
+		soloActivos,
 	});
+
+	// Lista completa de ganados para el selector padre/madre (sin paginación)
+	const { data: todosGanados } = useListarGanado({
+		page: 1,
+		limit: 1000,
+		soloActivos: true,
+	});
+	const ganadosList = todosGanados?.data ?? [];
 
 	const canCreate = hasPermission("ganado", "create");
 	const canUpdate = hasPermission("ganado", "update");
@@ -100,9 +115,7 @@ function GanadosComponent() {
 
 	function handleCloseForm(open: boolean) {
 		setIsFormOpen(open);
-		if (!open) {
-			setGanadoEditar(null);
-		}
+		if (!open) setGanadoEditar(null);
 	}
 
 	function handleResetFilters() {
@@ -110,8 +123,16 @@ function GanadosComponent() {
 		setFilterRazaId(undefined);
 		setFilterTerrenoId(undefined);
 		setFilterPropietarioId(undefined);
+		setSoloActivos(true);
 		setPage(1);
 	}
+
+	const tieneFilters =
+		filterIdentificador ||
+		filterRazaId ||
+		filterTerrenoId ||
+		filterPropietarioId ||
+		!soloActivos;
 
 	return (
 		<div className="space-y-8 py-6 animate-fade-in">
@@ -178,7 +199,7 @@ function GanadosComponent() {
 								setFilterRazaId(val === "" ? undefined : Number(val));
 								setPage(1);
 							}}
-							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							className={SELECT_CLASS}
 						>
 							<option value="">Todas las razas</option>
 							{razas.map((r) => (
@@ -199,7 +220,7 @@ function GanadosComponent() {
 								setFilterTerrenoId(val === "" ? undefined : Number(val));
 								setPage(1);
 							}}
-							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+							className={SELECT_CLASS}
 						>
 							<option value="">Todos los terrenos</option>
 							{terrenos.map((r) => (
@@ -220,7 +241,7 @@ function GanadosComponent() {
 								setFilterPropietarioId(val === "" ? undefined : Number(val));
 								setPage(1);
 							}}
-							className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							className={SELECT_CLASS}
 						>
 							<option value="">Todos los propietarios</option>
 							{propietarios.map((p) => (
@@ -231,10 +252,25 @@ function GanadosComponent() {
 						</select>
 					</div>
 				</div>
-				{(filterIdentificador ||
-					filterRazaId ||
-					filterTerrenoId ||
-					filterPropietarioId) && (
+
+				{/* Filtro soloActivos */}
+				<div className="flex items-center gap-2 text-sm">
+					<input
+						type="checkbox"
+						id="solo-activos"
+						checked={soloActivos}
+						onChange={(e) => {
+							setSoloActivos(e.target.checked);
+							setPage(1);
+						}}
+						className="accent-primary cursor-pointer"
+					/>
+					<Label htmlFor="solo-activos" className="cursor-pointer font-normal">
+						Mostrar solo ganado activo (ocultar bajas)
+					</Label>
+				</div>
+
+				{tieneFilters && (
 					<div className="flex justify-end pt-2">
 						<Button
 							variant="ghost"
@@ -277,6 +313,7 @@ function GanadosComponent() {
 						onDelete={(g) => setGanadoEliminar(g)}
 						onPesaje={(g) => setGanadoPesaje(g)}
 						onTraslado={(g) => setGanadoTraslado(g)}
+						onBaja={(g) => setGanadoBaja(g)}
 					/>
 				)}
 			</section>
@@ -324,6 +361,7 @@ function GanadosComponent() {
 				razas={razas}
 				terrenos={terrenos}
 				propietarios={propietarios}
+				ganadosList={ganadosList}
 			/>
 
 			{/* Registrar Pesaje Dialog */}
@@ -350,6 +388,18 @@ function GanadosComponent() {
 					arete={ganadoTraslado.identificador}
 					terrenoActualId={ganadoTraslado.terrenoId}
 					terrenos={terrenos}
+				/>
+			)}
+
+			{/* Dar de Baja Dialog */}
+			{ganadoBaja && (
+				<GanadoBajaDialog
+					open={!!ganadoBaja}
+					onOpenChange={(open) => {
+						if (!open) setGanadoBaja(null);
+					}}
+					ganadoId={ganadoBaja.id}
+					ganadoIdentificador={ganadoBaja.identificador}
 				/>
 			)}
 

@@ -1,7 +1,9 @@
 import { inject, injectable } from "tsyringe";
+import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { Ganado } from "../../domain/Ganado";
 import { GanadoDuplicateIdentificadorError } from "../../domain/error/GanadoDuplicateIdentificadorError";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
+
 import type {
 	RegistrarGanadoInputDto,
 	GanadoOutputDto,
@@ -17,6 +19,7 @@ import type { PropietarioRepository } from "@/modules/propietario/domain/reposit
 import { RazaNotFoundError } from "@/modules/raza/domain/error/RazaNotFoundError";
 import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
 import { PropietarioNotFoundError } from "@/modules/propietario/domain/error/PropietarioNotFoundError";
+import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
 
 @injectable()
 export class RegistrarGanadoUseCase {
@@ -31,6 +34,9 @@ export class RegistrarGanadoUseCase {
 		private readonly propietarioRepository: PropietarioRepository,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
+		@inject("ImageStorageService")
+		private readonly imageStorageService: ImageStorageService,
+
 	) {}
 
 	public async run(dto: RegistrarGanadoInputDto): Promise<GanadoOutputDto> {
@@ -62,15 +68,44 @@ export class RegistrarGanadoUseCase {
 			throw new PropietarioNotFoundError(dto.propietarioId);
 		}
 
-		// 5. Instanciar y persistir
+		// 5. Validar padre si se proporcionó
+		if (dto.padreId) {
+			const padre = await this.ganadoRepository.findById(dto.padreId);
+			if (!padre) {
+				throw new GanadoNotFoundError(dto.padreId);
+			}
+		}
+
+		// 6. Validar madre si se proporcionó
+		if (dto.madreId) {
+			const madre = await this.ganadoRepository.findById(dto.madreId);
+			if (!madre) {
+				throw new GanadoNotFoundError(dto.madreId);
+			}
+		}
+
+		// 7. Subir imagen si se proporcionó
+		let imagenGanadoPath: string | null = null;
+		if (dto.imagenGanado && dto.imagenGanado instanceof File) {
+			imagenGanadoPath = await this.imageStorageService.upload(
+				dto.imagenGanado,
+				"ganados",
+			);
+		}
+
+		// 8. Instanciar y persistir
+		const fechaNacimiento = new Date(dto.fechaNacimiento);
 		const ganado = Ganado.create(
 			dto.identificador,
 			dto.peso,
-			dto.edadEnMeses,
+			fechaNacimiento,
 			dto.sexo,
+			imagenGanadoPath,
 			dto.razaId,
 			dto.terrenoId,
 			dto.propietarioId,
+			dto.padreId ?? null,
+			dto.madreId ?? null,
 		);
 
 		const saved = await this.ganadoRepository.save(ganado);

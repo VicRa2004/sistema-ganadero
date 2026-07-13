@@ -18,6 +18,7 @@ import {
 	Sprout,
 	User,
 	Warehouse,
+	AlertTriangle,
 } from "lucide-react";
 import type { GanadoDto } from "@/modules/ganado/types";
 import type { RazaDto } from "@/modules/raza/types";
@@ -35,6 +36,20 @@ interface GanadoTableProps {
 	onDelete: (g: GanadoDto) => void;
 	onPesaje: (g: GanadoDto) => void;
 	onTraslado: (g: GanadoDto) => void;
+	onBaja: (g: GanadoDto) => void;
+}
+
+/** Calcula la edad en años/meses a partir de la fecha de nacimiento */
+function calcularEdad(fechaNacimiento: string): string {
+	const nacimiento = new Date(fechaNacimiento);
+	const hoy = new Date();
+	const totalMeses =
+		(hoy.getFullYear() - nacimiento.getFullYear()) * 12 +
+		(hoy.getMonth() - nacimiento.getMonth());
+	const años = Math.floor(totalMeses / 12);
+	const meses = totalMeses % 12;
+	if (años > 0) return meses > 0 ? `${años}a ${meses}m` : `${años} año(s)`;
+	return `${meses} mes(es)`;
 }
 
 export function GanadoTable({
@@ -48,6 +63,7 @@ export function GanadoTable({
 	onDelete,
 	onPesaje,
 	onTraslado,
+	onBaja,
 }: GanadoTableProps) {
 	if (ganados.length === 0) {
 		return (
@@ -77,6 +93,7 @@ export function GanadoTable({
 			<Table>
 				<TableHeader>
 					<TableRow className="bg-muted/40 hover:bg-muted/40">
+						<TableHead className="font-semibold text-foreground w-20" />
 						<TableHead className="font-semibold text-foreground">
 							Arete / Identificador
 						</TableHead>
@@ -96,7 +113,7 @@ export function GanadoTable({
 							Peso Actual
 						</TableHead>
 						<TableHead className="font-semibold text-foreground">
-							Edad (Meses)
+							Edad
 						</TableHead>
 						<TableHead className="font-semibold text-foreground text-right">
 							Acciones
@@ -107,11 +124,40 @@ export function GanadoTable({
 					{ganados.map((g) => (
 						<TableRow
 							key={g.id}
-							className="hover:bg-muted/20 transition-colors duration-150"
+							className={cn(
+								"hover:bg-muted/20 transition-colors duration-150",
+								g.fechaBaja && "opacity-60",
+							)}
 						>
-							<TableCell className="font-extrabold text-foreground">
-								{g.identificador}
+							{/* Thumbnail */}
+							<TableCell>
+								{g.imagenGanado ? (
+									<img
+										src={g.imagenGanado}
+										alt={`Ganado ${g.identificador}`}
+										className="size-10 rounded-lg object-cover border border-border"
+									/>
+								) : (
+									<div className="size-10 rounded-lg bg-muted flex items-center justify-center border border-border">
+										<Sprout className="size-5 text-muted-foreground" />
+									</div>
+								)}
 							</TableCell>
+
+							<TableCell>
+								<div className="flex flex-col gap-0.5">
+									<span className="font-extrabold text-foreground">
+										{g.identificador}
+									</span>
+									{g.fechaBaja && (
+										<span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
+											<AlertTriangle className="size-3" />
+											BAJA
+										</span>
+									)}
+								</div>
+							</TableCell>
+
 							<TableCell>
 								<span
 									className={cn(
@@ -124,23 +170,31 @@ export function GanadoTable({
 									{g.sexo}
 								</span>
 							</TableCell>
+
 							<TableCell>{getRazaNombre(g.razaId)}</TableCell>
+
 							<TableCell>
 								<span className="flex items-center gap-1 text-muted-foreground text-sm">
 									<Warehouse className="size-3.5" />
 									{getTerrenoNombre(g.terrenoId)}
 								</span>
 							</TableCell>
+
 							<TableCell>
 								<span className="flex items-center gap-1 text-muted-foreground text-sm">
 									<User className="size-3.5" />
 									{getPropietarioNombre(g.propietarioId)}
 								</span>
 							</TableCell>
+
 							<TableCell className="font-semibold text-foreground">
 								{g.peso} kg
 							</TableCell>
-							<TableCell>{g.edadEnMeses} m</TableCell>
+
+							<TableCell className="text-muted-foreground text-sm">
+								{calcularEdad(g.fechaNacimiento)}
+							</TableCell>
+
 							<TableCell className="text-right">
 								<div className="flex items-center justify-end gap-1.5">
 									<Link
@@ -156,7 +210,7 @@ export function GanadoTable({
 										<span className="sr-only">Ver ficha</span>
 									</Link>
 
-									{canUpdate && (
+									{canUpdate && !g.fechaBaja && (
 										<>
 											<Button
 												variant="ghost"
@@ -187,6 +241,16 @@ export function GanadoTable({
 											>
 												<Pencil className="size-4" />
 												<span className="sr-only">Editar</span>
+											</Button>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-8 w-8 p-0 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
+												onClick={() => onBaja(g)}
+												title="Dar de baja"
+											>
+												<AlertTriangle className="size-4" />
+												<span className="sr-only">Dar de baja</span>
 											</Button>
 										</>
 									)}

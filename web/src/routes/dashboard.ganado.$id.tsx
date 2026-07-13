@@ -10,10 +10,12 @@ import { useObtenerFichaGanado } from "@/modules/ganado/hooks/useObtenerFichaGan
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { useListarPropietarios } from "@/modules/propietario/hooks/useListarPropietarios";
+import { useListarGanado } from "@/modules/ganado/hooks/useListarGanado";
 import { GanadoFormDialog } from "@/components/ganado/GanadoFormDialog";
 import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
+import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +32,8 @@ import {
 	Loader2,
 	Dna,
 	Sparkles,
+	GitBranch,
+	AlertTriangle,
 } from "lucide-react";
 import type { GanadoDto } from "@/modules/ganado/types";
 
@@ -46,6 +50,20 @@ export const Route = createFileRoute("/dashboard/ganado/$id")({
 	component: DetalleGanadoComponent,
 });
 
+/** Calcula la edad legible desde la fecha de nacimiento */
+function calcularEdad(fechaNacimiento: string): string {
+	const nacimiento = new Date(fechaNacimiento);
+	const hoy = new Date();
+	const totalMeses =
+		(hoy.getFullYear() - nacimiento.getFullYear()) * 12 +
+		(hoy.getMonth() - nacimiento.getMonth());
+	const años = Math.floor(totalMeses / 12);
+	const meses = totalMeses % 12;
+	if (años > 0)
+		return meses > 0 ? `${años} año(s) y ${meses} mes(es)` : `${años} año(s)`;
+	return `${meses} mes(es)`;
+}
+
 function DetalleGanadoComponent() {
 	const { id } = Route.useParams();
 	const navigate = useNavigate();
@@ -61,15 +79,22 @@ function DetalleGanadoComponent() {
 	const [isPesajeOpen, setIsPesajeOpen] = useState(false);
 	const [isTrasladoOpen, setIsTrasladoOpen] = useState(false);
 	const [isEliminarOpen, setIsEliminarOpen] = useState(false);
+	const [isBajaOpen, setIsBajaOpen] = useState(false);
 
 	// Catálogos para el modal de edición
 	const { data: razasData = [] } = useListarRazas();
 	const { data: terrenosData } = useListarTerrenos(1, 100);
 	const { data: propietariosData } = useListarPropietarios(1, 100);
+	const { data: todosGanados } = useListarGanado({
+		page: 1,
+		limit: 1000,
+		soloActivos: true,
+	});
 
 	const razas = razasData;
 	const terrenos = terrenosData?.data ?? [];
 	const propietarios = propietariosData?.data ?? [];
+	const ganadosList = todosGanados?.data ?? [];
 
 	if (isLoading) {
 		return (
@@ -101,16 +126,23 @@ function DetalleGanadoComponent() {
 		);
 	}
 
-	// Adaptar el DTO de detalle a un DTO de ganado normal para el formulario
+	const estaActivo = !ganado.fechaBaja;
+
+	// Adaptar DTO de detalle a GanadoDto para el formulario de edición
 	const ganadoSimple: GanadoDto = {
 		id: ganado.id,
 		identificador: ganado.identificador,
 		peso: ganado.peso,
-		edadEnMeses: ganado.edadEnMeses,
+		fechaNacimiento: ganado.fechaNacimiento,
 		sexo: ganado.sexo,
+		imagenGanado: ganado.imagenGanado,
 		razaId: ganado.raza.id,
 		terrenoId: ganado.terreno.id,
 		propietarioId: ganado.propietario.id,
+		padreId: ganado.padre?.id ?? null,
+		madreId: ganado.madre?.id ?? null,
+		fechaBaja: ganado.fechaBaja,
+		motivoBajaId: ganado.motivoBaja?.id ?? null,
 	};
 
 	return (
@@ -129,7 +161,7 @@ function DetalleGanadoComponent() {
 				</Link>
 
 				<div className="flex flex-wrap gap-2">
-					{canUpdate && (
+					{canUpdate && estaActivo && (
 						<>
 							<Button
 								onClick={() => setIsPesajeOpen(true)}
@@ -145,7 +177,7 @@ function DetalleGanadoComponent() {
 								className="gap-2 cursor-pointer border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-500"
 							>
 								<TrendingUp className="size-4" />
-								Trasladar Rancho
+								Trasladar Terreno
 							</Button>
 							<Button
 								onClick={() => setIsEditOpen(true)}
@@ -154,6 +186,14 @@ function DetalleGanadoComponent() {
 							>
 								<Pencil className="size-4" />
 								Editar Ficha
+							</Button>
+							<Button
+								onClick={() => setIsBajaOpen(true)}
+								variant="outline"
+								className="gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600"
+							>
+								<AlertTriangle className="size-4" />
+								Dar de Baja
 							</Button>
 						</>
 					)}
@@ -170,14 +210,44 @@ function DetalleGanadoComponent() {
 				</div>
 			</div>
 
-			{/* Ficha Técnica Principal */}
+			{/* Banner de baja */}
+			{!estaActivo && (
+				<div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3 text-amber-700 dark:text-amber-400">
+					<AlertTriangle className="size-5 shrink-0" />
+					<div className="text-sm">
+						<span className="font-semibold">Este ganado está dado de baja</span>
+						{ganado.fechaBaja && (
+							<span className="ml-2 text-amber-600 dark:text-amber-500">
+								— Fecha de baja:{" "}
+								{new Date(ganado.fechaBaja).toLocaleDateString("es-MX")}
+							</span>
+						)}
+						{ganado.motivoBaja && (
+							<span className="ml-2 text-amber-600 dark:text-amber-500">
+								· Motivo: {ganado.motivoBaja.nombre}
+							</span>
+						)}
+					</div>
+				</div>
+			)}
+
+			{/* Ficha Principal */}
 			<Card className="border border-border bg-card/60 shadow-sm relative overflow-hidden">
 				<div className="absolute top-0 left-0 w-full h-[3px] bg-primary/60" />
 				<CardHeader className="flex flex-row items-start gap-4 pb-4">
-					<div className="size-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-						<Sparkles className="size-7 animate-pulse" />
-					</div>
-					<div className="text-left space-y-1">
+					{/* Imagen o icono */}
+					{ganado.imagenGanado ? (
+						<img
+							src={ganado.imagenGanado}
+							alt={`Ganado ${ganado.identificador}`}
+							className="size-24 rounded-xl object-cover border border-border shrink-0"
+						/>
+					) : (
+						<div className="size-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+							<Sparkles className="size-7 animate-pulse" />
+						</div>
+					)}
+					<div className="text-left space-y-1 flex-1">
 						<CardTitle className="text-2xl font-extrabold tracking-tight text-foreground">
 							Arete: {ganado.identificador}
 						</CardTitle>
@@ -197,7 +267,15 @@ function DetalleGanadoComponent() {
 							</Badge>
 							<Badge variant="outline" className="gap-1.5">
 								<Calendar className="size-3" />
-								{ganado.edadEnMeses} meses de edad
+								{calcularEdad(ganado.fechaNacimiento)} de edad
+							</Badge>
+							<Badge
+								variant="outline"
+								className="gap-1.5 text-muted-foreground"
+							>
+								<Calendar className="size-3" />
+								Nacimiento:{" "}
+								{new Date(ganado.fechaNacimiento).toLocaleDateString("es-MX")}
 							</Badge>
 						</div>
 					</div>
@@ -249,6 +327,60 @@ function DetalleGanadoComponent() {
 				</CardContent>
 			</Card>
 
+			{/* Linaje */}
+			{(ganado.padre || ganado.madre) && (
+				<Card className="border border-border bg-card/60 shadow-sm">
+					<CardHeader className="pb-3">
+						<CardTitle className="flex items-center gap-2 text-base font-semibold">
+							<GitBranch className="size-4 text-primary" />
+							Linaje
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							{ganado.padre && (
+								<Link
+									to="/dashboard/ganado/$id"
+									params={{ id: String(ganado.padre.id) }}
+									className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors cursor-pointer"
+								>
+									<div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
+										<GitBranch className="size-4" />
+									</div>
+									<div className="text-left">
+										<p className="text-xs text-muted-foreground uppercase font-semibold">
+											Padre (MACHO)
+										</p>
+										<p className="text-sm font-bold text-foreground">
+											{ganado.padre.identificador}
+										</p>
+									</div>
+								</Link>
+							)}
+							{ganado.madre && (
+								<Link
+									to="/dashboard/ganado/$id"
+									params={{ id: String(ganado.madre.id) }}
+									className="flex items-center gap-3 p-4 rounded-xl bg-pink-500/5 border border-pink-500/20 hover:bg-pink-500/10 transition-colors cursor-pointer"
+								>
+									<div className="size-8 rounded-lg bg-pink-500/10 text-pink-600 flex items-center justify-center">
+										<GitBranch className="size-4" />
+									</div>
+									<div className="text-left">
+										<p className="text-xs text-muted-foreground uppercase font-semibold">
+											Madre (HEMBRA)
+										</p>
+										<p className="text-sm font-bold text-foreground">
+											{ganado.madre.identificador}
+										</p>
+									</div>
+								</Link>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
 			{/* Diálogos */}
 			<GanadoFormDialog
 				open={isEditOpen}
@@ -257,6 +389,7 @@ function DetalleGanadoComponent() {
 				razas={razas}
 				terrenos={terrenos}
 				propietarios={propietarios}
+				ganadosList={ganadosList}
 			/>
 
 			{isPesajeOpen && (
@@ -277,6 +410,15 @@ function DetalleGanadoComponent() {
 					arete={ganado.identificador}
 					terrenoActualId={ganado.terreno.id}
 					terrenos={terrenos}
+				/>
+			)}
+
+			{isBajaOpen && (
+				<GanadoBajaDialog
+					open={isBajaOpen}
+					onOpenChange={setIsBajaOpen}
+					ganadoId={ganado.id}
+					ganadoIdentificador={ganado.identificador}
 				/>
 			)}
 

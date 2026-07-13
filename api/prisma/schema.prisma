@@ -189,22 +189,44 @@ model Terreno {
   @@map("terreno")
 }
 
+model MotivoBaja {
+  id          Int       @id @default(autoincrement()) @map("mtb_id")
+  nombre      String    @unique @map("mtb_nombre") @db.VarChar(100)
+  descripcion String?   @map("mtb_descripcion") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  ganados Ganado[]
+
+  @@map("motivo_baja")
+}
+
 model Ganado {
-  id            Int        @id @default(autoincrement()) @map("gan_id")
-  identificador String     @unique @map("gan_identificador") @db.VarChar(50)
-  peso          Float      @map("gan_peso")
-  edadEnMeses   Int        @map("gan_edad_meses")
-  sexo          SexoGanado @map("gan_sexo")
-  razaId        Int        @map("gan_fkraza")
-  terrenoId     Int        @map("gan_fkterreno")
-  propietarioId Int        @map("gan_fkpropietario")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime?  @updatedAt @map("updated_at")
-  deletedAt     DateTime?  @map("deleted_at")
+  id              Int        @id @default(autoincrement()) @map("gan_id")
+  identificador   String     @unique @map("gan_identificador") @db.VarChar(50)
+  peso            Float      @map("gan_peso")
+  fechaNacimiento DateTime   @map("gan_fecha_nacimiento") @db.Date
+  sexo            SexoGanado @map("gan_sexo")
+  imagenGanado    String?    @map("gan_imagen") @db.VarChar(255)
+  razaId          Int        @map("gan_fkraza")
+  terrenoId       Int        @map("gan_fkterreno")
+  propietarioId   Int        @map("gan_fkpropietario")
+  padreId         Int?       @map("gan_fkpadre")
+  madreId         Int?       @map("gan_fkmadre")
+  fechaBaja       DateTime?  @map("gan_fecha_baja")
+  motivoBajaId    Int?       @map("gan_fkmotivo_baja")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime?  @updatedAt @map("updated_at")
+  deletedAt       DateTime?  @map("deleted_at")
 
   raza                   Raza                  @relation(fields: [razaId], references: [id], onDelete: Restrict)
   terreno                Terreno               @relation(fields: [terrenoId], references: [id], onDelete: Restrict)
   propietario            Propietario           @relation(fields: [propietarioId], references: [id], onDelete: Restrict)
+  padre                  Ganado?               @relation("Linaje_Padre", fields: [padreId], references: [id], onDelete: Restrict)
+  madre                  Ganado?               @relation("Linaje_Madre", fields: [madreId], references: [id], onDelete: Restrict)
+  hijosComoPadre         Ganado[]              @relation("Linaje_Padre")
+  hijosComoMadre         Ganado[]              @relation("Linaje_Madre")
+  motivoBaja             MotivoBaja?           @relation(fields: [motivoBajaId], references: [id], onDelete: Restrict)
   aplicacionesSanitarias AplicacionSanitaria[]
   tratamientosMedicos    TratamientoMedico[]
 

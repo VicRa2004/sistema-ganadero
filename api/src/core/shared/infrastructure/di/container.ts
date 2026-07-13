@@ -105,6 +105,7 @@ import { EliminarTerrenoController } from "@/modules/terreno/infrastructure/http
 // Ganado
 import { PrismaGanadoRepository } from "@/modules/ganado/infrastructure/repository/PrismaGanadoRepository";
 import { PrismaGanadoDetalleQuery } from "@/modules/ganado/infrastructure/queries/PrismaGanadoDetalleQuery";
+import { PrismaMotivoBajaRepository } from "@/modules/ganado/infrastructure/repository/PrismaMotivoBajaRepository";
 import { GanadoMapper } from "@/modules/ganado/application/mappers/GanadoMapper";
 import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
 import { RegistrarPesajeUseCase } from "@/modules/ganado/application/useCases/RegistrarPesajeUseCase";
@@ -113,6 +114,8 @@ import { ObtenerFichaGanadoUseCase } from "@/modules/ganado/application/useCases
 import { ListarGanadosUseCase } from "@/modules/ganado/application/useCases/ListarGanadosUseCase";
 import { EliminarGanadoUseCase } from "@/modules/ganado/application/useCases/EliminarGanadoUseCase";
 import { ActualizarGanadoUseCase } from "@/modules/ganado/application/useCases/ActualizarGanadoUseCase";
+import { DarDeBajaGanadoUseCase } from "@/modules/ganado/application/useCases/DarDeBajaGanadoUseCase";
+import { ListarMotivosBajaUseCase } from "@/modules/ganado/application/useCases/ListarMotivosBajaUseCase";
 import { RegistrarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarGanadoController";
 import { RegistrarPesajeController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarPesajeController";
 import { TrasladarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/TrasladarGanadoController";
@@ -120,6 +123,8 @@ import { ObtenerFichaGanadoController } from "@/modules/ganado/infrastructure/ht
 import { ListarGanadosController } from "@/modules/ganado/infrastructure/http/controllers/ListarGanadosController";
 import { EliminarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/EliminarGanadoController";
 import { ActualizarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ActualizarGanadoController";
+import { DarDeBajaGanadoController } from "@/modules/ganado/infrastructure/http/controllers/DarDeBajaGanadoController";
+import { ListarMotivosBajaController } from "@/modules/ganado/infrastructure/http/controllers/ListarMotivosBajaController";
 
 // Veterinario
 import { PrismaVeterinarioRepository } from "@/modules/veterinario/infrastructure/repository/PrismaVeterinarioRepository";
@@ -401,6 +406,9 @@ container.register("GanadoRepository", { useClass: PrismaGanadoRepository });
 container.register("GanadoDetalleQuery", {
 	useClass: PrismaGanadoDetalleQuery,
 });
+container.register("MotivoBajaRepository", {
+	useClass: PrismaMotivoBajaRepository,
+});
 container.register("GanadoMapper", { useClass: GanadoMapper });
 
 // Módulo Ganado - Casos de Uso
@@ -422,6 +430,12 @@ container.register("EliminarGanadoUseCase", {
 });
 container.register("ActualizarGanadoUseCase", {
 	useClass: ActualizarGanadoUseCase,
+});
+container.register("DarDeBajaGanadoUseCase", {
+	useClass: DarDeBajaGanadoUseCase,
+});
+container.register("ListarMotivosBajaUseCase", {
+	useClass: ListarMotivosBajaUseCase,
 });
 
 // Módulo Ganado - Controladores
@@ -445,6 +459,12 @@ container.register("EliminarGanadoController", {
 });
 container.register("ActualizarGanadoController", {
 	useClass: ActualizarGanadoController,
+});
+container.register("DarDeBajaGanadoController", {
+	useClass: DarDeBajaGanadoController,
+});
+container.register("ListarMotivosBajaController", {
+	useClass: ListarMotivosBajaController,
 });
 
 // Módulo Veterinario - Repositorio & Mapper

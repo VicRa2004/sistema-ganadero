@@ -9,6 +9,8 @@ import type { ObtenerFichaGanadoController } from "../controllers/ObtenerFichaGa
 import type { ListarGanadosController } from "../controllers/ListarGanadosController";
 import type { EliminarGanadoController } from "../controllers/EliminarGanadoController";
 import type { ActualizarGanadoController } from "../controllers/ActualizarGanadoController";
+import type { DarDeBajaGanadoController } from "../controllers/DarDeBajaGanadoController";
+import type { ListarMotivosBajaController } from "../controllers/ListarMotivosBajaController";
 
 @injectable()
 export class GanadoRouter {
@@ -33,6 +35,10 @@ export class GanadoRouter {
 		private readonly eliminarController: EliminarGanadoController,
 		@inject("ActualizarGanadoController")
 		private readonly actualizarController: ActualizarGanadoController,
+		@inject("DarDeBajaGanadoController")
+		private readonly darDeBajaController: DarDeBajaGanadoController,
+		@inject("ListarMotivosBajaController")
+		private readonly listarMotivosBajaController: ListarMotivosBajaController,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -87,6 +93,22 @@ export class GanadoRouter {
 			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "delete"),
 			this.eliminarController.run.bind(this.eliminarController),
+		);
+
+		this.router.post(
+			"/:id/baja",
+			this.authMiddleware.handle,
+			this.requirePermissionMiddleware.handle("ganado", "update"),
+			this.darDeBajaController.run.bind(this.darDeBajaController),
+		);
+
+		this.router.get(
+			"/motivos-baja",
+			this.authMiddleware.handle,
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.listarMotivosBajaController.run.bind(
+				this.listarMotivosBajaController,
+			),
 		);
 	}
 }

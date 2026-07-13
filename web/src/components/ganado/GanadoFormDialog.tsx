@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "@tanstack/react-form";
 import {
 	Dialog,
@@ -11,7 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Tag, Scale, Calendar, Sparkles } from "lucide-react";
+import {
+	Loader2,
+	Tag,
+	Scale,
+	Calendar,
+	Sparkles,
+	Image,
+	GitBranch,
+} from "lucide-react";
 import { formatApiError } from "@/lib/utils";
 import { useRegistrarGanado } from "@/modules/ganado/hooks/useRegistrarGanado";
 import { useActualizarGanado } from "@/modules/ganado/hooks/useActualizarGanado";
@@ -19,6 +27,9 @@ import type { GanadoDto } from "@/modules/ganado/types";
 import type { RazaDto } from "@/modules/raza/types";
 import type { TerrenoDto } from "@/modules/terreno/types";
 import type { PropietarioDto } from "@/modules/propietario/types";
+
+const SELECT_CLASS =
+	"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
 
 interface GanadoFormDialogProps {
 	open: boolean;
@@ -28,6 +39,8 @@ interface GanadoFormDialogProps {
 	razas: RazaDto[];
 	terrenos: TerrenoDto[];
 	propietarios: PropietarioDto[];
+	/** Lista de ganados para seleccionar padre/madre (excluye el ganado actual) */
+	ganadosList?: GanadoDto[];
 }
 
 export function GanadoFormDialog({
@@ -37,9 +50,14 @@ export function GanadoFormDialog({
 	razas,
 	terrenos,
 	propietarios,
+	ganadosList = [],
 }: GanadoFormDialogProps) {
 	const isEditing = !!ganado;
 	const [apiError, setApiError] = useState<string | null>(null);
+	const [imagenPreview, setImagenPreview] = useState<string | null>(
+		ganado?.imagenGanado ?? null,
+	);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const { mutate: registrar, isPending: isRegistrando } = useRegistrarGanado();
 	const { mutate: actualizar, isPending: isActualizando } = useActualizarGanado(
@@ -48,27 +66,42 @@ export function GanadoFormDialog({
 
 	const isPending = isRegistrando || isActualizando;
 
+	// Ganados disponibles para seleccionar como padre/madre
+	const ganadosMacho = ganadosList.filter(
+		(g) => g.sexo === "MACHO" && g.id !== ganado?.id,
+	);
+	const ganadosHembra = ganadosList.filter(
+		(g) => g.sexo === "HEMBRA" && g.id !== ganado?.id,
+	);
+
 	const form = useForm({
 		defaultValues: {
 			identificador: ganado?.identificador ?? "",
-			peso: ganado?.peso ?? "",
-			edadEnMeses: ganado?.edadEnMeses ?? "",
+			peso: ganado?.peso ?? ("" as number | ""),
+			fechaNacimiento: ganado?.fechaNacimiento ?? "",
 			sexo: (ganado?.sexo ?? "") as "" | "MACHO" | "HEMBRA",
-			razaId: ganado?.razaId ?? "",
-			terrenoId: ganado?.terrenoId ?? "",
-			propietarioId: ganado?.propietarioId ?? "",
+			razaId: ganado?.razaId ?? ("" as number | ""),
+			terrenoId: ganado?.terrenoId ?? ("" as number | ""),
+			propietarioId: ganado?.propietarioId ?? ("" as number | ""),
+			padreId: ganado?.padreId ?? ("" as number | ""),
+			madreId: ganado?.madreId ?? ("" as number | ""),
 		},
 		onSubmit: async ({ value }) => {
 			setApiError(null);
 
+			const imagenFile = fileInputRef.current?.files?.[0] ?? undefined;
+
 			const payload = {
 				identificador: value.identificador.trim(),
 				peso: Number(value.peso),
-				edadEnMeses: Number(value.edadEnMeses),
+				fechaNacimiento: value.fechaNacimiento,
 				sexo: value.sexo as "MACHO" | "HEMBRA",
 				razaId: Number(value.razaId),
 				terrenoId: Number(value.terrenoId),
 				propietarioId: Number(value.propietarioId),
+				padreId: value.padreId !== "" ? Number(value.padreId) : null,
+				madreId: value.madreId !== "" ? Number(value.madreId) : null,
+				imagenGanado: imagenFile ?? null,
 			};
 
 			// biome-ignore lint/suspicious/noExplicitAny: error cast for API error extraction
@@ -85,6 +118,7 @@ export function GanadoFormDialog({
 				registrar(payload, {
 					onSuccess: () => {
 						form.reset();
+						setImagenPreview(null);
 						onOpenChange(false);
 					},
 					onError: handleError,
@@ -93,12 +127,12 @@ export function GanadoFormDialog({
 		},
 	});
 
-	// Resetear formulario cuando se abre para edición
+	// Resetear formulario cuando se abre
 	useEffect(() => {
 		if (open) {
 			form.setFieldValue("identificador", ganado?.identificador ?? "");
 			form.setFieldValue("peso", ganado?.peso ?? "");
-			form.setFieldValue("edadEnMeses", ganado?.edadEnMeses ?? "");
+			form.setFieldValue("fechaNacimiento", ganado?.fechaNacimiento ?? "");
 			form.setFieldValue(
 				"sexo",
 				(ganado?.sexo ?? "") as "" | "MACHO" | "HEMBRA",
@@ -106,6 +140,9 @@ export function GanadoFormDialog({
 			form.setFieldValue("razaId", ganado?.razaId ?? "");
 			form.setFieldValue("terrenoId", ganado?.terrenoId ?? "");
 			form.setFieldValue("propietarioId", ganado?.propietarioId ?? "");
+			form.setFieldValue("padreId", ganado?.padreId ?? "");
+			form.setFieldValue("madreId", ganado?.madreId ?? "");
+			setImagenPreview(ganado?.imagenGanado ?? null);
 		}
 	}, [open, ganado, form]);
 
@@ -119,7 +156,7 @@ export function GanadoFormDialog({
 				}
 			}}
 		>
-			<DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto animate-fade-in">
+			<DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-bold">
 						{isEditing
@@ -139,7 +176,7 @@ export function GanadoFormDialog({
 						e.stopPropagation();
 						form.handleSubmit();
 					}}
-					className="space-y-4 py-2"
+					className="space-y-5 py-2"
 				>
 					{apiError && (
 						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
@@ -147,8 +184,8 @@ export function GanadoFormDialog({
 						</div>
 					)}
 
+					{/* ── Identificador + Sexo ── */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						{/* Campo Identificador (Arete) */}
 						<form.Field
 							name="identificador"
 							validators={{
@@ -190,7 +227,6 @@ export function GanadoFormDialog({
 							)}
 						</form.Field>
 
-						{/* Campo Sexo */}
 						<form.Field
 							name="sexo"
 							validators={{
@@ -213,7 +249,7 @@ export function GanadoFormDialog({
 										onChange={(e) =>
 											field.handleChange(e.target.value as "MACHO" | "HEMBRA")
 										}
-										className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+										className={SELECT_CLASS}
 										disabled={isPending}
 									>
 										<option value="">Seleccione...</option>
@@ -229,8 +265,10 @@ export function GanadoFormDialog({
 								</div>
 							)}
 						</form.Field>
+					</div>
 
-						{/* Campo Peso */}
+					{/* ── Peso + Fecha de Nacimiento ── */}
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<form.Field
 							name="peso"
 							validators={{
@@ -278,16 +316,13 @@ export function GanadoFormDialog({
 							)}
 						</form.Field>
 
-						{/* Campo Edad en Meses */}
 						<form.Field
-							name="edadEnMeses"
+							name="fechaNacimiento"
 							validators={{
 								onChange: ({ value }) => {
-									if (value === undefined || value === "")
-										return "La edad es requerida.";
-									const num = Number(value);
-									if (Number.isNaN(num) || !Number.isInteger(num) || num < 0)
-										return "Debe introducir un número entero no negativo.";
+									if (!value) return "La fecha de nacimiento es requerida.";
+									if (new Date(value) > new Date())
+										return "La fecha no puede ser futura.";
 									return undefined;
 								},
 							}}
@@ -295,24 +330,21 @@ export function GanadoFormDialog({
 							{(field) => (
 								<div className="space-y-1.5">
 									<Label htmlFor={field.name}>
-										Edad (Meses) <span className="text-destructive">*</span>
+										Fecha de Nacimiento{" "}
+										<span className="text-destructive">*</span>
 									</Label>
 									<div className="relative">
 										<Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 										<Input
 											id={field.name}
 											name={field.name}
-											type="number"
-											step="1"
-											placeholder="Ej: 24"
+											type="date"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) => {
-												const val = e.target.value;
-												field.handleChange(val === "" ? "" : Number(val));
-											}}
+											onChange={(e) => field.handleChange(e.target.value)}
 											className="pl-9"
 											disabled={isPending}
+											max={new Date().toISOString().split("T")[0]}
 										/>
 									</div>
 									{field.state.meta.isTouched &&
@@ -326,97 +358,98 @@ export function GanadoFormDialog({
 						</form.Field>
 					</div>
 
-					{/* Campo Raza */}
-					<form.Field
-						name="razaId"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value) return "La raza es requerida.";
-								return undefined;
-							},
-						}}
-					>
-						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Raza <span className="text-destructive">*</span>
-								</Label>
-								<select
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) =>
-										field.handleChange(
-											e.target.value === "" ? "" : Number(e.target.value),
-										)
-									}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-									disabled={isPending}
-								>
-									<option value="">Seleccione una raza...</option>
-									{razas.map((r) => (
-										<option key={r.id} value={r.id}>
-											{r.nombre}
-										</option>
-									))}
-								</select>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
-						)}
-					</form.Field>
+					{/* ── Raza + Terreno ── */}
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<form.Field
+							name="razaId"
+							validators={{
+								onChange: ({ value }) => {
+									if (!value) return "La raza es requerida.";
+									return undefined;
+								},
+							}}
+						>
+							{(field) => (
+								<div className="space-y-1.5 text-left">
+									<Label htmlFor={field.name}>
+										Raza <span className="text-destructive">*</span>
+									</Label>
+									<select
+										id={field.name}
+										name={field.name}
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) =>
+											field.handleChange(
+												e.target.value === "" ? "" : Number(e.target.value),
+											)
+										}
+										className={SELECT_CLASS}
+										disabled={isPending}
+									>
+										<option value="">Seleccione una raza...</option>
+										{razas.map((r) => (
+											<option key={r.id} value={r.id}>
+												{r.nombre}
+											</option>
+										))}
+									</select>
+									{field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0 && (
+											<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+												{field.state.meta.errors.join(", ")}
+											</p>
+										)}
+								</div>
+							)}
+						</form.Field>
 
-					{/* Campo Terreno */}
-					<form.Field
-						name="terrenoId"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value) return "El terreno es requerido.";
-								return undefined;
-							},
-						}}
-					>
-						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Terreno <span className="text-destructive">*</span>
-								</Label>
-								<select
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) =>
-										field.handleChange(
-											e.target.value === "" ? "" : Number(e.target.value),
-										)
-									}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-									disabled={isPending}
-								>
-									<option value="">Seleccione un terreno...</option>
-									{terrenos.map((r) => (
-										<option key={r.id} value={r.id}>
-											{r.nombre} ({r.ubicacion})
-										</option>
-									))}
-								</select>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
-						)}
-					</form.Field>
+						<form.Field
+							name="terrenoId"
+							validators={{
+								onChange: ({ value }) => {
+									if (!value) return "El terreno es requerido.";
+									return undefined;
+								},
+							}}
+						>
+							{(field) => (
+								<div className="space-y-1.5 text-left">
+									<Label htmlFor={field.name}>
+										Terreno <span className="text-destructive">*</span>
+									</Label>
+									<select
+										id={field.name}
+										name={field.name}
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) =>
+											field.handleChange(
+												e.target.value === "" ? "" : Number(e.target.value),
+											)
+										}
+										className={SELECT_CLASS}
+										disabled={isPending}
+									>
+										<option value="">Seleccione un terreno...</option>
+										{terrenos.map((r) => (
+											<option key={r.id} value={r.id}>
+												{r.nombre} ({r.ubicacion})
+											</option>
+										))}
+									</select>
+									{field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0 && (
+											<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+												{field.state.meta.errors.join(", ")}
+											</p>
+										)}
+								</div>
+							)}
+						</form.Field>
+					</div>
 
-					{/* Campo Propietario */}
+					{/* ── Propietario ── */}
 					<form.Field
 						name="propietarioId"
 						validators={{
@@ -441,7 +474,7 @@ export function GanadoFormDialog({
 											e.target.value === "" ? "" : Number(e.target.value),
 										)
 									}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+									className={SELECT_CLASS}
 									disabled={isPending}
 								>
 									<option value="">Seleccione un propietario...</option>
@@ -460,6 +493,143 @@ export function GanadoFormDialog({
 							</div>
 						)}
 					</form.Field>
+
+					{/* ── Linaje (Padre / Madre) ── */}
+					{(ganadosMacho.length > 0 || ganadosHembra.length > 0) && (
+						<div className="space-y-3 p-4 rounded-xl border border-border bg-muted/20">
+							<div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+								<GitBranch className="size-4 text-primary" />
+								Linaje (opcional)
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								{ganadosMacho.length > 0 && (
+									<form.Field name="padreId">
+										{(field) => (
+											<div className="space-y-1.5 text-left">
+												<Label htmlFor={field.name}>Padre (MACHO)</Label>
+												<select
+													id={field.name}
+													name={field.name}
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) =>
+														field.handleChange(
+															e.target.value === ""
+																? ""
+																: Number(e.target.value),
+														)
+													}
+													className={SELECT_CLASS}
+													disabled={isPending}
+												>
+													<option value="">Sin padre registrado</option>
+													{ganadosMacho.map((g) => (
+														<option key={g.id} value={g.id}>
+															{g.identificador}
+														</option>
+													))}
+												</select>
+											</div>
+										)}
+									</form.Field>
+								)}
+
+								{ganadosHembra.length > 0 && (
+									<form.Field name="madreId">
+										{(field) => (
+											<div className="space-y-1.5 text-left">
+												<Label htmlFor={field.name}>Madre (HEMBRA)</Label>
+												<select
+													id={field.name}
+													name={field.name}
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) =>
+														field.handleChange(
+															e.target.value === ""
+																? ""
+																: Number(e.target.value),
+														)
+													}
+													className={SELECT_CLASS}
+													disabled={isPending}
+												>
+													<option value="">Sin madre registrada</option>
+													{ganadosHembra.map((g) => (
+														<option key={g.id} value={g.id}>
+															{g.identificador}
+														</option>
+													))}
+												</select>
+											</div>
+										)}
+									</form.Field>
+								)}
+							</div>
+						</div>
+					)}
+
+					{/* ── Imagen del Ganado ── */}
+					<div className="space-y-3 p-4 rounded-xl border border-border bg-muted/20">
+						<div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+							<Image className="size-4 text-primary" />
+							Imagen del Ganado (opcional)
+						</div>
+						<div className="flex items-start gap-4">
+							{imagenPreview && (
+								<img
+									src={imagenPreview}
+									alt="Preview del ganado"
+									className="size-20 rounded-lg object-cover border border-border shrink-0"
+								/>
+							)}
+							<div className="flex-1 space-y-2">
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									id="imagen-ganado-input"
+									className="hidden"
+									disabled={isPending}
+									onChange={(e) => {
+										const file = e.target.files?.[0];
+										if (file) {
+											setImagenPreview(URL.createObjectURL(file));
+										}
+									}}
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="gap-2 cursor-pointer"
+									disabled={isPending}
+									onClick={() => fileInputRef.current?.click()}
+								>
+									<Image className="size-4" />
+									{imagenPreview ? "Cambiar imagen" : "Seleccionar imagen"}
+								</Button>
+								{imagenPreview && (
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="gap-2 cursor-pointer text-muted-foreground"
+										disabled={isPending}
+										onClick={() => {
+											setImagenPreview(null);
+											if (fileInputRef.current) fileInputRef.current.value = "";
+										}}
+									>
+										Quitar imagen
+									</Button>
+								)}
+								<p className="text-xs text-muted-foreground">
+									JPG, PNG, WEBP. Máximo recomendado: 5MB.
+								</p>
+							</div>
+						</div>
+					</div>
 
 					<DialogFooter className="pt-4 border-t border-border">
 						<Button

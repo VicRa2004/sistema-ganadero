@@ -289,6 +289,39 @@ async function main() {
 		});
 	}
 	console.log("✅ Veterinarios inicializados");
+
+	// ─── 7. Semillas de Motivos de Baja ──────────────────────────────────────────
+	const motivosBajaData = [
+		{ nombre: "VENTA", descripcion: "El animal fue vendido a un tercero." },
+		{
+			nombre: "MUERTE NATURAL",
+			descripcion: "El animal falleció por causas naturales.",
+		},
+		{
+			nombre: "ENFERMEDAD",
+			descripcion:
+				"El animal fue dado de baja por enfermedad grave o terminal.",
+		},
+		{ nombre: "ROBO", descripcion: "El animal fue robado." },
+		{
+			nombre: "SACRIFICIO",
+			descripcion: "El animal fue sacrificado para consumo o por bienestar.",
+		},
+		{
+			nombre: "OTRO",
+			descripcion:
+				"Motivo de baja no contemplado en las categorías anteriores.",
+		},
+	];
+
+	for (const motivo of motivosBajaData) {
+		await prisma.motivoBaja.upsert({
+			where: { nombre: motivo.nombre },
+			update: { descripcion: motivo.descripcion },
+			create: motivo,
+		});
+	}
+	console.log("✅ Motivos de baja inicializados");
 }
 
 main()

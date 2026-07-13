@@ -1,14 +1,35 @@
 import { api } from "@/config/axios";
 import type {
 	ActualizarGanadoInput,
+	DarDeBajaGanadoInput,
 	GanadoDetalleDto,
 	GanadoDto,
 	GanadoFilters,
+	MotivoBajaDto,
 	PaginatedResponse,
 	RegistrarGanadoInput,
 	RegistrarPesajeInput,
 	TrasladarGanadoInput,
 } from "../types";
+
+/** Construye un FormData a partir del input de ganado (para soportar imagen) */
+function buildGanadoFormData(
+	input: RegistrarGanadoInput | ActualizarGanadoInput,
+): FormData {
+	const formData = new FormData();
+	const entries = Object.entries(input) as [string, unknown][];
+	for (const [key, value] of entries) {
+		if (value === undefined) continue;
+		if (value === null) {
+			formData.append(key, "");
+		} else if (value instanceof File) {
+			formData.append(key, value);
+		} else {
+			formData.append(key, String(value));
+		}
+	}
+	return formData;
+}
 
 export const ganadoService = {
 	async listar(filters: GanadoFilters): Promise<PaginatedResponse<GanadoDto>> {
@@ -20,6 +41,7 @@ export const ganadoService = {
 				razaId: filters.razaId || undefined,
 				terrenoId: filters.terrenoId || undefined,
 				propietarioId: filters.propietarioId || undefined,
+				soloActivos: filters.soloActivos !== false ? "true" : "false",
 			},
 		});
 		return data;
@@ -35,7 +57,10 @@ export const ganadoService = {
 	},
 
 	async registrar(input: RegistrarGanadoInput): Promise<GanadoDto> {
-		const { data } = await api.post<GanadoDto>("/ganado", input);
+		const formData = buildGanadoFormData(input);
+		const { data } = await api.post<GanadoDto>("/ganado", formData, {
+			headers: { "Content-Type": "multipart/form-data" },
+		});
 		return data;
 	},
 
@@ -43,7 +68,10 @@ export const ganadoService = {
 		id: number,
 		input: ActualizarGanadoInput,
 	): Promise<GanadoDto> {
-		const { data } = await api.put<GanadoDto>(`/ganado/${id}`, input);
+		const formData = buildGanadoFormData(input);
+		const { data } = await api.put<GanadoDto>(`/ganado/${id}`, formData, {
+			headers: { "Content-Type": "multipart/form-data" },
+		});
 		return data;
 	},
 
@@ -60,6 +88,16 @@ export const ganadoService = {
 			`/ganado/${id}/traslados`,
 			input,
 		);
+		return data;
+	},
+
+	async darDeBaja(id: number, input: DarDeBajaGanadoInput): Promise<GanadoDto> {
+		const { data } = await api.post<GanadoDto>(`/ganado/${id}/baja`, input);
+		return data;
+	},
+
+	async listarMotivosBaja(): Promise<MotivoBajaDto[]> {
+		const { data } = await api.get<MotivoBajaDto[]>("/ganado/motivos-baja");
 		return data;
 	},
 

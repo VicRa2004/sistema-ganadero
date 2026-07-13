@@ -5,4 +5,6 @@ export interface GanadoFilters {
 	terrenoId?: number;
 	razaId?: number;
 	propietarioId?: number;
+	/** Si es true (valor por defecto), excluye ganados con fechaBaja establecida */
+	soloActivos?: boolean;
 }

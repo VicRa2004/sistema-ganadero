@@ -11,11 +11,16 @@ interface PrismaGanadoRecord {
 	id: number;
 	identificador: string;
 	peso: number;
-	edadEnMeses: number;
+	fechaNacimiento: Date;
 	sexo: SexoGanado;
+	imagenGanado: string | null;
 	razaId: number;
 	terrenoId: number;
 	propietarioId: number;
+	padreId: number | null;
+	madreId: number | null;
+	fechaBaja: Date | null;
+	motivoBajaId: number | null;
 	deletedAt: Date | null;
 }
 
@@ -26,11 +31,16 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			record.id,
 			record.identificador,
 			record.peso,
-			record.edadEnMeses,
+			record.fechaNacimiento,
 			record.sexo,
+			record.imagenGanado,
 			record.razaId,
 			record.terrenoId,
 			record.propietarioId,
+			record.padreId,
+			record.madreId,
+			record.fechaBaja,
+			record.motivoBajaId,
 		);
 	}
 
@@ -57,6 +67,12 @@ export class PrismaGanadoRepository implements GanadoRepository {
 	public async findAll(filters: GanadoFilters): Promise<Pagination<Ganado>> {
 		const skip = (filters.page - 1) * filters.limit;
 		const whereClause: Prisma.GanadoWhereInput = { deletedAt: null };
+
+		// Por defecto excluir dados de baja (soloActivos = true si no se especifica)
+		const soloActivos = filters.soloActivos !== false;
+		if (soloActivos) {
+			whereClause.fechaBaja = null;
+		}
 
 		if (filters.identificador && filters.identificador.trim() !== "") {
 			whereClause.identificador = {
@@ -102,32 +118,31 @@ export class PrismaGanadoRepository implements GanadoRepository {
 	}
 
 	public async save(ganado: Ganado): Promise<Ganado> {
+		const data = {
+			identificador: ganado.getIdentificador(),
+			peso: ganado.getPeso(),
+			fechaNacimiento: ganado.getFechaNacimiento(),
+			sexo: ganado.getSexo(),
+			imagenGanado: ganado.getImagenGanado(),
+			razaId: ganado.getRazaId(),
+			terrenoId: ganado.getTerrenoId(),
+			propietarioId: ganado.getPropietarioId(),
+			padreId: ganado.getPadreId(),
+			madreId: ganado.getMadreId(),
+			fechaBaja: ganado.getFechaBaja(),
+			motivoBajaId: ganado.getMotivoBajaId(),
+		};
+
 		if (ganado.esNuevo()) {
 			const record = (await prisma.ganado.create({
-				data: {
-					identificador: ganado.getIdentificador(),
-					peso: ganado.getPeso(),
-					edadEnMeses: ganado.getEdadEnMeses(),
-					sexo: ganado.getSexo(),
-					razaId: ganado.getRazaId(),
-					terrenoId: ganado.getTerrenoId(),
-					propietarioId: ganado.getPropietarioId(),
-				},
+				data,
 			})) as PrismaGanadoRecord;
 			return this.toDomain(record);
 		}
 
 		const record = (await prisma.ganado.update({
 			where: { id: ganado.getId() },
-			data: {
-				identificador: ganado.getIdentificador(),
-				peso: ganado.getPeso(),
-				edadEnMeses: ganado.getEdadEnMeses(),
-				sexo: ganado.getSexo(),
-				razaId: ganado.getRazaId(),
-				terrenoId: ganado.getTerrenoId(),
-				propietarioId: ganado.getPropietarioId(),
-			},
+			data,
 		})) as PrismaGanadoRecord;
 		return this.toDomain(record);
 	}

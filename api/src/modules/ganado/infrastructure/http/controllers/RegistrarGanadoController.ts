@@ -16,9 +16,34 @@ export class RegistrarGanadoController extends BaseController {
 
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const body = await c.req.json();
-			const dto = validate(registrarGanadoSchema, body);
-			const result = await this.registrarGanadoUseCase.run(dto);
+			const body = await c.req.parseBody();
+
+			const dataToValidate = {
+				identificador: body.identificador,
+				peso: body.peso !== undefined ? Number(body.peso) : undefined,
+				fechaNacimiento: body.fechaNacimiento,
+				sexo: body.sexo,
+				razaId: body.razaId !== undefined ? Number(body.razaId) : undefined,
+				terrenoId:
+					body.terrenoId !== undefined ? Number(body.terrenoId) : undefined,
+				propietarioId:
+					body.propietarioId !== undefined
+						? Number(body.propietarioId)
+						: undefined,
+				padreId: body.padreId ? Number(body.padreId) : null,
+				madreId: body.madreId ? Number(body.madreId) : null,
+				imagenGanado:
+					body.imagenGanado === "" || typeof body.imagenGanado === "string"
+						? undefined
+						: body.imagenGanado,
+			};
+
+			const dto = validate(registrarGanadoSchema, dataToValidate);
+			const result = await this.registrarGanadoUseCase.run({
+				...dto,
+				imagenGanado:
+					body.imagenGanado instanceof File ? body.imagenGanado : null,
+			});
 			return this.created(c, result);
 		});
 	};

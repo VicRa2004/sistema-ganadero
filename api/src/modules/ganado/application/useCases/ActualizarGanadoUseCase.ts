@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { GanadoDuplicateIdentificadorError } from "../../domain/error/GanadoDuplicateIdentificadorError";
 import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
@@ -31,6 +32,8 @@ export class ActualizarGanadoUseCase {
 		private readonly propietarioRepository: PropietarioRepository,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
+		@inject("ImageStorageService")
+		private readonly imageStorageService: ImageStorageService,
 	) {}
 
 	public async run(
@@ -43,14 +46,20 @@ export class ActualizarGanadoUseCase {
 			throw new GanadoNotFoundError(id);
 		}
 
-		// Determinar valores finales (si no se envían, usar los existentes)
+		// Determinar valores finales
 		const nuevoIdentificador = dto.identificador ?? ganado.getIdentificador();
 		const nuevoPeso = dto.peso ?? ganado.getPeso();
-		const nuevaEdadEnMeses = dto.edadEnMeses ?? ganado.getEdadEnMeses();
+		const nuevaFechaNacimiento = dto.fechaNacimiento
+			? new Date(dto.fechaNacimiento)
+			: ganado.getFechaNacimiento();
 		const nuevoSexo = dto.sexo ?? ganado.getSexo();
 		const nuevaRazaId = dto.razaId ?? ganado.getRazaId();
 		const nuevoTerrenoId = dto.terrenoId ?? ganado.getTerrenoId();
 		const nuevoPropietarioId = dto.propietarioId ?? ganado.getPropietarioId();
+		const nuevoPadreId =
+			dto.padreId !== undefined ? dto.padreId : ganado.getPadreId();
+		const nuevaMadreId =
+			dto.madreId !== undefined ? dto.madreId : ganado.getMadreId();
 
 		// 2. Validar que el identificador no esté duplicado en otro ganado
 		if (dto.identificador && dto.identificador !== ganado.getIdentificador()) {
@@ -88,18 +97,54 @@ export class ActualizarGanadoUseCase {
 			}
 		}
 
-		// 6. Actualizar modelo de dominio
+		// 6. Validar padre si se actualizó
+		if (nuevoPadreId && nuevoPadreId !== ganado.getPadreId()) {
+			const padre = await this.ganadoRepository.findById(nuevoPadreId);
+			if (!padre) {
+				throw new GanadoNotFoundError(nuevoPadreId);
+			}
+		}
+
+		// 7. Validar madre si se actualizó
+		if (nuevaMadreId && nuevaMadreId !== ganado.getMadreId()) {
+			const madre = await this.ganadoRepository.findById(nuevaMadreId);
+			if (!madre) {
+				throw new GanadoNotFoundError(nuevaMadreId);
+			}
+		}
+
+		// 8. Manejar imagen
+		if (dto.imagenGanado && dto.imagenGanado instanceof File) {
+			// Eliminar imagen anterior si existe
+			const imagenAnterior = ganado.getImagenGanado();
+			if (imagenAnterior) {
+				try {
+					await this.imageStorageService.delete(imagenAnterior);
+				} catch {
+					// No falla si la imagen anterior no existe
+				}
+			}
+			const nuevaRuta = await this.imageStorageService.upload(
+				dto.imagenGanado,
+				"ganados",
+			);
+			ganado.setImagenGanado(nuevaRuta);
+		}
+
+		// 9. Actualizar modelo de dominio
 		ganado.actualizar(
 			nuevoIdentificador,
 			nuevoPeso,
-			nuevaEdadEnMeses,
+			nuevaFechaNacimiento,
 			nuevoSexo,
 			nuevaRazaId,
 			nuevoTerrenoId,
 			nuevoPropietarioId,
+			nuevoPadreId,
+			nuevaMadreId,
 		);
 
-		// 7. Guardar cambios
+		// 10. Guardar cambios
 		const saved = await this.ganadoRepository.save(ganado);
 		return this.mapper.toDto(saved);
 	}

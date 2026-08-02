@@ -149,4 +149,32 @@ export class Insumo extends Entity {
 	public esBajoStock(): boolean {
 		return this.stock <= this.stockMinimo;
 	}
+
+	public actualizarDatos(
+		nombre: string,
+		tipo: TipoInsumo,
+		stockMinimo: number,
+		unidadMedida: string,
+		lote: string,
+		fechaCaducidad: Date,
+	): void {
+		if (!nombre || nombre.trim() === "") {
+			throw new Error("El nombre del insumo no puede estar vacío");
+		}
+		if (stockMinimo < 0) {
+			throw new Error("El stock mínimo no puede ser negativo");
+		}
+		if (!unidadMedida || unidadMedida.trim() === "") {
+			throw new Error("La unidad de medida no puede estar vacía");
+		}
+		if (!lote || lote.trim() === "") {
+			throw new Error("El lote del insumo no puede estar vacío");
+		}
+		this.nombre = nombre;
+		this.tipo = tipo;
+		this.stockMinimo = stockMinimo;
+		this.unidadMedida = unidadMedida;
+		this.lote = lote;
+		this.fechaCaducidad = fechaCaducidad;
+	}
 }

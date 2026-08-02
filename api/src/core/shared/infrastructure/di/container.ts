@@ -72,6 +72,7 @@ import { EliminarPropietarioController } from "@/modules/propietario/infrastruct
 import { PrismaInsumoRepository } from "@/modules/inventario-insumos/infrastructure/repository/PrismaInsumoRepository";
 import { InsumoMapper } from "@/modules/inventario-insumos/application/mappers/InsumoMapper";
 import { RegistrarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/RegistrarInsumoUseCase";
+import { ActualizarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ActualizarInsumoUseCase";
 import { AbastecerInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/AbastecerInsumoUseCase";
 import { ConsumirInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ConsumirInsumoUseCase";
 import { ObtenerInsumosCriticosUseCase } from "@/modules/inventario-insumos/application/useCases/ObtenerInsumosCriticosUseCase";
@@ -79,6 +80,7 @@ import { ListarInsumosUseCase } from "@/modules/inventario-insumos/application/u
 import { ObtenerDetalleInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ObtenerDetalleInsumoUseCase";
 import { EliminarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/EliminarInsumoUseCase";
 import { RegistrarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/RegistrarInsumoController";
+import { ActualizarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ActualizarInsumoController";
 import { AbastecerInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/AbastecerInsumoController";
 import { ConsumirInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ConsumirInsumoController";
 import { ObtenerInsumosCriticosController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerInsumosCriticosController";
@@ -318,6 +320,9 @@ container.register("InsumoMapper", { useClass: InsumoMapper });
 container.register("RegistrarInsumoUseCase", {
 	useClass: RegistrarInsumoUseCase,
 });
+container.register("ActualizarInsumoUseCase", {
+	useClass: ActualizarInsumoUseCase,
+});
 container.register("AbastecerInsumoUseCase", {
 	useClass: AbastecerInsumoUseCase,
 });
@@ -338,6 +343,9 @@ container.register("EliminarInsumoUseCase", {
 // Módulo Insumos - Controladores
 container.register("RegistrarInsumoController", {
 	useClass: RegistrarInsumoController,
+});
+container.register("ActualizarInsumoController", {
+	useClass: ActualizarInsumoController,
 });
 container.register("AbastecerInsumoController", {
 	useClass: AbastecerInsumoController,

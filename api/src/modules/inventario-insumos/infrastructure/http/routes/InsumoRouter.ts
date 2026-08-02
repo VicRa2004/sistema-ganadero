@@ -9,6 +9,7 @@ import type { ObtenerInsumosCriticosController } from "../controllers/ObtenerIns
 import type { ListarInsumosController } from "../controllers/ListarInsumosController";
 import type { ObtenerDetalleInsumoController } from "../controllers/ObtenerDetalleInsumoController";
 import type { EliminarInsumoController } from "../controllers/EliminarInsumoController";
+import type { ActualizarInsumoController } from "../controllers/ActualizarInsumoController";
 
 @injectable()
 export class InsumoRouter {
@@ -21,6 +22,8 @@ export class InsumoRouter {
 		private readonly requirePermissionMiddleware: RequirePermissionMiddleware,
 		@inject("RegistrarInsumoController")
 		private readonly registrarController: RegistrarInsumoController,
+		@inject("ActualizarInsumoController")
+		private readonly actualizarController: ActualizarInsumoController,
 		@inject("AbastecerInsumoController")
 		private readonly abastecerController: AbastecerInsumoController,
 		@inject("ConsumirInsumoController")
@@ -66,6 +69,13 @@ export class InsumoRouter {
 			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("inventario-insumos", "create"),
 			this.registrarController.run.bind(this.registrarController),
+		);
+
+		this.router.put(
+			"/:id",
+			this.authMiddleware.handle,
+			this.requirePermissionMiddleware.handle("inventario-insumos", "update"),
+			this.actualizarController.run.bind(this.actualizarController),
 		);
 
 		this.router.post(

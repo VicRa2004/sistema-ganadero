@@ -108,7 +108,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 			{
 				label: "Inventario de Insumos",
 				resource: "inventario-insumos",
-				href: "#",
+				href: "/dashboard/insumos",
 				icon: Database,
 			},
 		],

@@ -27,3 +27,12 @@ export interface AbastecerInsumoInputDto {
 export interface ConsumirInsumoInputDto {
 	cantidad: number;
 }
+
+export interface ActualizarInsumoInputDto {
+	nombre?: string;
+	tipo?: string;
+	stockMinimo?: number;
+	unidadMedida?: string;
+	lote?: string;
+	fechaCaducidad?: string;
+}

@@ -91,6 +91,7 @@ async function main() {
 			"terreno:delete",
 			"inventario-insumos:create",
 			"inventario-insumos:update",
+			"inventario-insumos:delete",
 			"sesiones-sanitarias:create",
 			"sesiones-sanitarias:update",
 			"tratamientos-medicos:create",

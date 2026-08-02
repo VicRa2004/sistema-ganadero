@@ -43,49 +43,49 @@ export class InsumoRouter {
 		this.router.get(
 			"/",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "read"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
 			this.listarController.run.bind(this.listarController),
 		);
 
 		this.router.get(
 			"/criticos",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "read"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
 			this.obtenerCriticosController.run.bind(this.obtenerCriticosController),
 		);
 
 		this.router.get(
 			"/:id",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "read"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
 			this.obtenerDetalleController.run.bind(this.obtenerDetalleController),
 		);
 
 		this.router.post(
 			"/",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "create"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "create"),
 			this.registrarController.run.bind(this.registrarController),
 		);
 
 		this.router.post(
 			"/:id/abastecer",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "update"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "update"),
 			this.abastecerController.run.bind(this.abastecerController),
 		);
 
 		this.router.post(
 			"/:id/consumir",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "update"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "update"),
 			this.consumirController.run.bind(this.consumirController),
 		);
 
 		this.router.delete(
 			"/:id",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("insumo", "delete"),
+			this.requirePermissionMiddleware.handle("inventario-insumos", "delete"),
 			this.eliminarController.run.bind(this.eliminarController),
 		);
 	}

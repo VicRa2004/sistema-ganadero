@@ -323,6 +323,47 @@ async function main() {
 		});
 	}
 	console.log("✅ Motivos de baja inicializados");
+
+	// ─── 8. Semillas de Insumos ───────────────────────────────────────────
+	const insumosData = [
+		{
+			nombre: "Ivermectina 1%",
+			tipo: "MEDICAMENTO" as const,
+			stock: 500,
+			stockMinimo: 100,
+			unidadMedida: "ml",
+			lote: "LOT-2026-001",
+			fechaCaducidad: new Date("2027-12-31"),
+		},
+		{
+			nombre: "Vacuna Triple Bovina",
+			tipo: "VACUNA" as const,
+			stock: 50,
+			stockMinimo: 100,
+			unidadMedida: "dosis",
+			lote: "LOT-2026-002",
+			fechaCaducidad: new Date("2026-11-30"),
+		},
+		{
+			nombre: "Alimento Balanceado Engorda",
+			tipo: "ALIMENTO" as const,
+			stock: 2500,
+			stockMinimo: 500,
+			unidadMedida: "kg",
+			lote: "LOT-2026-003",
+			fechaCaducidad: new Date("2027-06-30"),
+		},
+	];
+
+	for (const insumo of insumosData) {
+		const existing = await prisma.insumo.findFirst({
+			where: { nombre: insumo.nombre, lote: insumo.lote, deletedAt: null },
+		});
+		if (!existing) {
+			await prisma.insumo.create({ data: insumo });
+		}
+	}
+	console.log("✅ Insumos de inventario inicializados");
 }
 
 main()

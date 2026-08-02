@@ -85,6 +85,7 @@ import { ObtenerInsumosCriticosController } from "@/modules/inventario-insumos/i
 import { ListarInsumosController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ListarInsumosController";
 import { ObtenerDetalleInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerDetalleInsumoController";
 import { EliminarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/EliminarInsumoController";
+import { InsumoRouter } from "@/modules/inventario-insumos/infrastructure/http/routes/InsumoRouter";
 
 // Terreno
 import { PrismaTerrenoRepository } from "@/modules/terreno/infrastructure/repository/PrismaTerrenoRepository";
@@ -356,6 +357,7 @@ container.register("ObtenerDetalleInsumoController", {
 container.register("EliminarInsumoController", {
 	useClass: EliminarInsumoController,
 });
+container.register("InsumoRouter", { useClass: InsumoRouter });
 
 // Módulo Terreno - Repositorio & Mapper
 container.register("TerrenoRepository", { useClass: PrismaTerrenoRepository });

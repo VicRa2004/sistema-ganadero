@@ -228,11 +228,19 @@ export function TerrenoFormDialog({
 						name="extensionHectareas"
 						validators={{
 							onChange: ({ value }) => {
-								if (value === undefined || value === "")
+								if (
+									value === undefined ||
+									value === null ||
+									String(value).trim() === ""
+								)
 									return "La extensión es requerida.";
 								const num = Number(value);
-								if (Number.isNaN(num) || num <= 0)
-									return "Debe introducir una extensión positiva válida.";
+								if (Number.isNaN(num))
+									return "Debe introducir un número válido.";
+								if (num <= 0)
+									return "La extensión debe ser mayor a 0 hectáreas.";
+								if (num > 1000000)
+									return "La extensión no puede exceder 1,000,000 de hectáreas.";
 								return undefined;
 							},
 						}}
@@ -250,13 +258,11 @@ export function TerrenoFormDialog({
 										name={field.name}
 										type="number"
 										step="any"
+										allowDecimals={true}
 										placeholder="Ej: 150.5"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) => {
-											const val = e.target.value;
-											field.handleChange(val === "" ? "" : Number(val));
-										}}
+										onChange={(e) => field.handleChange(e.target.value)}
 										className="pl-9"
 										disabled={isPending}
 									/>
@@ -276,11 +282,21 @@ export function TerrenoFormDialog({
 						name="capacidadMaxima"
 						validators={{
 							onChange: ({ value }) => {
-								if (value === undefined || value === "")
+								if (
+									value === undefined ||
+									value === null ||
+									String(value).trim() === ""
+								)
 									return "La capacidad máxima es requerida.";
 								const num = Number(value);
-								if (Number.isNaN(num) || !Number.isInteger(num) || num <= 0)
-									return "Debe introducir un número entero positivo.";
+								if (Number.isNaN(num))
+									return "Debe introducir un número válido.";
+								if (!Number.isInteger(num))
+									return "La capacidad debe ser un número entero sin decimales.";
+								if (num <= 0)
+									return "La capacidad máxima debe ser mayor a 0 cabezas.";
+								if (num > 500000)
+									return "La capacidad máxima no puede exceder 500,000 cabezas.";
 								return undefined;
 							},
 						}}
@@ -298,13 +314,11 @@ export function TerrenoFormDialog({
 										name={field.name}
 										type="number"
 										step="1"
+										allowDecimals={false}
 										placeholder="Ej: 300"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) => {
-											const val = e.target.value;
-											field.handleChange(val === "" ? "" : Number(val));
-										}}
+										onChange={(e) => field.handleChange(e.target.value)}
 										className="pl-9"
 										disabled={isPending}
 									/>

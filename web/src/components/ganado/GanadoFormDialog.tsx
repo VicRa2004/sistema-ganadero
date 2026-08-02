@@ -94,7 +94,7 @@ export function GanadoFormDialog({
 	const form = useForm({
 		defaultValues: {
 			identificador: ganado?.identificador ?? "",
-			peso: ganado?.peso ?? ("" as number | ""),
+			peso: (ganado?.peso ?? "") as number | string,
 			fechaNacimiento: ganado?.fechaNacimiento ?? "",
 			sexo: (ganado?.sexo ?? "") as "" | "MACHO" | "HEMBRA",
 			razaId: ganado?.razaId ?? ("" as number | ""),
@@ -290,11 +290,18 @@ export function GanadoFormDialog({
 							name="peso"
 							validators={{
 								onChange: ({ value }) => {
-									if (value === undefined || value === "")
+									if (
+										value === undefined ||
+										value === null ||
+										String(value).trim() === ""
+									)
 										return "El peso es requerido.";
 									const num = Number(value);
-									if (Number.isNaN(num) || num <= 0)
-										return "Debe introducir un peso positivo válido.";
+									if (Number.isNaN(num))
+										return "Debe introducir un número válido.";
+									if (num <= 0) return "El peso debe ser mayor a 0 kg.";
+									if (num > 3000)
+										return "El peso no puede exceder los 3,000 kg.";
 									return undefined;
 								},
 							}}
@@ -312,13 +319,11 @@ export function GanadoFormDialog({
 											name={field.name}
 											type="number"
 											step="any"
+											allowDecimals={true}
 											placeholder="Ej: 350.5"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) => {
-												const val = e.target.value;
-												field.handleChange(val === "" ? "" : Number(val));
-											}}
+											onChange={(e) => field.handleChange(e.target.value)}
 											className="pl-9"
 											disabled={isPending}
 										/>

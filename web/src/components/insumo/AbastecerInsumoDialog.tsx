@@ -32,7 +32,7 @@ export function AbastecerInsumoDialog({
 
 	const form = useForm({
 		defaultValues: {
-			cantidad: 10,
+			cantidad: 10 as number | string,
 		},
 		onSubmit: async ({ value }) => {
 			setApiError(null);
@@ -135,7 +135,7 @@ export function AbastecerInsumoDialog({
 										placeholder="Ej: 50"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.valueAsNumber)}
+										onChange={(e) => field.handleChange(e.target.value)}
 										className="pl-9"
 										disabled={isPending}
 									/>

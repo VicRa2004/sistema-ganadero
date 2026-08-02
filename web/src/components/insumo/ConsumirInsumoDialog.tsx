@@ -32,7 +32,7 @@ export function ConsumirInsumoDialog({
 
 	const form = useForm({
 		defaultValues: {
-			cantidad: 1,
+			cantidad: 1 as number | string,
 		},
 		onSubmit: async ({ value }) => {
 			setApiError(null);
@@ -138,7 +138,7 @@ export function ConsumirInsumoDialog({
 										placeholder="Ej: 5"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.valueAsNumber)}
+										onChange={(e) => field.handleChange(e.target.value)}
 										className="pl-9"
 										disabled={isPending}
 									/>

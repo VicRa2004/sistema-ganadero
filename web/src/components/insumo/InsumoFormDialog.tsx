@@ -43,8 +43,8 @@ export function InsumoFormDialog({
 		defaultValues: {
 			nombre: insumo?.nombre ?? "",
 			tipo: (insumo?.tipo ?? "MEDICAMENTO") as TipoInsumo,
-			stockInicial: insumo?.stock ?? 100,
-			stockMinimo: insumo?.stockMinimo ?? 20,
+			stockInicial: (insumo?.stock ?? 100) as number | string,
+			stockMinimo: (insumo?.stockMinimo ?? 20) as number | string,
 			unidadMedida: insumo?.unidadMedida ?? "ml",
 			lote: insumo?.lote ?? "",
 			fechaCaducidad: insumo
@@ -247,8 +247,19 @@ export function InsumoFormDialog({
 								name="stockInicial"
 								validators={{
 									onChange: ({ value }) => {
-										if (Number.isNaN(Number(value)) || Number(value) < 0)
-											return "El stock inicial debe ser 0 o mayor.";
+										if (
+											value === undefined ||
+											value === null ||
+											String(value).trim() === ""
+										)
+											return "El stock inicial es requerido.";
+										const num = Number(value);
+										if (Number.isNaN(num))
+											return "Debe introducir un número válido.";
+										if (num < 0)
+											return "El stock inicial no puede ser negativo.";
+										if (num > 1000000)
+											return "El stock inicial no puede exceder 1,000,000 de unidades.";
 										return undefined;
 									},
 								}}
@@ -269,9 +280,7 @@ export function InsumoFormDialog({
 												placeholder="0"
 												value={field.state.value}
 												onBlur={field.handleBlur}
-												onChange={(e) =>
-													field.handleChange(e.target.valueAsNumber)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												className="pl-9"
 												disabled={isPending}
 											/>
@@ -291,8 +300,18 @@ export function InsumoFormDialog({
 							name="stockMinimo"
 							validators={{
 								onChange: ({ value }) => {
-									if (Number.isNaN(Number(value)) || Number(value) < 0)
-										return "El stock mínimo debe ser 0 o mayor.";
+									if (
+										value === undefined ||
+										value === null ||
+										String(value).trim() === ""
+									)
+										return "El stock mínimo es requerido.";
+									const num = Number(value);
+									if (Number.isNaN(num))
+										return "Debe introducir un número válido.";
+									if (num < 0) return "El stock mínimo no puede ser negativo.";
+									if (num > 1000000)
+										return "El stock mínimo no puede exceder 1,000,000 de unidades.";
 									return undefined;
 								},
 							}}
@@ -316,9 +335,7 @@ export function InsumoFormDialog({
 											placeholder="0"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(e.target.valueAsNumber)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											className="pl-9"
 											disabled={isPending}
 										/>

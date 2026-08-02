@@ -123,3 +123,22 @@ beforeLoad: ({ context }) => {
     throw redirect({ to: "/dashboard" });
 };
 ```
+
+### 6. Manejo Estricto de Inputs Numéricos y Telefónicos (`<Input />` + `@tanstack/react-form`)
+
+**Regla de ORO:** Los campos numéricos y de teléfono deben impedir la entrada de texto/letras tanto al tipear como al pegar (`onKeyDown` y `onPaste`).
+
+1. **Uso del componente `<Input />` (`src/components/ui/input.tsx`)**:
+   - `type="number"`: Bloquea automáticamente letras (`a-z`), notación científica (`e`, `E`), signos (`+`, `-`) y pegado de texto no numérico.
+   - `allowDecimals={false}`: Usar para números enteros estrictos (ej. `capacidadMaxima` en Terrenos). Bloquea el punto `.` y la coma `,`.
+   - `allowDecimals={true}`: Usar para flotantes/medidas (ej. `peso`, `stock`, `extensionHectareas`).
+   - `type="tel"`: Restringe el teclado a dígitos, `+`, `-`, `(`, `)`, espacios; bloquea letras alfabéticas.
+
+2. **Binding con TanStack Form**:
+   - Pasar la cadena directamente en `onChange`: `onChange={(e) => field.handleChange(e.target.value)}`.
+   - **Prohibido** usar `Number(val)` o `valueAsNumber` directamente dentro de `onChange` (borra el punto decimal `.` al tipear o genera `NaN` al vaciar).
+   - Convertir a número únicamente en el validador `onChange` del campo y en la mutación/payload del `onSubmit` (`Number(value)`).
+
+3. **Validaciones de Negocio Obligatorias**:
+   - Validar siempre que el número esté dentro del rango permitido (ej. `peso > 0` y `<= 3000`, `extensionHectareas > 0`, `capacidadMaxima > 0` e integer, `stock >= 0`).
+

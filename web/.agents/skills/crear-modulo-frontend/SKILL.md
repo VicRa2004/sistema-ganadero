@@ -51,6 +51,11 @@ Todos los formularios interactivos de creación, edición o filtrado deben imple
     *   *Correcto:* `<form.Field name="email">{(field) => <Input ... />}</form.Field>`
     *   *Incorrecto:* `<form.Field name="email" children={(field) => <Input ... />} />`
 4.  **Manejo de Errores Visuales:** Mostrar los errores de validación únicamente si el campo ha sido modificado (`field.state.meta.isTouched`), presentándolos en color rojo contrastado (`text-red-600 dark:text-red-400`) y de forma alineada al input.
+5.  **Manejo Estricto de Inputs Numéricos y Telefónicos:**
+    *   Utilizar siempre el componente `<Input />` (`src/components/ui/input.tsx`) configurado con `type="number"` o `type="tel"`.
+    *   Para campos de números enteros (ej. capacidades), especificar `allowDecimals={false}` para impedir la escritura de decimales.
+    *   En la vinculación del formulario, mantener el valor como cadena en `onChange`: `onChange={(e) => field.handleChange(e.target.value)}`. Está estrictamente prohibido usar `valueAsNumber` o `Number(val)` dentro de `onChange`.
+    *   Validar rangos y positividad (ej. `num > 0`, `num <= max`) dentro del validador `onChange` del campo y castear a `Number(value)` únicamente al enviar el payload en `onSubmit`.
 
 ---
 

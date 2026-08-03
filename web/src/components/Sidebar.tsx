@@ -85,7 +85,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 			{
 				label: "Sesiones Sanitarias",
 				resource: "sesiones-sanitarias",
-				href: "#",
+				href: "/dashboard/sesiones-sanitarias",
 				icon: Activity,
 			},
 			{

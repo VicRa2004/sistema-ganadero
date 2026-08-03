@@ -144,6 +144,23 @@ import { ActualizarVeterinarioController } from "@/modules/veterinario/infrastru
 import { EliminarVeterinarioController } from "@/modules/veterinario/infrastructure/http/controllers/EliminarVeterinarioController";
 import { VeterinarioRouter } from "@/modules/veterinario/infrastructure/http/routes/VeterinarioRouter";
 
+// Sesión Sanitaria
+import { PrismaSesionSanitariaRepository } from "@/modules/sesion-sanitaria/infrastructure/repository/PrismaSesionSanitariaRepository";
+import { SesionSanitariaMapper } from "@/modules/sesion-sanitaria/application/mappers/SesionSanitariaMapper";
+import { RegistrarSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/RegistrarSesionSanitariaUseCase";
+import { ListarSesionesSanitariasUseCase } from "@/modules/sesion-sanitaria/application/useCases/ListarSesionesSanitariasUseCase";
+import { ObtenerDetalleSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/ObtenerDetalleSesionSanitariaUseCase";
+import { RegistrarResultadoAnimalUseCase } from "@/modules/sesion-sanitaria/application/useCases/RegistrarResultadoAnimalUseCase";
+import { ObtenerHistorialSanitarioGanadoUseCase } from "@/modules/sesion-sanitaria/application/useCases/ObtenerHistorialSanitarioGanadoUseCase";
+import { EliminarSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/EliminarSesionSanitariaUseCase";
+import { RegistrarSesionSanitariaController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/RegistrarSesionSanitariaController";
+import { ListarSesionesSanitariasController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ListarSesionesSanitariasController";
+import { ObtenerDetalleSesionSanitariaController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ObtenerDetalleSesionSanitariaController";
+import { RegistrarResultadoAnimalController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/RegistrarResultadoAnimalController";
+import { ObtenerHistorialSanitarioGanadoController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ObtenerHistorialSanitarioGanadoController";
+import { EliminarSesionSanitariaController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/EliminarSesionSanitariaController";
+import { SesionSanitariaRouter } from "@/modules/sesion-sanitaria/infrastructure/http/routes/SesionSanitariaRouter";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -519,6 +536,59 @@ container.register("EliminarVeterinarioController", {
 
 // Módulo Veterinario - Router
 container.register("VeterinarioRouter", { useClass: VeterinarioRouter });
+
+// Módulo Sesión Sanitaria - Repositorio & Mapper
+container.register("SesionSanitariaRepository", {
+	useClass: PrismaSesionSanitariaRepository,
+});
+container.register("SesionSanitariaMapper", {
+	useClass: SesionSanitariaMapper,
+});
+
+// Módulo Sesión Sanitaria - Casos de Uso
+container.register("RegistrarSesionSanitariaUseCase", {
+	useClass: RegistrarSesionSanitariaUseCase,
+});
+container.register("ListarSesionesSanitariasUseCase", {
+	useClass: ListarSesionesSanitariasUseCase,
+});
+container.register("ObtenerDetalleSesionSanitariaUseCase", {
+	useClass: ObtenerDetalleSesionSanitariaUseCase,
+});
+container.register("RegistrarResultadoAnimalUseCase", {
+	useClass: RegistrarResultadoAnimalUseCase,
+});
+container.register("ObtenerHistorialSanitarioGanadoUseCase", {
+	useClass: ObtenerHistorialSanitarioGanadoUseCase,
+});
+container.register("EliminarSesionSanitariaUseCase", {
+	useClass: EliminarSesionSanitariaUseCase,
+});
+
+// Módulo Sesión Sanitaria - Controladores
+container.register("RegistrarSesionSanitariaController", {
+	useClass: RegistrarSesionSanitariaController,
+});
+container.register("ListarSesionesSanitariasController", {
+	useClass: ListarSesionesSanitariasController,
+});
+container.register("ObtenerDetalleSesionSanitariaController", {
+	useClass: ObtenerDetalleSesionSanitariaController,
+});
+container.register("RegistrarResultadoAnimalController", {
+	useClass: RegistrarResultadoAnimalController,
+});
+container.register("ObtenerHistorialSanitarioGanadoController", {
+	useClass: ObtenerHistorialSanitarioGanadoController,
+});
+container.register("EliminarSesionSanitariaController", {
+	useClass: EliminarSesionSanitariaController,
+});
+
+// Módulo Sesión Sanitaria - Router
+container.register("SesionSanitariaRouter", {
+	useClass: SesionSanitariaRouter,
+});
 
 container.register(
 	"EventBus",

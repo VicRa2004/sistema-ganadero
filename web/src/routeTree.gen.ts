@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardVeterinariosIndexRouteImport } from './routes/dashboard.veterinarios.index'
 import { Route as DashboardTerrenosIndexRouteImport } from './routes/dashboard.terrenos.index'
+import { Route as DashboardSesionesSanitariasIndexRouteImport } from './routes/dashboard.sesiones-sanitarias.index'
 import { Route as DashboardPropietariosIndexRouteImport } from './routes/dashboard.propietarios.index'
 import { Route as DashboardInsumosIndexRouteImport } from './routes/dashboard.insumos.index'
 import { Route as DashboardGanadoIndexRouteImport } from './routes/dashboard.ganado.index'
@@ -59,6 +60,12 @@ const DashboardTerrenosIndexRoute = DashboardTerrenosIndexRouteImport.update({
   path: '/terrenos/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSesionesSanitariasIndexRoute =
+  DashboardSesionesSanitariasIndexRouteImport.update({
+    id: '/sesiones-sanitarias/',
+    path: '/sesiones-sanitarias/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardPropietariosIndexRoute =
   DashboardPropietariosIndexRouteImport.update({
     id: '/propietarios/',
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
+  '/dashboard/sesiones-sanitarias/': typeof DashboardSesionesSanitariasIndexRoute
   '/dashboard/terrenos/': typeof DashboardTerrenosIndexRoute
   '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/dashboard/ganado': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos': typeof DashboardInsumosIndexRoute
   '/dashboard/propietarios': typeof DashboardPropietariosIndexRoute
+  '/dashboard/sesiones-sanitarias': typeof DashboardSesionesSanitariasIndexRoute
   '/dashboard/terrenos': typeof DashboardTerrenosIndexRoute
   '/dashboard/veterinarios': typeof DashboardVeterinariosIndexRoute
 }
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
+  '/dashboard/sesiones-sanitarias/': typeof DashboardSesionesSanitariasIndexRoute
   '/dashboard/terrenos/': typeof DashboardTerrenosIndexRoute
   '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/propietarios/'
+    | '/dashboard/sesiones-sanitarias/'
     | '/dashboard/terrenos/'
     | '/dashboard/veterinarios/'
   fileRoutesByTo: FileRoutesByTo
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/dashboard/ganado'
     | '/dashboard/insumos'
     | '/dashboard/propietarios'
+    | '/dashboard/sesiones-sanitarias'
     | '/dashboard/terrenos'
     | '/dashboard/veterinarios'
   id:
@@ -179,6 +191,7 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/propietarios/'
+    | '/dashboard/sesiones-sanitarias/'
     | '/dashboard/terrenos/'
     | '/dashboard/veterinarios/'
   fileRoutesById: FileRoutesById
@@ -241,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTerrenosIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/sesiones-sanitarias/': {
+      id: '/dashboard/sesiones-sanitarias/'
+      path: '/sesiones-sanitarias'
+      fullPath: '/dashboard/sesiones-sanitarias/'
+      preLoaderRoute: typeof DashboardSesionesSanitariasIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/propietarios/': {
       id: '/dashboard/propietarios/'
       path: '/propietarios'
@@ -294,6 +314,7 @@ interface DashboardRouteChildren {
   DashboardGanadoIndexRoute: typeof DashboardGanadoIndexRoute
   DashboardInsumosIndexRoute: typeof DashboardInsumosIndexRoute
   DashboardPropietariosIndexRoute: typeof DashboardPropietariosIndexRoute
+  DashboardSesionesSanitariasIndexRoute: typeof DashboardSesionesSanitariasIndexRoute
   DashboardTerrenosIndexRoute: typeof DashboardTerrenosIndexRoute
   DashboardVeterinariosIndexRoute: typeof DashboardVeterinariosIndexRoute
 }
@@ -306,6 +327,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardGanadoIndexRoute: DashboardGanadoIndexRoute,
   DashboardInsumosIndexRoute: DashboardInsumosIndexRoute,
   DashboardPropietariosIndexRoute: DashboardPropietariosIndexRoute,
+  DashboardSesionesSanitariasIndexRoute: DashboardSesionesSanitariasIndexRoute,
   DashboardTerrenosIndexRoute: DashboardTerrenosIndexRoute,
   DashboardVeterinariosIndexRoute: DashboardVeterinariosIndexRoute,
 }

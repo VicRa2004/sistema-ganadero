@@ -16,6 +16,7 @@ import { InsumoRouter } from "@/modules/inventario-insumos/infrastructure/http/r
 import { TerrenoRouter } from "@/modules/terreno/infrastructure/http/routes/TerrenoRouter";
 import { GanadoRouter } from "@/modules/ganado/infrastructure/http/routes/GanadoRouter";
 import { VeterinarioRouter } from "@/modules/veterinario/infrastructure/http/routes/VeterinarioRouter";
+import { SesionSanitariaRouter } from "@/modules/sesion-sanitaria/infrastructure/http/routes/SesionSanitariaRouter";
 
 const app = new Hono();
 
@@ -51,6 +52,7 @@ const insumoRouter = container.resolve(InsumoRouter);
 const terrenoRouter = container.resolve(TerrenoRouter);
 const ganadoRouter = container.resolve(GanadoRouter);
 const veterinarioRouter = container.resolve(VeterinarioRouter);
+const sesionSanitariaRouter = container.resolve(SesionSanitariaRouter);
 
 // 4. Registro de rutas
 // En Hono se usa .route() en lugar de .use() para anidar otros routers
@@ -63,6 +65,7 @@ app.route("/api/insumos", insumoRouter.router);
 app.route("/api/terrenos", terrenoRouter.router);
 app.route("/api/ganado", ganadoRouter.router);
 app.route("/api/veterinarios", veterinarioRouter.router);
+app.route("/api/sesiones-sanitarias", sesionSanitariaRouter.router);
 
 // 5. Global Error Handler
 app.onError((err, c) => {

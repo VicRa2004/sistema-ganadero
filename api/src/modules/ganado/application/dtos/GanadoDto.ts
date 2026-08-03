@@ -26,6 +26,8 @@ export interface ActualizarGanadoInputDto {
 	propietarioId?: number;
 	padreId?: number | null;
 	madreId?: number | null;
+	fechaBaja?: string | null;
+	motivoBajaId?: number | null;
 }
 
 export interface RegistrarPesajeInputDto {

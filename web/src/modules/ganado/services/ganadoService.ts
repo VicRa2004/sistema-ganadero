@@ -38,6 +38,7 @@ export const ganadoService = {
 				page: filters.page,
 				limit: filters.limit,
 				identificador: filters.identificador || undefined,
+				sexo: filters.sexo || undefined,
 				razaId: filters.razaId || undefined,
 				terrenoId: filters.terrenoId || undefined,
 				propietarioId: filters.propietarioId || undefined,

@@ -93,6 +93,10 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			whereClause.propietarioId = filters.propietarioId;
 		}
 
+		if (filters.sexo) {
+			whereClause.sexo = filters.sexo;
+		}
+
 		const [records, totalItems] = await Promise.all([
 			prisma.ganado.findMany({
 				where: whereClause,

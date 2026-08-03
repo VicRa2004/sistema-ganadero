@@ -184,14 +184,6 @@ function DetalleGanadoComponent() {
 								Trasladar Terreno
 							</Button>
 							<Button
-								onClick={() => setIsEditOpen(true)}
-								variant="outline"
-								className="gap-2 cursor-pointer"
-							>
-								<Pencil className="size-4" />
-								Editar Ficha
-							</Button>
-							<Button
 								onClick={() => setIsBajaOpen(true)}
 								variant="outline"
 								className="gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600"
@@ -200,6 +192,16 @@ function DetalleGanadoComponent() {
 								Dar de Baja
 							</Button>
 						</>
+					)}
+					{canUpdate && (
+						<Button
+							onClick={() => setIsEditOpen(true)}
+							variant="outline"
+							className="gap-2 cursor-pointer"
+						>
+							<Pencil className="size-4" />
+							Editar Ficha
+						</Button>
 					)}
 					{canDelete && (
 						<Button

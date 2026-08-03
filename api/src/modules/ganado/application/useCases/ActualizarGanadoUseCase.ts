@@ -19,6 +19,9 @@ import { RazaNotFoundError } from "@/modules/raza/domain/error/RazaNotFoundError
 import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
 import { PropietarioNotFoundError } from "@/modules/propietario/domain/error/PropietarioNotFoundError";
 
+import { BaseError } from "@/core/shared/domain/error/BaseError";
+import type { MotivoBajaRepository } from "../../domain/repository/MotivoBajaRepository";
+
 @injectable()
 export class ActualizarGanadoUseCase {
 	constructor(
@@ -30,6 +33,8 @@ export class ActualizarGanadoUseCase {
 		private readonly terrenoRepository: TerrenoRepository,
 		@inject("PropietarioRepository")
 		private readonly propietarioRepository: PropietarioRepository,
+		@inject("MotivoBajaRepository")
+		private readonly motivoBajaRepository: MotivoBajaRepository,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 		@inject("ImageStorageService")
@@ -113,7 +118,44 @@ export class ActualizarGanadoUseCase {
 			}
 		}
 
-		// 8. Manejar imagen
+		// 8. Validar información de baja si se proporcionó
+		if (dto.motivoBajaId !== undefined || dto.fechaBaja !== undefined) {
+			if (
+				ganado.estaActivo() &&
+				dto.motivoBajaId !== undefined &&
+				dto.motivoBajaId !== null
+			) {
+				throw new BaseError(
+					"El motivo de baja solo se puede agregar cuando el ganado ya está dado de baja",
+					400,
+				);
+			}
+			if (!ganado.estaActivo()) {
+				const nuevoMotivoBajaId =
+					dto.motivoBajaId !== undefined
+						? dto.motivoBajaId
+						: ganado.getMotivoBajaId();
+				if (nuevoMotivoBajaId !== null) {
+					const motivo =
+						await this.motivoBajaRepository.findById(nuevoMotivoBajaId);
+					if (!motivo) {
+						throw new BaseError(
+							`Motivo de baja con ID ${nuevoMotivoBajaId} no fue encontrado`,
+							404,
+						);
+					}
+				}
+				const nuevaFechaBaja =
+					dto.fechaBaja !== undefined
+						? dto.fechaBaja
+							? new Date(dto.fechaBaja)
+							: null
+						: ganado.getFechaBaja();
+				ganado.actualizarInformacionBaja(nuevaFechaBaja, nuevoMotivoBajaId);
+			}
+		}
+
+		// 9. Manejar imagen
 		if (dto.imagenGanado && dto.imagenGanado instanceof File) {
 			// Eliminar imagen anterior si existe
 			const imagenAnterior = ganado.getImagenGanado();
@@ -131,7 +173,7 @@ export class ActualizarGanadoUseCase {
 			ganado.setImagenGanado(nuevaRuta);
 		}
 
-		// 9. Actualizar modelo de dominio
+		// 10. Actualizar modelo de dominio
 		ganado.actualizar(
 			nuevoIdentificador,
 			nuevoPeso,

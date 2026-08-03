@@ -88,6 +88,8 @@ export interface ActualizarGanadoInput {
 	propietarioId?: number;
 	padreId?: number | null;
 	madreId?: number | null;
+	fechaBaja?: string | null;
+	motivoBajaId?: number | null;
 }
 
 export interface RegistrarPesajeInput {
@@ -107,6 +109,7 @@ export interface GanadoFilters {
 	page: number;
 	limit: number;
 	identificador?: string;
+	sexo?: SexoGanado;
 	razaId?: number;
 	terrenoId?: number;
 	propietarioId?: number;

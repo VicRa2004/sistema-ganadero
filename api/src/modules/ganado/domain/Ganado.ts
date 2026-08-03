@@ -224,6 +224,19 @@ export class Ganado extends Entity {
 		this.motivoBajaId = motivoBajaId;
 	}
 
+	public actualizarInformacionBaja(
+		fechaBaja: Date | null,
+		motivoBajaId: number | null,
+	): void {
+		if (motivoBajaId !== null && fechaBaja === null && this.estaActivo()) {
+			throw new Error(
+				"El motivo de baja solo se puede establecer si el ganado está dado de baja",
+			);
+		}
+		this.fechaBaja = fechaBaja;
+		this.motivoBajaId = motivoBajaId;
+	}
+
 	public actualizar(
 		identificador: string,
 		peso: number,
@@ -261,6 +274,12 @@ export class Ganado extends Entity {
 		}
 		if (propietarioId <= 0) {
 			throw new Error("El propietario especificado no es válido");
+		}
+		if (padreId && !this.esNuevo() && padreId === this.getId()) {
+			throw new Error("Un ganado no puede ser registrado como su propio padre");
+		}
+		if (madreId && !this.esNuevo() && madreId === this.getId()) {
+			throw new Error("Un ganado no puede ser registrado como su propia madre");
 		}
 
 		this.identificador = identificador;

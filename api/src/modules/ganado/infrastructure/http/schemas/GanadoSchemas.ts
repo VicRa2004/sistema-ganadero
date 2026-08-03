@@ -43,6 +43,14 @@ export const actualizarGanadoSchema = z.object({
 	propietarioId: z.number().int().positive().optional(),
 	padreId: z.number().int().positive().nullable().optional(),
 	madreId: z.number().int().positive().nullable().optional(),
+	fechaBaja: z
+		.string()
+		.refine((val) => !Number.isNaN(Date.parse(val)), {
+			message: "La fecha de baja no es válida",
+		})
+		.nullable()
+		.optional(),
+	motivoBajaId: z.number().int().positive().nullable().optional(),
 });
 
 export const darDeBajaSchema = z.object({
@@ -92,6 +100,7 @@ export const listarGanadoQuerySchema = z.object({
 			return Number.isNaN(n) || n < 1 ? 10 : n;
 		}),
 	identificador: z.string().optional(),
+	sexo: z.enum(["MACHO", "HEMBRA"]).optional(),
 	terrenoId: z
 		.string()
 		.optional()

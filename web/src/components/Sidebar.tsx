@@ -91,7 +91,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 			{
 				label: "Tratamientos Médicos",
 				resource: "tratamientos-medicos",
-				href: "#",
+				href: "/dashboard/tratamientos-medicos",
 				icon: Stethoscope,
 			},
 			{

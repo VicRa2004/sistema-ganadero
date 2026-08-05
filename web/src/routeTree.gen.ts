@@ -15,11 +15,13 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardVeterinariosIndexRouteImport } from './routes/dashboard.veterinarios.index'
+import { Route as DashboardTratamientosMedicosIndexRouteImport } from './routes/dashboard.tratamientos-medicos.index'
 import { Route as DashboardTerrenosIndexRouteImport } from './routes/dashboard.terrenos.index'
 import { Route as DashboardSesionesSanitariasIndexRouteImport } from './routes/dashboard.sesiones-sanitarias.index'
 import { Route as DashboardPropietariosIndexRouteImport } from './routes/dashboard.propietarios.index'
 import { Route as DashboardInsumosIndexRouteImport } from './routes/dashboard.insumos.index'
 import { Route as DashboardGanadoIndexRouteImport } from './routes/dashboard.ganado.index'
+import { Route as DashboardTratamientosMedicosIdRouteImport } from './routes/dashboard.tratamientos-medicos.$id'
 import { Route as DashboardTerrenosIdRouteImport } from './routes/dashboard.terrenos.$id'
 import { Route as DashboardPropietariosIdRouteImport } from './routes/dashboard.propietarios.$id'
 import { Route as DashboardGanadoIdRouteImport } from './routes/dashboard.ganado.$id'
@@ -55,6 +57,12 @@ const DashboardVeterinariosIndexRoute =
     path: '/veterinarios/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardTratamientosMedicosIndexRoute =
+  DashboardTratamientosMedicosIndexRouteImport.update({
+    id: '/tratamientos-medicos/',
+    path: '/tratamientos-medicos/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardTerrenosIndexRoute = DashboardTerrenosIndexRouteImport.update({
   id: '/terrenos/',
   path: '/terrenos/',
@@ -82,6 +90,12 @@ const DashboardGanadoIndexRoute = DashboardGanadoIndexRouteImport.update({
   path: '/ganado/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardTratamientosMedicosIdRoute =
+  DashboardTratamientosMedicosIdRouteImport.update({
+    id: '/tratamientos-medicos/$id',
+    path: '/tratamientos-medicos/$id',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardTerrenosIdRoute = DashboardTerrenosIdRouteImport.update({
   id: '/terrenos/$id',
   path: '/terrenos/$id',
@@ -107,11 +121,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
+  '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
   '/dashboard/sesiones-sanitarias/': typeof DashboardSesionesSanitariasIndexRoute
   '/dashboard/terrenos/': typeof DashboardTerrenosIndexRoute
+  '/dashboard/tratamientos-medicos/': typeof DashboardTratamientosMedicosIndexRoute
   '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -122,11 +138,13 @@ export interface FileRoutesByTo {
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
+  '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
   '/dashboard/ganado': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos': typeof DashboardInsumosIndexRoute
   '/dashboard/propietarios': typeof DashboardPropietariosIndexRoute
   '/dashboard/sesiones-sanitarias': typeof DashboardSesionesSanitariasIndexRoute
   '/dashboard/terrenos': typeof DashboardTerrenosIndexRoute
+  '/dashboard/tratamientos-medicos': typeof DashboardTratamientosMedicosIndexRoute
   '/dashboard/veterinarios': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRoutesById {
@@ -139,11 +157,13 @@ export interface FileRoutesById {
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
+  '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
   '/dashboard/sesiones-sanitarias/': typeof DashboardSesionesSanitariasIndexRoute
   '/dashboard/terrenos/': typeof DashboardTerrenosIndexRoute
+  '/dashboard/tratamientos-medicos/': typeof DashboardTratamientosMedicosIndexRoute
   '/dashboard/veterinarios/': typeof DashboardVeterinariosIndexRoute
 }
 export interface FileRouteTypes {
@@ -157,11 +177,13 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
     | '/dashboard/terrenos/$id'
+    | '/dashboard/tratamientos-medicos/$id'
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/propietarios/'
     | '/dashboard/sesiones-sanitarias/'
     | '/dashboard/terrenos/'
+    | '/dashboard/tratamientos-medicos/'
     | '/dashboard/veterinarios/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -172,11 +194,13 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
     | '/dashboard/terrenos/$id'
+    | '/dashboard/tratamientos-medicos/$id'
     | '/dashboard/ganado'
     | '/dashboard/insumos'
     | '/dashboard/propietarios'
     | '/dashboard/sesiones-sanitarias'
     | '/dashboard/terrenos'
+    | '/dashboard/tratamientos-medicos'
     | '/dashboard/veterinarios'
   id:
     | '__root__'
@@ -188,11 +212,13 @@ export interface FileRouteTypes {
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
     | '/dashboard/terrenos/$id'
+    | '/dashboard/tratamientos-medicos/$id'
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/propietarios/'
     | '/dashboard/sesiones-sanitarias/'
     | '/dashboard/terrenos/'
+    | '/dashboard/tratamientos-medicos/'
     | '/dashboard/veterinarios/'
   fileRoutesById: FileRoutesById
 }
@@ -247,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardVeterinariosIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/tratamientos-medicos/': {
+      id: '/dashboard/tratamientos-medicos/'
+      path: '/tratamientos-medicos'
+      fullPath: '/dashboard/tratamientos-medicos/'
+      preLoaderRoute: typeof DashboardTratamientosMedicosIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/terrenos/': {
       id: '/dashboard/terrenos/'
       path: '/terrenos'
@@ -282,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGanadoIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/tratamientos-medicos/$id': {
+      id: '/dashboard/tratamientos-medicos/$id'
+      path: '/tratamientos-medicos/$id'
+      fullPath: '/dashboard/tratamientos-medicos/$id'
+      preLoaderRoute: typeof DashboardTratamientosMedicosIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/terrenos/$id': {
       id: '/dashboard/terrenos/$id'
       path: '/terrenos/$id'
@@ -311,11 +351,13 @@ interface DashboardRouteChildren {
   DashboardGanadoIdRoute: typeof DashboardGanadoIdRoute
   DashboardPropietariosIdRoute: typeof DashboardPropietariosIdRoute
   DashboardTerrenosIdRoute: typeof DashboardTerrenosIdRoute
+  DashboardTratamientosMedicosIdRoute: typeof DashboardTratamientosMedicosIdRoute
   DashboardGanadoIndexRoute: typeof DashboardGanadoIndexRoute
   DashboardInsumosIndexRoute: typeof DashboardInsumosIndexRoute
   DashboardPropietariosIndexRoute: typeof DashboardPropietariosIndexRoute
   DashboardSesionesSanitariasIndexRoute: typeof DashboardSesionesSanitariasIndexRoute
   DashboardTerrenosIndexRoute: typeof DashboardTerrenosIndexRoute
+  DashboardTratamientosMedicosIndexRoute: typeof DashboardTratamientosMedicosIndexRoute
   DashboardVeterinariosIndexRoute: typeof DashboardVeterinariosIndexRoute
 }
 
@@ -324,11 +366,14 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardGanadoIdRoute: DashboardGanadoIdRoute,
   DashboardPropietariosIdRoute: DashboardPropietariosIdRoute,
   DashboardTerrenosIdRoute: DashboardTerrenosIdRoute,
+  DashboardTratamientosMedicosIdRoute: DashboardTratamientosMedicosIdRoute,
   DashboardGanadoIndexRoute: DashboardGanadoIndexRoute,
   DashboardInsumosIndexRoute: DashboardInsumosIndexRoute,
   DashboardPropietariosIndexRoute: DashboardPropietariosIndexRoute,
   DashboardSesionesSanitariasIndexRoute: DashboardSesionesSanitariasIndexRoute,
   DashboardTerrenosIndexRoute: DashboardTerrenosIndexRoute,
+  DashboardTratamientosMedicosIndexRoute:
+    DashboardTratamientosMedicosIndexRoute,
   DashboardVeterinariosIndexRoute: DashboardVeterinariosIndexRoute,
 }
 

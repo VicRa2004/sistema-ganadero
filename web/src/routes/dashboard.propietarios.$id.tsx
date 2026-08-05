@@ -118,7 +118,7 @@ function DetallePropietarioComponent() {
 					{propietario.imagenMarca ? (
 						<div className="size-14 rounded-xl border border-border bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden shadow-sm">
 							<img
-								src={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3000"}${propietario.imagenMarca}`}
+								src={`${import.meta.env.VITE_API_URL?.replace("/api", "") || ""}${propietario.imagenMarca}`}
 								alt={`Marca de ${propietario.nombre}`}
 								className="size-full object-contain"
 							/>

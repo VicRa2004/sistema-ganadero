@@ -43,8 +43,7 @@ export function TerrenoFormDialog({
 	const [eliminarImagenTerreno, setEliminarImagenTerreno] = useState(false);
 
 	const baseApiUrl =
-		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
-		"http://localhost:3000";
+		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") || "";
 	const [previewUrl, setPreviewUrl] = useState<string | null>(
 		terreno?.imagenTerreno ? `${baseApiUrl}${terreno.imagenTerreno}` : null,
 	);

@@ -74,7 +74,7 @@ export function PropietariosTable({
 									{p.imagenMarca ? (
 										<div className="relative group size-12 rounded-lg border border-border bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
 											<img
-												src={`${import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:3000"}${p.imagenMarca}`}
+												src={`${import.meta.env.VITE_API_URL?.replace("/api", "") || ""}${p.imagenMarca}`}
 												alt={`Marca de ${p.nombre}`}
 												className="size-full object-contain transition-transform duration-200 group-hover:scale-125"
 											/>

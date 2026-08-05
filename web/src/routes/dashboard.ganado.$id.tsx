@@ -51,8 +51,7 @@ export const Route = createFileRoute("/dashboard/ganado/$id")({
 });
 
 const baseApiUrl =
-	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
-	"http://localhost:3000";
+	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") || "";
 
 /** Calcula la edad legible en meses desde la fecha de nacimiento */
 function calcularEdad(fechaNacimiento: string): string {

@@ -57,8 +57,7 @@ function DetalleTerrenoComponent() {
 	const isError = isErrorDetalle || isErrorCapacidad;
 
 	const baseApiUrl =
-		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
-		"http://localhost:3000";
+		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") || "";
 
 	if (isLoading) {
 		return (

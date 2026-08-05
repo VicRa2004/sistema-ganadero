@@ -51,8 +51,7 @@ export function TerrenosTable({
 	}
 
 	const baseApiUrl =
-		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
-		"http://localhost:3000";
+		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") || "";
 
 	return (
 		<div className="rounded-xl border border-border overflow-hidden shadow-sm">

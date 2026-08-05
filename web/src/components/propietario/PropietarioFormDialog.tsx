@@ -36,8 +36,7 @@ export function PropietarioFormDialog({
 	const [eliminarImagenMarca, setEliminarImagenMarca] = useState(false);
 
 	const baseApiUrl =
-		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
-		"http://localhost:3000";
+		(import.meta.env.VITE_API_URL as string)?.replace("/api", "") || "";
 	const [previewUrl, setPreviewUrl] = useState<string | null>(
 		propietario?.imagenMarca ? `${baseApiUrl}${propietario.imagenMarca}` : null,
 	);

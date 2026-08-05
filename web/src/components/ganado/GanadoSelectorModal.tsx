@@ -46,8 +46,7 @@ interface GanadoSelectorModalProps {
 }
 
 const baseApiUrl =
-	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") ||
-	"http://localhost:3000";
+	(import.meta.env.VITE_API_URL as string)?.replace("/api", "") || "";
 
 const getImagenUrl = (path: string | null) => {
 	if (!path) return null;

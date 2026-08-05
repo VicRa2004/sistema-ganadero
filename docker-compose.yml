@@ -20,8 +20,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: sistema_ganadero_app
-    ports:
-      - "${PORT:-3000}:${PORT:-3000}"
+    expose:
+      - "${PORT:-3000}"
     env_file:
       - path: .env
         required: false

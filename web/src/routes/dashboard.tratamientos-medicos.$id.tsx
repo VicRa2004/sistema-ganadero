@@ -8,7 +8,6 @@ import {
 	ArrowLeft,
 	Calendar,
 	CheckCircle2,
-	Database,
 	Loader2,
 	Pill,
 	Sprout,

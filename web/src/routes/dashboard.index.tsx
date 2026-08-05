@@ -20,6 +20,7 @@ import {
 	Sprout,
 	Stethoscope,
 	User,
+	UserCheck,
 	Users,
 	Warehouse,
 } from "lucide-react";
@@ -50,7 +51,7 @@ const OPERATIONS_DATA: OperationCard[] = [
 		icon: Sprout,
 		readAction: "read",
 		badge: "Operativo",
-		href: "#",
+		href: "/dashboard/ganado",
 	},
 	{
 		resource: "terreno",
@@ -77,7 +78,7 @@ const OPERATIONS_DATA: OperationCard[] = [
 		icon: Database,
 		readAction: "read",
 		badge: "Insumos",
-		href: "#",
+		href: "/dashboard/insumos",
 	},
 	{
 		resource: "sesiones-sanitarias",
@@ -86,7 +87,7 @@ const OPERATIONS_DATA: OperationCard[] = [
 		icon: Activity,
 		readAction: "read",
 		badge: "Sanidad",
-		href: "#",
+		href: "/dashboard/sesiones-sanitarias",
 	},
 	{
 		resource: "tratamientos-medicos",
@@ -95,7 +96,16 @@ const OPERATIONS_DATA: OperationCard[] = [
 		icon: Stethoscope,
 		readAction: "read",
 		badge: "Sanidad",
-		href: "#",
+		href: "/dashboard/tratamientos-medicos",
+	},
+	{
+		resource: "veterinarios",
+		title: "Veterinarios",
+		description: "Directorio de personal veterinario y especialistas.",
+		icon: UserCheck,
+		readAction: "read",
+		badge: "Sanidad",
+		href: "/dashboard/veterinarios",
 	},
 ];
 

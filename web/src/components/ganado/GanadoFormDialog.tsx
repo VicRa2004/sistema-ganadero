@@ -126,7 +126,7 @@ export function GanadoFormDialog({
 			const imagenFile = fileInputRef.current?.files?.[0] ?? undefined;
 
 			// Base Payload
-			const payload: Record<string, unknown> = {
+			const payload: any = {
 				identificador: value.identificador.trim(),
 				peso: Number(value.peso),
 				fechaNacimiento: value.fechaNacimiento,

@@ -8,11 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { useObtenerDetalleTratamiento } from "@/modules/tratamiento-medico/hooks/useObtenerDetalleTratamiento";
 import {
-	Activity,
 	Calendar,
 	CheckCircle2,
-	Clock,
-	Database,
 	Loader2,
 	Pill,
 	Sprout,

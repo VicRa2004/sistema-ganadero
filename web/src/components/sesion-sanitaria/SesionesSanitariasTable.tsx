@@ -13,7 +13,6 @@ import {
 	Loader2,
 	Plus,
 	Search,
-	Stethoscope,
 	Trash2,
 	UserCheck,
 } from "lucide-react";

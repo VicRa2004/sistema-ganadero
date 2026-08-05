@@ -10,7 +10,6 @@ import { useListarTratamientosMedicos } from "@/modules/tratamiento-medico/hooks
 import type { TratamientoMedicoDto } from "@/modules/tratamiento-medico/types";
 import { useListarVeterinarios } from "@/modules/veterinario/hooks/useListarVeterinarios";
 import {
-	Activity,
 	Calendar,
 	CheckCircle2,
 	ChevronLeft,

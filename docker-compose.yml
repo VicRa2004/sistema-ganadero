@@ -1,0 +1,28 @@
+services:
+  migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistema_ganadero_migrations
+    command: ["bun", "--cwd", "api", "bunx", "prisma", "migrate", "deploy"]
+    env_file:
+      - path: .env
+        required: false
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistema_ganadero_app
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./api/uploads:/app/api/uploads
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    restart: unless-stopped

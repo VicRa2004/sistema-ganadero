@@ -4,6 +4,7 @@ import { logger } from "hono/logger";
 import { serveStatic } from "hono/bun";
 import { secureHeaders } from "hono/secure-headers";
 import { swaggerUI } from "@hono/swagger-ui";
+import { env } from "@/core/config/env";
 import { swaggerSpec } from "@/core/config/swagger";
 
 import { container } from "@/core/shared/infrastructure/di/container";
@@ -66,6 +67,23 @@ app.route("/api/terrenos", terrenoRouter.router);
 app.route("/api/ganado", ganadoRouter.router);
 app.route("/api/veterinarios", veterinarioRouter.router);
 app.route("/api/sesiones-sanitarias", sesionSanitariaRouter.router);
+
+// 5. Servir Frontend (Vite SPA) en producción
+if (env.NODE_ENV === "prod") {
+	app.use("/*", serveStatic({ root: "../web/dist" }));
+	app.get("*", async (c, next) => {
+		const path = c.req.path;
+		if (
+			path.startsWith("/api/") ||
+			path.startsWith("/uploads/") ||
+			path.startsWith("/api-docs") ||
+			path.includes(".")
+		) {
+			return c.text("Not Found", 404);
+		}
+		return serveStatic({ path: "../web/dist/index.html" })(c, next);
+	});
+}
 
 // 5. Global Error Handler
 app.onError((err, c) => {

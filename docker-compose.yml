@@ -4,10 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: sistema_ganadero_migrations
-    command: ["bun", "--cwd", "api", "bunx", "prisma", "migrate", "deploy"]
+    command: ["bun", "run", "--cwd", "api", "scripts/migrate.ts"]
     env_file:
       - path: .env
         required: false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: "no"
 
   app:
@@ -20,6 +22,8 @@ services:
     env_file:
       - path: .env
         required: false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./api/uploads:/app/api/uploads
     depends_on:

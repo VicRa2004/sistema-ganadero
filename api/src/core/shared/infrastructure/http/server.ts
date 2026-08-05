@@ -1,3 +1,5 @@
+import path from "node:path";
+import { existsSync } from "node:fs";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -69,19 +71,30 @@ app.route("/api/veterinarios", veterinarioRouter.router);
 app.route("/api/sesiones-sanitarias", sesionSanitariaRouter.router);
 
 // 5. Servir Frontend (Vite SPA) en producción
-if (env.NODE_ENV === "prod") {
-	app.use("/*", serveStatic({ root: "../web/dist" }));
+const isProd = env.NODE_ENV === "prod" || env.NODE_ENV === "production";
+const distPath = existsSync(path.resolve(process.cwd(), "web/dist"))
+	? path.resolve(process.cwd(), "web/dist")
+	: path.resolve(process.cwd(), "../web/dist");
+
+if (isProd && existsSync(distPath)) {
+	const relativeDistPath = path.relative(process.cwd(), distPath);
+	const relativeIndexPath = path.relative(
+		process.cwd(),
+		path.resolve(distPath, "index.html"),
+	);
+
+	app.use("/*", serveStatic({ root: relativeDistPath }));
 	app.get("*", async (c, next) => {
-		const path = c.req.path;
+		const reqPath = c.req.path;
 		if (
-			path.startsWith("/api/") ||
-			path.startsWith("/uploads/") ||
-			path.startsWith("/api-docs") ||
-			path.includes(".")
+			reqPath.startsWith("/api/") ||
+			reqPath.startsWith("/uploads/") ||
+			reqPath.startsWith("/api-docs") ||
+			reqPath.includes(".")
 		) {
 			return c.text("Not Found", 404);
 		}
-		return serveStatic({ path: "../web/dist/index.html" })(c, next);
+		return serveStatic({ path: relativeIndexPath })(c, next);
 	});
 }
 

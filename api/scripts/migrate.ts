@@ -4,7 +4,9 @@ async function runMigrations() {
 	const dbUrl = process.env.DATABASE_URL;
 
 	if (!dbUrl) {
-		console.error("❌ ERROR: DATABASE_URL is not set in environment variables!");
+		console.error(
+			"❌ ERROR: DATABASE_URL is not set in environment variables!",
+		);
 		process.exit(1);
 	}
 
@@ -17,7 +19,9 @@ async function runMigrations() {
 
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
-			console.log(`🔄 Executing Prisma migrations (Attempt ${attempt}/${maxRetries})...`);
+			console.log(
+				`🔄 Executing Prisma migrations (Attempt ${attempt}/${maxRetries})...`,
+			);
 			execSync("bunx prisma migrate deploy", {
 				stdio: "inherit",
 				env: process.env,
@@ -27,7 +31,9 @@ async function runMigrations() {
 		} catch (_err) {
 			console.error(`⚠️ Migration attempt ${attempt} failed.`);
 			if (attempt < maxRetries) {
-				console.log(`⏳ Waiting ${retryDelayMs / 1000}s before next attempt...`);
+				console.log(
+					`⏳ Waiting ${retryDelayMs / 1000}s before next attempt...`,
+				);
 				await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
 			} else {
 				console.error("❌ All migration attempts failed. Exiting.");

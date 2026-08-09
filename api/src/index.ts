@@ -3,9 +3,9 @@ import { app } from "@/core/shared/infrastructure/http/server";
 import { env } from "./core/config/env";
 
 const server = Bun.serve({
-  hostname: "0.0.0.0",
-  port: env.PORT,
-  fetch: app.fetch,
+	hostname: "0.0.0.0",
+	port: env.PORT,
+	fetch: app.fetch,
 });
 
 console.log("-----------------------------------------");

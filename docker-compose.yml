@@ -31,7 +31,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ./api/uploads:/app/api/uploads
+      - sistema_ganadero_uploads:/app/api/uploads
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -41,3 +41,8 @@ networks:
   dokploy-network:
     name: dokploy-network
     external: true
+
+volumes:
+  sistema_ganadero_uploads:
+    name: sistema_ganadero_uploads
+

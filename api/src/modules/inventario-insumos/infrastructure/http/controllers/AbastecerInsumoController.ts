@@ -22,8 +22,14 @@ export class AbastecerInsumoController extends BaseController {
 			const { id } = validate(insumoIdSchema, { id: c.req.param("id") });
 			const body = await c.req.json();
 			const dto = validate(abastecerInsumoSchema, body);
+			const user = c.get("user");
 
-			const result = await this.abastecerInsumoUseCase.run(id, dto);
+			const result = await this.abastecerInsumoUseCase.run(
+				id,
+				dto,
+				user.id,
+				user.role,
+			);
 			return this.ok(c, result);
 		});
 	};

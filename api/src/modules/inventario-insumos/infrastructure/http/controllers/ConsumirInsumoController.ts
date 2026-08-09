@@ -19,8 +19,14 @@ export class ConsumirInsumoController extends BaseController {
 			const { id } = validate(insumoIdSchema, { id: c.req.param("id") });
 			const body = await c.req.json();
 			const dto = validate(consumirInsumoSchema, body);
+			const user = c.get("user");
 
-			const result = await this.consumirInsumoUseCase.run(id, dto);
+			const result = await this.consumirInsumoUseCase.run(
+				id,
+				dto,
+				user.id,
+				user.role,
+			);
 			return this.ok(c, result);
 		});
 	};

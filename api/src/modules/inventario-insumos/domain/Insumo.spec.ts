@@ -5,6 +5,7 @@ import { InsumoStockInsuficienteError } from "./error/InsumoStockInsuficienteErr
 
 describe("Entidad de Dominio: Insumo", () => {
 	const fechaCaducidad = new Date("2027-12-31");
+	const usuarioId = 1;
 
 	it("debe crear un nuevo insumo con datos válidos", () => {
 		const insumo = Insumo.create(
@@ -15,6 +16,7 @@ describe("Entidad de Dominio: Insumo", () => {
 			"ml",
 			"LOT-001",
 			fechaCaducidad,
+			usuarioId,
 		);
 
 		expect(insumo.getNombre()).toBe("Ivermectina 1%");
@@ -24,13 +26,23 @@ describe("Entidad de Dominio: Insumo", () => {
 		expect(insumo.getUnidadMedida()).toBe("ml");
 		expect(insumo.getLote()).toBe("LOT-001");
 		expect(insumo.getFechaCaducidad()).toEqual(fechaCaducidad);
+		expect(insumo.getUsuarioId()).toBe(usuarioId);
 		expect(insumo.esNuevo()).toBeTrue();
 		expect(insumo.esBajoStock()).toBeFalse();
 	});
 
 	it("debe lanzar un error si el nombre está vacío", () => {
 		expect(() =>
-			Insumo.create("", "MEDICAMENTO", 10, 5, "ml", "LOT-001", fechaCaducidad),
+			Insumo.create(
+				"",
+				"MEDICAMENTO",
+				10,
+				5,
+				"ml",
+				"LOT-001",
+				fechaCaducidad,
+				usuarioId,
+			),
 		).toThrow("El nombre del insumo no puede estar vacío");
 	});
 
@@ -44,6 +56,7 @@ describe("Entidad de Dominio: Insumo", () => {
 				"ml",
 				"LOT-001",
 				fechaCaducidad,
+				usuarioId,
 			),
 		).toThrow("El stock inicial no puede ser negativo");
 	});
@@ -58,9 +71,11 @@ describe("Entidad de Dominio: Insumo", () => {
 			"dosis",
 			"LOT-002",
 			fechaCaducidad,
+			usuarioId,
 		);
 
 		expect(insumo.getId()).toBe(42);
+		expect(insumo.getUsuarioId()).toBe(usuarioId);
 		expect(insumo.esNuevo()).toBeFalse();
 		expect(insumo.esBajoStock()).toBeTrue();
 	});
@@ -75,6 +90,7 @@ describe("Entidad de Dominio: Insumo", () => {
 			"kg",
 			"LOT-003",
 			fechaCaducidad,
+			usuarioId,
 		);
 
 		insumo.adicionarStock(150);
@@ -92,6 +108,7 @@ describe("Entidad de Dominio: Insumo", () => {
 			"kg",
 			"LOT-003",
 			fechaCaducidad,
+			usuarioId,
 		);
 
 		expect(() => insumo.adicionarStock(0)).toThrow(InsumoCantidadInvalidaError);
@@ -110,6 +127,7 @@ describe("Entidad de Dominio: Insumo", () => {
 			"kg",
 			"LOT-003",
 			fechaCaducidad,
+			usuarioId,
 		);
 
 		insumo.descontarStock(40);
@@ -128,6 +146,7 @@ describe("Entidad de Dominio: Insumo", () => {
 			"ml",
 			"LOT-004",
 			fechaCaducidad,
+			usuarioId,
 		);
 
 		expect(() => insumo.descontarStock(50)).toThrow(

@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
 import type { InsumoOutputDto } from "../dtos/InsumoDto";
@@ -13,10 +14,18 @@ export class ObtenerDetalleInsumoUseCase {
 		private readonly mapper: InsumoMapper,
 	) {}
 
-	public async run(id: number): Promise<InsumoOutputDto> {
+	public async run(
+		id: number,
+		usuarioId: number,
+		rol: string,
+	): Promise<InsumoOutputDto> {
 		const insumo = await this.insumoRepository.findById(id);
 		if (!insumo) {
 			throw new InsumoNotFoundError(id);
+		}
+
+		if (rol !== "ADMIN" && insumo.getUsuarioId() !== usuarioId) {
+			throw new BaseError("No tienes permiso para acceder a este insumo", 403);
 		}
 		return this.mapper.toDto(insumo);
 	}

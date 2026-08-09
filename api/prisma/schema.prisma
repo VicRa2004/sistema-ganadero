@@ -26,6 +26,7 @@ model User {
   refreshTokens     RefreshToken[]
   terrenos          Terreno[]
   veterinarios      Veterinario[]
+  insumos           Insumo[]
 
   @@map("user")
 }
@@ -242,10 +243,12 @@ model Insumo {
   unidadMedida   String     @map("ins_unidad") @db.VarChar(20)
   lote           String     @map("ins_lote") @db.VarChar(50)
   fechaCaducidad DateTime   @map("ins_fecha_caducidad")
+  usuarioId      Int        @map("ins_fkusuario")
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime?  @updatedAt @map("updated_at")
   deletedAt      DateTime?  @map("deleted_at")
 
+  usuario             User                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
 

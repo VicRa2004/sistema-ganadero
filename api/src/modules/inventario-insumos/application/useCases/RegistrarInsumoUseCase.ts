@@ -26,6 +26,7 @@ export class RegistrarInsumoUseCase {
 			dto.unidadMedida,
 			dto.lote,
 			new Date(dto.fechaCaducidad),
+			dto.usuarioId,
 		);
 
 		const saved = await this.insumoRepository.save(insumo);

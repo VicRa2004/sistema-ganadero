@@ -16,6 +16,7 @@ interface PrismaInsumoRecord {
 	unidadMedida: string;
 	lote: string;
 	fechaCaducidad: Date;
+	usuarioId: number;
 	deletedAt: Date | null;
 }
 
@@ -31,6 +32,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 			record.unidadMedida,
 			record.lote,
 			record.fechaCaducidad,
+			record.usuarioId,
 		);
 	}
 
@@ -45,6 +47,10 @@ export class PrismaInsumoRepository implements InsumoRepository {
 	public async findAll(filters: InsumoFilters): Promise<Pagination<Insumo>> {
 		const skip = (filters.page - 1) * filters.limit;
 		const whereClause: Prisma.InsumoWhereInput = { deletedAt: null };
+
+		if (filters.usuarioId !== undefined) {
+			whereClause.usuarioId = filters.usuarioId;
+		}
 
 		if (filters.nombre && filters.nombre.trim() !== "") {
 			whereClause.nombre = {
@@ -81,9 +87,14 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		};
 	}
 
-	public async findCriticos(): Promise<Insumo[]> {
+	public async findCriticos(usuarioId?: number): Promise<Insumo[]> {
+		const whereClause: Prisma.InsumoWhereInput = { deletedAt: null };
+		if (usuarioId !== undefined) {
+			whereClause.usuarioId = usuarioId;
+		}
+
 		const records = await prisma.insumo.findMany({
-			where: { deletedAt: null },
+			where: whereClause,
 		});
 
 		// Filtramos en memoria los insumos cuyo stock es inferior o igual a stockMinimo
@@ -105,6 +116,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 					unidadMedida: insumo.getUnidadMedida(),
 					lote: insumo.getLote(),
 					fechaCaducidad: insumo.getFechaCaducidad(),
+					usuarioId: insumo.getUsuarioId(),
 				},
 			});
 			return this.toDomain(record as unknown as PrismaInsumoRecord);
@@ -120,6 +132,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 				unidadMedida: insumo.getUnidadMedida(),
 				lote: insumo.getLote(),
 				fechaCaducidad: insumo.getFechaCaducidad(),
+				usuarioId: insumo.getUsuarioId(),
 			},
 		});
 		return this.toDomain(record as unknown as PrismaInsumoRecord);

@@ -18,8 +18,12 @@ export class RegistrarInsumoController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const body = await c.req.json();
 			const dto = validate(registrarInsumoSchema, body);
+			const user = c.get("user");
 
-			const result = await this.registrarInsumoUseCase.run(dto);
+			const result = await this.registrarInsumoUseCase.run({
+				...dto,
+				usuarioId: user.id,
+			});
 			return this.created(c, result);
 		});
 	};

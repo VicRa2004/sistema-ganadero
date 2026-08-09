@@ -23,6 +23,7 @@ describe("EliminarInsumoUseCase", () => {
 								"kg",
 								"L-DEL",
 								new Date("2027-01-01"),
+								1,
 							)
 						: null,
 				),
@@ -38,13 +39,13 @@ describe("EliminarInsumoUseCase", () => {
 	});
 
 	it("debe ejecutar el borrado suave (delete) si el insumo existe", async () => {
-		await useCase.run(1);
+		await useCase.run(1, 1, "USER");
 
 		expect(repository.findById).toHaveBeenCalledWith(1);
 		expect(repository.delete).toHaveBeenCalledWith(1);
 	});
 
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {
-		expect(useCase.run(999)).rejects.toThrow(InsumoNotFoundError);
+		expect(useCase.run(999, 1, "USER")).rejects.toThrow(InsumoNotFoundError);
 	});
 });

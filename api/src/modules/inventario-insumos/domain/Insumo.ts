@@ -12,6 +12,7 @@ export class Insumo extends Entity {
 	private unidadMedida: string;
 	private lote: string;
 	private fechaCaducidad: Date;
+	private usuarioId: number;
 
 	private constructor(
 		id: EntityId,
@@ -22,6 +23,7 @@ export class Insumo extends Entity {
 		unidadMedida: string,
 		lote: string,
 		fechaCaducidad: Date,
+		usuarioId: number,
 	) {
 		super(id);
 		this.nombre = nombre;
@@ -31,6 +33,7 @@ export class Insumo extends Entity {
 		this.unidadMedida = unidadMedida;
 		this.lote = lote;
 		this.fechaCaducidad = fechaCaducidad;
+		this.usuarioId = usuarioId;
 	}
 
 	public static create(
@@ -41,6 +44,7 @@ export class Insumo extends Entity {
 		unidadMedida: string,
 		lote: string,
 		fechaCaducidad: Date,
+		usuarioId: number,
 	): Insumo {
 		if (!nombre || nombre.trim() === "") {
 			throw new Error("El nombre del insumo no puede estar vacío");
@@ -57,6 +61,9 @@ export class Insumo extends Entity {
 		if (!lote || lote.trim() === "") {
 			throw new Error("El lote del insumo no puede estar vacío");
 		}
+		if (!usuarioId || usuarioId <= 0) {
+			throw new Error("El usuarioId debe ser un ID válido");
+		}
 		return new Insumo(
 			new EntityId(),
 			nombre,
@@ -66,6 +73,7 @@ export class Insumo extends Entity {
 			unidadMedida,
 			lote,
 			fechaCaducidad,
+			usuarioId,
 		);
 	}
 
@@ -78,6 +86,7 @@ export class Insumo extends Entity {
 		unidadMedida: string,
 		lote: string,
 		fechaCaducidad: Date,
+		usuarioId: number,
 	): Insumo {
 		return new Insumo(
 			new EntityId(id),
@@ -88,6 +97,7 @@ export class Insumo extends Entity {
 			unidadMedida,
 			lote,
 			fechaCaducidad,
+			usuarioId,
 		);
 	}
 
@@ -117,6 +127,10 @@ export class Insumo extends Entity {
 
 	public getFechaCaducidad(): Date {
 		return this.fechaCaducidad;
+	}
+
+	public getUsuarioId(): number {
+		return this.usuarioId;
 	}
 
 	public esNuevo(): boolean {

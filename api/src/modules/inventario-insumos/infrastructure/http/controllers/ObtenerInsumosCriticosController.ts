@@ -14,7 +14,10 @@ export class ObtenerInsumosCriticosController extends BaseController {
 
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const result = await this.obtenerCriticosUseCase.run();
+			const user = c.get("user");
+			const usuarioId = user.role !== "ADMIN" ? user.id : undefined;
+
+			const result = await this.obtenerCriticosUseCase.run(usuarioId);
 			return this.ok(c, result);
 		});
 	};

@@ -8,6 +8,7 @@ export interface InsumoOutputDto {
 	lote: string;
 	fechaCaducidad: string;
 	esBajoStock: boolean;
+	usuarioId: number;
 }
 
 export interface RegistrarInsumoInputDto {
@@ -18,6 +19,7 @@ export interface RegistrarInsumoInputDto {
 	unidadMedida: string;
 	lote: string;
 	fechaCaducidad: string;
+	usuarioId: number;
 }
 
 export interface AbastecerInsumoInputDto {

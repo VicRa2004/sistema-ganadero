@@ -16,6 +16,7 @@ describe("InsumoMapper", () => {
 			"ml",
 			"LOT-ABC",
 			fecha,
+			1,
 		);
 
 		const dto = mapper.toDto(insumo);
@@ -30,6 +31,7 @@ describe("InsumoMapper", () => {
 			lote: "LOT-ABC",
 			fechaCaducidad: fecha.toISOString(),
 			esBajoStock: true,
+			usuarioId: 1,
 		});
 	});
 });

@@ -15,6 +15,7 @@ export class InsumoMapper {
 			lote: insumo.getLote(),
 			fechaCaducidad: insumo.getFechaCaducidad().toISOString(),
 			esBajoStock: insumo.esBajoStock(),
+			usuarioId: insumo.getUsuarioId(),
 		};
 	}
 }

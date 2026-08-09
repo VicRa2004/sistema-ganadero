@@ -12,8 +12,8 @@ export class ObtenerInsumosCriticosUseCase {
 		private readonly mapper: InsumoMapper,
 	) {}
 
-	public async run(): Promise<InsumoOutputDto[]> {
-		const insumos = await this.insumoRepository.findCriticos();
+	public async run(usuarioId?: number): Promise<InsumoOutputDto[]> {
+		const insumos = await this.insumoRepository.findCriticos(usuarioId);
 		return insumos.map((insumo) => this.mapper.toDto(insumo));
 	}
 }

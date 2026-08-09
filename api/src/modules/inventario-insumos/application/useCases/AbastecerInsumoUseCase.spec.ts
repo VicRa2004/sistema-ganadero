@@ -20,6 +20,7 @@ describe("AbastecerInsumoUseCase", () => {
 		"ml",
 		"LOT-100",
 		new Date("2027-01-01"),
+		1,
 	);
 
 	beforeEach(() => {
@@ -39,7 +40,7 @@ describe("AbastecerInsumoUseCase", () => {
 	});
 
 	it("debe adicionar stock a un insumo existente y retornar DTO actualizado", async () => {
-		const result = await useCase.run(5, { cantidad: 30 });
+		const result = await useCase.run(5, { cantidad: 30 }, 1, "USER");
 
 		expect(repository.findById).toHaveBeenCalledWith(5);
 		expect(repository.save).toHaveBeenCalled();
@@ -47,7 +48,7 @@ describe("AbastecerInsumoUseCase", () => {
 	});
 
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {
-		expect(useCase.run(99, { cantidad: 10 })).rejects.toThrow(
+		expect(useCase.run(99, { cantidad: 10 }, 1, "USER")).rejects.toThrow(
 			InsumoNotFoundError,
 		);
 	});

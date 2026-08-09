@@ -21,6 +21,7 @@ describe("ObtenerInsumosCriticosUseCase", () => {
 			"dosis",
 			"LOT-X",
 			new Date("2027-01-01"),
+			1,
 		);
 		repository = {
 			findById: mock(() => Promise.resolve(null)),
@@ -35,9 +36,9 @@ describe("ObtenerInsumosCriticosUseCase", () => {
 	});
 
 	it("debe retornar la lista de insumos con stock igual o inferior al stock mínimo", async () => {
-		const result = await useCase.run();
+		const result = await useCase.run(1);
 
-		expect(repository.findCriticos).toHaveBeenCalled();
+		expect(repository.findCriticos).toHaveBeenCalledWith(1);
 		expect(result).toHaveLength(1);
 		expect(result[0].nombre).toBe("Vacuna Critica");
 		expect(result[0].esBajoStock).toBeTrue();

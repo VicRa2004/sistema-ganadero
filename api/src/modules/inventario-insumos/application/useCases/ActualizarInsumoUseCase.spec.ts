@@ -26,6 +26,7 @@ describe("ActualizarInsumoUseCase", () => {
 								"ml",
 								"LOT-VIEJO",
 								new Date("2027-01-01"),
+								1,
 							)
 						: null,
 				),
@@ -41,11 +42,16 @@ describe("ActualizarInsumoUseCase", () => {
 	});
 
 	it("debe actualizar los datos del insumo y retornar DTO actualizado", async () => {
-		const result = await useCase.run(1, {
-			nombre: "Nombre Nuevo",
-			stockMinimo: 25,
-			lote: "LOT-NUEVO",
-		});
+		const result = await useCase.run(
+			1,
+			{
+				nombre: "Nombre Nuevo",
+				stockMinimo: 25,
+				lote: "LOT-NUEVO",
+			},
+			1,
+			"USER",
+		);
 
 		expect(repository.findById).toHaveBeenCalledWith(1);
 		expect(repository.save).toHaveBeenCalled();
@@ -55,7 +61,7 @@ describe("ActualizarInsumoUseCase", () => {
 	});
 
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {
-		expect(useCase.run(999, { nombre: "Test" })).rejects.toThrow(
+		expect(useCase.run(999, { nombre: "Test" }, 1, "USER")).rejects.toThrow(
 			InsumoNotFoundError,
 		);
 	});

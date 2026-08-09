@@ -22,6 +22,7 @@ describe("ListarInsumosUseCase", () => {
 				"ml",
 				"L1",
 				new Date("2027-01-01"),
+				1,
 			),
 			Insumo.reconstitute(
 				2,
@@ -32,6 +33,7 @@ describe("ListarInsumosUseCase", () => {
 				"kg",
 				"L2",
 				new Date("2027-01-01"),
+				1,
 			),
 		];
 		repository = {

@@ -18,8 +18,14 @@ export class ActualizarInsumoController extends BaseController {
 			const id = Number(c.req.param("id"));
 			const body = await c.req.json();
 			const parsed = actualizarInsumoSchema.parse(body);
+			const user = c.get("user");
 
-			const result = await this.actualizarInsumoUseCase.run(id, parsed);
+			const result = await this.actualizarInsumoUseCase.run(
+				id,
+				parsed,
+				user.id,
+				user.role,
+			);
 			return this.ok(c, result);
 		});
 	};

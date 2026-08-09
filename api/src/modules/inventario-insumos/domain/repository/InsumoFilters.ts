@@ -3,4 +3,5 @@ export interface InsumoFilters {
 	limit: number;
 	nombre?: string;
 	tipo?: string;
+	usuarioId?: number;
 }

@@ -17,7 +17,12 @@ export class ListarInsumosController extends BaseController {
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
 			const queryParams = c.req.query();
-			const filters = validate(listarInsumosQuerySchema, queryParams);
+			const dto = validate(listarInsumosQuerySchema, queryParams);
+			const user = c.get("user");
+			const filters = {
+				...dto,
+				usuarioId: user.role !== "ADMIN" ? user.id : undefined,
+			};
 
 			const result = await this.listarInsumosUseCase.run(filters);
 			return this.ok(c, result);

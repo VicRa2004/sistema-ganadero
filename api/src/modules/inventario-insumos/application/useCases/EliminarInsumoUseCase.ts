@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
 
@@ -9,10 +10,14 @@ export class EliminarInsumoUseCase {
 		private readonly insumoRepository: InsumoRepository,
 	) {}
 
-	public async run(id: number): Promise<void> {
+	public async run(id: number, usuarioId: number, rol: string): Promise<void> {
 		const insumo = await this.insumoRepository.findById(id);
 		if (!insumo) {
 			throw new InsumoNotFoundError(id);
+		}
+
+		if (rol !== "ADMIN" && insumo.getUsuarioId() !== usuarioId) {
+			throw new BaseError("No tienes permiso para eliminar este insumo", 403);
 		}
 		await this.insumoRepository.delete(id);
 	}

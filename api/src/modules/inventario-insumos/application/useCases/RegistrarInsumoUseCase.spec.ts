@@ -30,6 +30,7 @@ describe("RegistrarInsumoUseCase", () => {
 						insumo.getUnidadMedida(),
 						insumo.getLote(),
 						insumo.getFechaCaducidad(),
+						insumo.getUsuarioId(),
 					),
 				),
 			),
@@ -47,6 +48,7 @@ describe("RegistrarInsumoUseCase", () => {
 			unidadMedida: "ml",
 			lote: "LOT-999",
 			fechaCaducidad: "2028-01-01T00:00:00.000Z",
+			usuarioId: 1,
 		};
 
 		const result = await useCase.run(input);
@@ -62,6 +64,7 @@ describe("RegistrarInsumoUseCase", () => {
 			lote: "LOT-999",
 			fechaCaducidad: new Date("2028-01-01T00:00:00.000Z").toISOString(),
 			esBajoStock: false,
+			usuarioId: 1,
 		});
 	});
 });

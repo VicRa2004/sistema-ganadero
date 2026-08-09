@@ -27,6 +27,7 @@ describe("ConsumirInsumoUseCase", () => {
 							"dosis",
 							"LOT-200",
 							new Date("2027-01-01"),
+							1,
 						),
 					);
 				}
@@ -43,7 +44,7 @@ describe("ConsumirInsumoUseCase", () => {
 	});
 
 	it("debe descontar stock de un insumo existente y retornar DTO", async () => {
-		const result = await useCase.run(5, { cantidad: 20 });
+		const result = await useCase.run(5, { cantidad: 20 }, 1, "USER");
 
 		expect(repository.findById).toHaveBeenCalledWith(5);
 		expect(repository.save).toHaveBeenCalled();
@@ -52,13 +53,13 @@ describe("ConsumirInsumoUseCase", () => {
 	});
 
 	it("debe lanzar InsumoStockInsuficienteError si la cantidad supera el stock", async () => {
-		expect(useCase.run(5, { cantidad: 100 })).rejects.toThrow(
+		expect(useCase.run(5, { cantidad: 100 }, 1, "USER")).rejects.toThrow(
 			InsumoStockInsuficienteError,
 		);
 	});
 
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {
-		expect(useCase.run(99, { cantidad: 5 })).rejects.toThrow(
+		expect(useCase.run(99, { cantidad: 5 }, 1, "USER")).rejects.toThrow(
 			InsumoNotFoundError,
 		);
 	});

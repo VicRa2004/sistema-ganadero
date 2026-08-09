@@ -26,6 +26,7 @@ describe("ObtenerDetalleInsumoUseCase", () => {
 								"ml",
 								"L-1",
 								new Date("2027-01-01"),
+								1,
 							)
 						: null,
 				),
@@ -41,7 +42,7 @@ describe("ObtenerDetalleInsumoUseCase", () => {
 	});
 
 	it("debe retornar el DTO del insumo si existe", async () => {
-		const result = await useCase.run(1);
+		const result = await useCase.run(1, 1, "USER");
 
 		expect(repository.findById).toHaveBeenCalledWith(1);
 		expect(result.id).toBe(1);
@@ -49,6 +50,6 @@ describe("ObtenerDetalleInsumoUseCase", () => {
 	});
 
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {
-		expect(useCase.run(999)).rejects.toThrow(InsumoNotFoundError);
+		expect(useCase.run(999, 1, "USER")).rejects.toThrow(InsumoNotFoundError);
 	});
 });

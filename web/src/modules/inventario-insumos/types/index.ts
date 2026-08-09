@@ -21,6 +21,7 @@ export interface InsumoDto {
 	lote: string;
 	fechaCaducidad: string;
 	esBajoStock: boolean;
+	usuarioId: number;
 }
 
 // ---- Input DTOs (payloads para el API) ----

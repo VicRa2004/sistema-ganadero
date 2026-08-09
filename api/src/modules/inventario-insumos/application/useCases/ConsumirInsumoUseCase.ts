@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
 import type {
@@ -19,10 +20,16 @@ export class ConsumirInsumoUseCase {
 	public async run(
 		id: number,
 		dto: ConsumirInsumoInputDto,
+		usuarioId: number,
+		rol: string,
 	): Promise<InsumoOutputDto> {
 		const insumo = await this.insumoRepository.findById(id);
 		if (!insumo) {
 			throw new InsumoNotFoundError(id);
+		}
+
+		if (rol !== "ADMIN" && insumo.getUsuarioId() !== usuarioId) {
+			throw new BaseError("No tienes permiso para consumir este insumo", 403);
 		}
 
 		insumo.descontarStock(dto.cantidad);

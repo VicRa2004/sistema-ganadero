@@ -14,7 +14,7 @@ async function runMigrations() {
 	const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ":****@");
 	console.log(`📡 Target Database: ${maskedUrl}`);
 
-	const maxRetries = 5;
+	const maxRetries = 10;
 	const retryDelayMs = 3000;
 
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -22,14 +22,15 @@ async function runMigrations() {
 			console.log(
 				`🔄 Executing Prisma migrations (Attempt ${attempt}/${maxRetries})...`,
 			);
-			execSync("bunx prisma migrate deploy", {
+			execSync("bun run prisma migrate deploy", {
 				stdio: "inherit",
 				env: process.env,
 			});
 			console.log("✅ Database migrations applied successfully!");
 			process.exit(0);
-		} catch (_err) {
-			console.error(`⚠️ Migration attempt ${attempt} failed.`);
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : String(err);
+			console.error(`⚠️ Migration attempt ${attempt} failed: ${errorMessage}`);
 			if (attempt < maxRetries) {
 				console.log(
 					`⏳ Waiting ${retryDelayMs / 1000}s before next attempt...`,

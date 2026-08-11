@@ -17,19 +17,6 @@ async function runMigrations() {
 	const maxRetries = 5;
 	const retryDelayMs = 3000;
 
-	// Intentar auto-resolver la migración que causaba P3009 si estaba atascada
-	try {
-		execSync(
-			"bun run prisma migrate resolve --rolled-back 20260809213929_add_usuario_to_insumo",
-			{ stdio: "ignore", env: process.env },
-		);
-		console.log(
-			"ℹ️ Se intentó auto-desbloquear la migración 20260809213929_add_usuario_to_insumo",
-		);
-	} catch (_e) {
-		// Ignorar si no estaba en estado fallido
-	}
-
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
 			console.log(

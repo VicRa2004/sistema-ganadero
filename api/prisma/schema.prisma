@@ -234,8 +234,23 @@ model Ganado {
   motivoBaja             MotivoBaja?           @relation(fields: [motivoBajaId], references: [id], onDelete: Restrict)
   aplicacionesSanitarias AplicacionSanitaria[]
   tratamientosMedicos    TratamientoMedico[]
+  pesajes                Pesaje[]
 
   @@map("ganado")
+}
+
+model Pesaje {
+  id            Int      @id @default(autoincrement()) @map("pes_id")
+  ganadoId      Int      @map("pes_fkganado")
+  peso          Float    @map("pes_peso")
+  fecha         DateTime @map("pes_fecha")
+  observaciones String?  @map("pes_observaciones") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  ganado Ganado @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+
+  @@index([ganadoId, fecha])
+  @@map("pesaje")
 }
 
 model Insumo {

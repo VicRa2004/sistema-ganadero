@@ -4,7 +4,11 @@ import { injectable, inject } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import type { RefreshTokenUseCase } from "../../../application/useCases/RefreshTokenUseCase";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
-import { env } from "@/core/config/env";
+import {
+	REFRESH_COOKIE_MAX_AGE,
+	REFRESH_COOKIE_NAME,
+	refreshCookieOptions,
+} from "../refreshTokenCookie";
 
 @injectable()
 export class RefreshTokenController extends BaseController {
@@ -17,7 +21,7 @@ export class RefreshTokenController extends BaseController {
 
 	run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const refreshToken = getCookie(c, "refreshToken");
+			const refreshToken = getCookie(c, REFRESH_COOKIE_NAME);
 
 			if (!refreshToken) {
 				throw new BaseError("Refresh token no proporcionado o expirado", 401);
@@ -25,12 +29,9 @@ export class RefreshTokenController extends BaseController {
 
 			const result = await this.refreshTokenUseCase.run(refreshToken);
 
-			setCookie(c, "refreshToken", result.refreshToken, {
-				httpOnly: true,
-				secure: env.NODE_ENV === "prod",
-				sameSite: "Lax",
-				path: "/api/auth",
-				maxAge: 7 * 24 * 60 * 60, // 7 días en segundos
+			setCookie(c, REFRESH_COOKIE_NAME, result.refreshToken, {
+				...refreshCookieOptions,
+				maxAge: REFRESH_COOKIE_MAX_AGE,
 			});
 
 			return this.ok(c, { accessToken: result.accessToken });

@@ -82,7 +82,7 @@ app.use("/uploads/*", serveStatic({ root: "./" }));
 
 // 2. Documentación de la API (Swagger)
 // Solo fuera de producción, o si se activa explícitamente con ENABLE_API_DOCS=true
-const isProd = env.NODE_ENV === "prod" || env.NODE_ENV === "production";
+const isProd = env.isProd;
 if (env.ENABLE_API_DOCS ?? !isProd) {
 	// Hono necesita que expongas el JSON y luego le digas a la UI dónde leerlo
 	app.get("/api-docs.json", (c) => c.json(swaggerSpec));

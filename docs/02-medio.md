@@ -74,16 +74,22 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-10 · El peso del ganado se sobrescribe sin historial
 
+> ✅ **Implementado (API).** Tabla `pesaje` (migración `20261017190000_add_pesaje`, con backfill de un pesaje por animal activo). `POST /ganado/:id/pesajes` inserta (acepta `fecha` y `observaciones`) y deja `Ganado.peso` igual al pesaje más reciente en la misma transacción; un pesaje con fecha anterior al último no cambia el peso actual. `GET /ganado/:id/pesajes` devuelve el historial con ganancia diaria (GDP) entre pesajes, GDP acumulada y alerta de pérdida de peso. El peso inicial al registrar un animal es su primer pesaje, y cambiar `peso` por `PUT` también genera uno (`save` ya no escribe el peso al actualizar). **Pendiente:** gráfica y tabla en la ficha del web, y comparación con el promedio de raza/edad (ver `mejoras/feature-pesajes-y-reproduccion.md`).
+
 - **Dónde:** `RegistrarPesajeUseCase`, `Ganado.peso`.
 - **Propuesta:** crear tabla `Pesaje` (ver `mejoras/feature-pesajes-y-reproduccion.md`) y mantener `Ganado.peso` como último valor.
 
 ## M-11 · Cookie `Secure` depende de `NODE_ENV === "prod"`
+
+> ✅ **Implementado.** `env.ts` normaliza `production` → `prod` y expone `env.isProd`, usado por el servidor y la cookie. Login, registro, refresh y logout comparten `refreshTokenCookie.ts` (mismos atributos al crear y al borrar la cookie).
 
 - **Dónde:** `LoginController`, `RefreshTokenController`, `RegisterController`.
 - **Problema:** `NODE_ENV` acepta `prod` y `production`; con `production` la cookie sale sin `Secure`.
 - **Propuesta:** normalizar `NODE_ENV` en `env.ts` (un único valor) y exponer `env.isProd`; usarlo en todos los puntos. Verificar también que `Logout` limpia la cookie con los mismos atributos.
 
 ## M-12 · `authStore` del web: confirmar que no persiste el access token
+
+> ✅ **Verificado y corregido.** Sí persistía `accessToken` en `localStorage`. Ahora solo se guardan `user` y `permissions` (con `version: 1` y `migrate`, que descarta el token de instalaciones anteriores). Al arrancar, `restoreSession` pide un token nuevo a `/auth/refresh` con la cookie HttpOnly antes de renderizar, así los guards no redirigen a `/login` a una sesión válida.
 
 - **Dónde:** `web/src/modules/auth/store/authStore.ts` (usa `persist`, clave `auth-storage`).
 - **Propuesta:** _verificar_ y, si guarda `accessToken`, usar `partialize` para persistir solo datos no sensibles (el access token debe vivir solo en memoria y recuperarse vía `/auth/refresh`).

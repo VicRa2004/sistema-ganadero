@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/config/query";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import { restoreSession } from "@/modules/auth/services/restoreSession";
 import "./index.css";
 
 // Importar el árbol de rutas auto-generado por el compilador de TanStack Router
@@ -52,11 +53,16 @@ function App() {
 
 const rootElement = document.getElementById("root");
 if (rootElement && !rootElement.innerHTML) {
-	createRoot(rootElement).render(
-		<StrictMode>
-			<QueryClientProvider client={queryClient}>
-				<App />
-			</QueryClientProvider>
-		</StrictMode>,
-	);
+	const root = createRoot(rootElement);
+	// Se espera a recuperar el access token para que los guards de ruta
+	// no redirijan a /login a un usuario con sesión válida
+	restoreSession().finally(() => {
+		root.render(
+			<StrictMode>
+				<QueryClientProvider client={queryClient}>
+					<App />
+				</QueryClientProvider>
+			</StrictMode>,
+		);
+	});
 }

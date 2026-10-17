@@ -8,7 +8,11 @@ const JWT_SECRET_PLACEHOLDER = /supersecret|cambiar|change[_-]?me|dev_local/i;
 export const EnvSchema = z
 	.object({
 		PORT: z.coerce.number("El puerto debe ser un numero").default(3000),
-		NODE_ENV: z.enum(["dev", "prod", "production", "test"]).default("dev"),
+		// "production" es un alias de "prod": se normaliza para tener un único valor
+		NODE_ENV: z
+			.enum(["dev", "prod", "production", "test"])
+			.default("dev")
+			.transform((value) => (value === "production" ? "prod" : value)),
 		DATABASE_URL: z.string().url("DATABASE_URL debe ser una URL valida"),
 		JWT_SECRET: z.string().min(1, "JWT_SECRET es obligatorio"),
 		// Orígenes permitidos para CORS, separados por comas. Vacío = solo mismo origen.
@@ -58,9 +62,10 @@ export const EnvSchema = z
 			});
 		}
 
-		const esProduccion =
-			value.NODE_ENV === "prod" || value.NODE_ENV === "production";
-		if (esProduccion && JWT_SECRET_PLACEHOLDER.test(value.JWT_SECRET)) {
+		if (
+			value.NODE_ENV === "prod" &&
+			JWT_SECRET_PLACEHOLDER.test(value.JWT_SECRET)
+		) {
 			ctx.addIssue({
 				code: "custom",
 				path: ["JWT_SECRET"],
@@ -68,7 +73,8 @@ export const EnvSchema = z
 					"JWT_SECRET usa un valor de ejemplo; define un secreto aleatorio propio en producción",
 			});
 		}
-	});
+	})
+	.transform((value) => ({ ...value, isProd: value.NODE_ENV === "prod" }));
 
 const envPrev = {
 	PORT: process.env.PORT,

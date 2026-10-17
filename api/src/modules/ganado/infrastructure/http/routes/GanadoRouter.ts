@@ -3,6 +3,7 @@ import { inject, injectable } from "tsyringe";
 import type { AuthMiddleware } from "@/modules/auth/infrastructure/http/middlewares/authMiddleware";
 import type { RequirePermissionMiddleware } from "@/modules/authorization/infrastructure/http/middlewares/RequirePermissionMiddleware";
 import type { RegistrarGanadoController } from "../controllers/RegistrarGanadoController";
+import type { ListarPesajesController } from "../controllers/ListarPesajesController";
 import type { RegistrarPesajeController } from "../controllers/RegistrarPesajeController";
 import type { TrasladarGanadoController } from "../controllers/TrasladarGanadoController";
 import type { ObtenerFichaGanadoController } from "../controllers/ObtenerFichaGanadoController";
@@ -25,6 +26,8 @@ export class GanadoRouter {
 		private readonly registrarController: RegistrarGanadoController,
 		@inject("RegistrarPesajeController")
 		private readonly pesajeController: RegistrarPesajeController,
+		@inject("ListarPesajesController")
+		private readonly listarPesajesController: ListarPesajesController,
 		@inject("TrasladarGanadoController")
 		private readonly trasladoController: TrasladarGanadoController,
 		@inject("ObtenerFichaGanadoController")
@@ -74,6 +77,13 @@ export class GanadoRouter {
 			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "create"),
 			this.registrarController.run.bind(this.registrarController),
+		);
+
+		this.router.get(
+			"/:id/pesajes",
+			this.authMiddleware.handle,
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.listarPesajesController.run.bind(this.listarPesajesController),
 		);
 
 		this.router.post(

@@ -75,6 +75,13 @@ export const darDeBajaSchema = z.object({
 
 export const registrarPesajeSchema = z.object({
 	peso: z.number().positive("El peso debe ser un número positivo"),
+	fecha: z
+		.string()
+		.refine((val) => !Number.isNaN(Date.parse(val)), {
+			message: "La fecha del pesaje no es válida",
+		})
+		.optional(),
+	observaciones: z.string().max(500).optional(),
 });
 
 export const trasladarGanadoSchema = z.object({

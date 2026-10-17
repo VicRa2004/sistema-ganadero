@@ -60,3 +60,28 @@ describe("EnvSchema · JWT_SECRET", () => {
 		expect(result.success).toBe(true);
 	});
 });
+
+describe("EnvSchema · NODE_ENV", () => {
+	it("normaliza production a prod y expone isProd", () => {
+		for (const NODE_ENV of ["prod", "production"]) {
+			const result = EnvSchema.parse({
+				...base,
+				NODE_ENV,
+				JWT_SECRET: SECRETO_VALIDO,
+			});
+			expect(result.NODE_ENV).toBe("prod");
+			expect(result.isProd).toBe(true);
+		}
+	});
+
+	it("isProd es falso en dev y test", () => {
+		for (const NODE_ENV of ["dev", "test"]) {
+			const result = EnvSchema.parse({
+				...base,
+				NODE_ENV,
+				JWT_SECRET: SECRETO_VALIDO,
+			});
+			expect(result.isProd).toBe(false);
+		}
+	});
+});

@@ -114,6 +114,7 @@ import { GanadoMapper } from "@/modules/ganado/application/mappers/GanadoMapper"
 import { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
 import { RegistrarPesajeUseCase } from "@/modules/ganado/application/useCases/RegistrarPesajeUseCase";
+import { ListarPesajesUseCase } from "@/modules/ganado/application/useCases/ListarPesajesUseCase";
 import { TrasladarGanadoUseCase } from "@/modules/ganado/application/useCases/TrasladarGanadoUseCase";
 import { ObtenerFichaGanadoUseCase } from "@/modules/ganado/application/useCases/ObtenerFichaGanadoUseCase";
 import { ListarGanadosUseCase } from "@/modules/ganado/application/useCases/ListarGanadosUseCase";
@@ -123,6 +124,7 @@ import { DarDeBajaGanadoUseCase } from "@/modules/ganado/application/useCases/Da
 import { ListarMotivosBajaUseCase } from "@/modules/ganado/application/useCases/ListarMotivosBajaUseCase";
 import { RegistrarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarGanadoController";
 import { RegistrarPesajeController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarPesajeController";
+import { ListarPesajesController } from "@/modules/ganado/infrastructure/http/controllers/ListarPesajesController";
 import { TrasladarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/TrasladarGanadoController";
 import { ObtenerFichaGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ObtenerFichaGanadoController";
 import { ListarGanadosController } from "@/modules/ganado/infrastructure/http/controllers/ListarGanadosController";
@@ -451,6 +453,9 @@ container.register("RegistrarGanadoUseCase", {
 container.register("RegistrarPesajeUseCase", {
 	useClass: RegistrarPesajeUseCase,
 });
+container.register("ListarPesajesUseCase", {
+	useClass: ListarPesajesUseCase,
+});
 container.register("TrasladarGanadoUseCase", {
 	useClass: TrasladarGanadoUseCase,
 });
@@ -477,6 +482,9 @@ container.register("RegistrarGanadoController", {
 });
 container.register("RegistrarPesajeController", {
 	useClass: RegistrarPesajeController,
+});
+container.register("ListarPesajesController", {
+	useClass: ListarPesajesController,
 });
 container.register("TrasladarGanadoController", {
 	useClass: TrasladarGanadoController,

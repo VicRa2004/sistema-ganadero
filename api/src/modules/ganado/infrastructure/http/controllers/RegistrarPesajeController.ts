@@ -23,11 +23,14 @@ export class RegistrarPesajeController extends BaseController {
 			const { id } = validate(ganadoIdSchema, { id: idParam });
 
 			const body = await c.req.json();
-			const { peso } = validate(registrarPesajeSchema, body);
+			const { peso, fecha, observaciones } = validate(
+				registrarPesajeSchema,
+				body,
+			);
 
 			const result = await this.registrarPesajeUseCase.run(
 				id,
-				peso,
+				{ peso, fecha: fecha ? new Date(fecha) : undefined, observaciones },
 				this.getActor(c),
 			);
 			return this.ok(c, result);

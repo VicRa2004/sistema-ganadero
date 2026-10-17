@@ -1,9 +1,11 @@
 import { injectable } from "tsyringe";
 import type { Prisma } from "@/generated/prisma/client";
+import { db, runInTransaction } from "@/core/config/transaction";
 import { prisma } from "@/core/config/prisma";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import { Ganado } from "../../domain/Ganado";
 import type { SexoGanado } from "../../domain/Ganado";
+import type { NuevoPesaje, Pesaje } from "../../domain/Pesaje";
 import type { GanadoFilters } from "../../domain/repository/GanadoFilters";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
 
@@ -143,17 +145,58 @@ export class PrismaGanadoRepository implements GanadoRepository {
 		};
 
 		if (ganado.esNuevo()) {
+			// El peso inicial es el primer pesaje del historial
 			const record = (await prisma.ganado.create({
-				data,
+				data: {
+					...data,
+					pesajes: {
+						create: { peso: data.peso, fecha: new Date() },
+					},
+				},
 			})) as PrismaGanadoRecord;
 			return this.toDomain(record);
 		}
 
+		// El peso no se escribe aquí: lo gobierna el historial (registrarPesaje),
+		// así una edición con datos viejos no pisa el último pesaje.
+		const { peso: _peso, ...dataSinPeso } = data;
 		const record = (await prisma.ganado.update({
 			where: { id: ganado.getId() },
-			data,
+			data: dataSinPeso,
 		})) as PrismaGanadoRecord;
 		return this.toDomain(record);
+	}
+
+	public async registrarPesaje(
+		ganadoId: number,
+		pesaje: NuevoPesaje,
+	): Promise<Ganado> {
+		const record = await runInTransaction(async () => {
+			await db().pesaje.create({ data: { ganadoId, ...pesaje } });
+			const ultimo = await db().pesaje.findFirstOrThrow({
+				where: { ganadoId },
+				orderBy: [{ fecha: "desc" }, { id: "desc" }],
+			});
+			return db().ganado.update({
+				where: { id: ganadoId },
+				data: { peso: ultimo.peso },
+			});
+		});
+		return this.toDomain(record as PrismaGanadoRecord);
+	}
+
+	public async findPesajes(ganadoId: number): Promise<Pesaje[]> {
+		return prisma.pesaje.findMany({
+			where: { ganadoId },
+			orderBy: [{ fecha: "asc" }, { id: "asc" }],
+			select: {
+				id: true,
+				ganadoId: true,
+				peso: true,
+				fecha: true,
+				observaciones: true,
+			},
+		});
 	}
 
 	public async delete(id: number): Promise<void> {

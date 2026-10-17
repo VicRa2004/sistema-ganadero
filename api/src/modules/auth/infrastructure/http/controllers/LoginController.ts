@@ -3,10 +3,14 @@ import { setCookie } from "hono/cookie";
 import { injectable, inject } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import type { LoginUseCase } from "../../../application/useCases/LoginUseCase";
-import { env } from "@/core/config/env";
 
 import { validate } from "@/core/shared/infrastructure/libs/validate";
 import { loginSchema } from "../schemas/authSchemas";
+import {
+	REFRESH_COOKIE_MAX_AGE,
+	REFRESH_COOKIE_NAME,
+	refreshCookieOptions,
+} from "../refreshTokenCookie";
 
 @injectable()
 export class LoginController extends BaseController {
@@ -23,12 +27,9 @@ export class LoginController extends BaseController {
 			const { accessToken, refreshToken, user } =
 				await this.loginUseCase.run(dto);
 
-			setCookie(c, "refreshToken", refreshToken, {
-				httpOnly: true,
-				secure: env.NODE_ENV === "prod",
-				sameSite: "Lax",
-				path: "/api/auth",
-				maxAge: 7 * 24 * 60 * 60, // 7 días en segundos
+			setCookie(c, REFRESH_COOKIE_NAME, refreshToken, {
+				...refreshCookieOptions,
+				maxAge: REFRESH_COOKIE_MAX_AGE,
 			});
 
 			return this.ok(c, { accessToken, user });

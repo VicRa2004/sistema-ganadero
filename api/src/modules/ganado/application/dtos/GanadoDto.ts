@@ -101,3 +101,18 @@ export interface MotivoBajaOutputDto {
 	nombre: string;
 	descripcion: string | null;
 }
+
+export interface PesajeOutputDto {
+	id: number;
+	peso: number;
+	fecha: string;
+	observaciones: string | null;
+	/** GDP respecto al pesaje anterior; null en el primero. */
+	gananciaDiaria: number | null;
+}
+
+export interface HistorialPesajesOutputDto {
+	pesajes: PesajeOutputDto[];
+	gananciaDiariaAcumulada: number | null;
+	perdidaDePeso: boolean;
+}

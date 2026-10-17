@@ -36,12 +36,21 @@ export const useAuthStore = create<AuthState>()(
 		}),
 		{
 			name: "auth-storage", // Nombre de la clave en localStorage
-			// Solo persistimos el token, el usuario y los permisos (excluimos isInitialized del storage)
+			// El accessToken vive solo en memoria (se recupera con /auth/refresh al
+			// arrancar, ver restoreSession); en localStorage solo van datos no sensibles.
 			partialize: (state) => ({
-				accessToken: state.accessToken,
 				user: state.user,
 				permissions: state.permissions,
 			}),
+			// v0 guardaba también el accessToken: se descarta al migrar
+			version: 1,
+			migrate: (persisted) => {
+				const { user = null, permissions = null } = (persisted ?? {}) as {
+					user?: UserDto | null;
+					permissions?: string[] | null;
+				};
+				return { user, permissions };
+			},
 		},
 	),
 );

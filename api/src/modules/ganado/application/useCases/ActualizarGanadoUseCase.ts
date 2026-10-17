@@ -46,7 +46,8 @@ export class ActualizarGanadoUseCase {
 
 		// Determinar valores finales
 		const nuevoIdentificador = dto.identificador ?? ganado.getIdentificador();
-		const nuevoPeso = dto.peso ?? ganado.getPeso();
+		const pesoAnterior = ganado.getPeso();
+		const nuevoPeso = dto.peso ?? pesoAnterior;
 		const nuevaFechaNacimiento = dto.fechaNacimiento
 			? new Date(dto.fechaNacimiento)
 			: ganado.getFechaNacimiento();
@@ -165,8 +166,17 @@ export class ActualizarGanadoUseCase {
 			nuevaMadreId,
 		);
 
-		// 10. Guardar cambios
-		const saved = await this.ganadoRepository.save(ganado);
+		// 11. Guardar cambios
+		let saved = await this.ganadoRepository.save(ganado);
+
+		// Un cambio de peso se registra como un pesaje más del historial
+		if (nuevoPeso !== pesoAnterior) {
+			saved = await this.ganadoRepository.registrarPesaje(id, {
+				peso: nuevoPeso,
+				fecha: new Date(),
+				observaciones: null,
+			});
+		}
 		return this.mapper.toDto(saved);
 	}
 }

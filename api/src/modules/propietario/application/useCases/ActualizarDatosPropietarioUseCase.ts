@@ -1,4 +1,6 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
+import { puedeAcceder } from "@/core/shared/domain/Actor";
 import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { PropietarioDuplicateEmailError } from "../../domain/error/PropietarioDuplicateEmailError";
 import { PropietarioNotFoundError } from "../../domain/error/PropietarioNotFoundError";
@@ -23,9 +25,10 @@ export class ActualizarDatosPropietarioUseCase {
 	public async run(
 		id: number,
 		dto: ActualizarPropietarioInputDto,
+		actor: Actor,
 	): Promise<PropietarioOutputDto> {
 		const propietario = await this.propietarioRepository.findById(id);
-		if (!propietario) {
+		if (!propietario || !puedeAcceder(actor, propietario.getUsuarioId())) {
 			throw new PropietarioNotFoundError(id);
 		}
 
@@ -33,6 +36,7 @@ export class ActualizarDatosPropietarioUseCase {
 			if (dto.correo && dto.correo.trim() !== "") {
 				const existing = await this.propietarioRepository.findByEmail(
 					dto.correo,
+					propietario.getUsuarioId(),
 				);
 				if (existing && existing.getId() !== id) {
 					throw new PropietarioDuplicateEmailError(dto.correo);

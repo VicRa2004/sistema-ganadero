@@ -20,7 +20,7 @@ export class EliminarSesionSanitariaController extends BaseController {
 				throw new Error("El ID de la sesión debe ser un entero positivo");
 			}
 
-			await this.eliminarSesionSanitariaUseCase.run(id);
+			await this.eliminarSesionSanitariaUseCase.run(id, this.getActor(c));
 			return c.body(null, 204);
 		});
 	};

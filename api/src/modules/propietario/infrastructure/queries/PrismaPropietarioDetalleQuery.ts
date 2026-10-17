@@ -7,9 +7,14 @@ import type { PropietarioDetalleQuery } from "../../application/queries/Propieta
 export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 	public async obtenerDetalle(
 		id: number,
+		usuarioId?: number,
 	): Promise<PropietarioDetalleOutputDto | null> {
 		const record = await prisma.propietario.findFirst({
-			where: { id, deletedAt: null },
+			where: {
+				id,
+				deletedAt: null,
+				...(usuarioId !== undefined && { usuarioId }),
+			},
 			include: {
 				ganados: {
 					where: { deletedAt: null },

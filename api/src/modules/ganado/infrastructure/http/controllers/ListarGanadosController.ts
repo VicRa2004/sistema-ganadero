@@ -18,7 +18,7 @@ export class ListarGanadosController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const query = c.req.query();
 			const dto = validate(listarGanadoQuerySchema, query);
-			const result = await this.listarGanadosUseCase.run(dto);
+			const result = await this.listarGanadosUseCase.run(dto, this.getActor(c));
 			return this.ok(c, result);
 		});
 	};

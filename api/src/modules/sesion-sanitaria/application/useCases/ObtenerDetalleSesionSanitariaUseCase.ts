@@ -1,32 +1,32 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoRepository } from "@/modules/ganado/domain/repository/GanadoRepository";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
 import type { VeterinarioRepository } from "@/modules/veterinario/domain/repository/VeterinarioRepository";
-import { SesionSanitariaNotFoundError } from "../../domain/error/SesionSanitariaNotFoundError";
-import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
 import type { SesionSanitariaOutputDto } from "../dtos/SesionSanitariaDto";
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
+import type { SesionAccessService } from "../services/SesionAccessService";
 
 @injectable()
 export class ObtenerDetalleSesionSanitariaUseCase {
 	constructor(
-		@inject("SesionSanitariaRepository")
-		private readonly sesionSanitariaRepository: SesionSanitariaRepository,
 		@inject("VeterinarioRepository")
 		private readonly veterinarioRepository: VeterinarioRepository,
 		@inject("InsumoRepository")
 		private readonly insumoRepository: InsumoRepository,
 		@inject("GanadoRepository")
 		private readonly ganadoRepository: GanadoRepository,
+		@inject("SesionAccessService")
+		private readonly accessService: SesionAccessService,
 		@inject("SesionSanitariaMapper")
 		private readonly mapper: SesionSanitariaMapper,
 	) {}
 
-	public async run(id: number): Promise<SesionSanitariaOutputDto> {
-		const sesion = await this.sesionSanitariaRepository.findById(id);
-		if (!sesion) {
-			throw new SesionSanitariaNotFoundError(id);
-		}
+	public async run(
+		id: number,
+		actor: Actor,
+	): Promise<SesionSanitariaOutputDto> {
+		const sesion = await this.accessService.obtenerSesion(id, actor);
 
 		const veterinario = await this.veterinarioRepository.findById(
 			sesion.getVeterinarioId(),

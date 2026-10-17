@@ -39,11 +39,14 @@ export class RegistrarGanadoController extends BaseController {
 			};
 
 			const dto = validate(registrarGanadoSchema, dataToValidate);
-			const result = await this.registrarGanadoUseCase.run({
-				...dto,
-				imagenGanado:
-					body.imagenGanado instanceof File ? body.imagenGanado : null,
-			});
+			const result = await this.registrarGanadoUseCase.run(
+				{
+					...dto,
+					imagenGanado:
+						body.imagenGanado instanceof File ? body.imagenGanado : null,
+				},
+				this.getActor(c),
+			);
 			return this.created(c, result);
 		});
 	};

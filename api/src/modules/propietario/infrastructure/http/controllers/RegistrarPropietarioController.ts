@@ -30,7 +30,10 @@ export class RegistrarPropietarioController extends BaseController {
 
 			const dto = validate(createPropietarioSchema, dataToValidate);
 
-			const result = await this.registrarPropietarioUseCase.run(dto);
+			const result = await this.registrarPropietarioUseCase.run(
+				dto,
+				this.getActor(c),
+			);
 			return this.created(c, result);
 		});
 	};

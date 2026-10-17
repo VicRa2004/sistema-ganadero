@@ -20,8 +20,10 @@ export class ObtenerHistorialSanitarioGanadoController extends BaseController {
 				throw new Error("El ID de ganado debe ser un entero positivo");
 			}
 
-			const result =
-				await this.obtenerHistorialSanitarioGanadoUseCase.run(ganadoId);
+			const result = await this.obtenerHistorialSanitarioGanadoUseCase.run(
+				ganadoId,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

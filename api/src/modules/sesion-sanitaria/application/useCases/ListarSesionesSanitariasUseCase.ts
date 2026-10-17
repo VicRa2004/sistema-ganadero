@@ -1,4 +1,6 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { SesionSanitariaFilters } from "../../domain/repository/SesionSanitariaFilters";
 import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
@@ -16,8 +18,12 @@ export class ListarSesionesSanitariasUseCase {
 
 	public async run(
 		filters: SesionSanitariaFilters,
+		actor: Actor,
 	): Promise<Pagination<SesionSanitariaOutputDto>> {
-		const result = await this.sesionSanitariaRepository.find(filters);
+		const result = await this.sesionSanitariaRepository.find({
+			...filters,
+			usuarioId: usuarioIdDeFiltro(actor),
+		});
 
 		const dtos = result.data.map((sesion) => this.mapper.toDto(sesion));
 

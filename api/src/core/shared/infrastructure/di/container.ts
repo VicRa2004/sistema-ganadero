@@ -110,6 +110,7 @@ import { PrismaGanadoRepository } from "@/modules/ganado/infrastructure/reposito
 import { PrismaGanadoDetalleQuery } from "@/modules/ganado/infrastructure/queries/PrismaGanadoDetalleQuery";
 import { PrismaMotivoBajaRepository } from "@/modules/ganado/infrastructure/repository/PrismaMotivoBajaRepository";
 import { GanadoMapper } from "@/modules/ganado/application/mappers/GanadoMapper";
+import { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
 import { RegistrarPesajeUseCase } from "@/modules/ganado/application/useCases/RegistrarPesajeUseCase";
 import { TrasladarGanadoUseCase } from "@/modules/ganado/application/useCases/TrasladarGanadoUseCase";
@@ -147,6 +148,7 @@ import { VeterinarioRouter } from "@/modules/veterinario/infrastructure/http/rou
 // Sesión Sanitaria
 import { PrismaSesionSanitariaRepository } from "@/modules/sesion-sanitaria/infrastructure/repository/PrismaSesionSanitariaRepository";
 import { SesionSanitariaMapper } from "@/modules/sesion-sanitaria/application/mappers/SesionSanitariaMapper";
+import { SesionAccessService } from "@/modules/sesion-sanitaria/application/services/SesionAccessService";
 import { RegistrarSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/RegistrarSesionSanitariaUseCase";
 import { ListarSesionesSanitariasUseCase } from "@/modules/sesion-sanitaria/application/useCases/ListarSesionesSanitariasUseCase";
 import { ObtenerDetalleSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/ObtenerDetalleSesionSanitariaUseCase";
@@ -437,6 +439,9 @@ container.register("MotivoBajaRepository", {
 	useClass: PrismaMotivoBajaRepository,
 });
 container.register("GanadoMapper", { useClass: GanadoMapper });
+container.register("GanadoAccessService", {
+	useClass: GanadoAccessService,
+});
 
 // Módulo Ganado - Casos de Uso
 container.register("RegistrarGanadoUseCase", {
@@ -540,6 +545,9 @@ container.register("VeterinarioRouter", { useClass: VeterinarioRouter });
 // Módulo Sesión Sanitaria - Repositorio & Mapper
 container.register("SesionSanitariaRepository", {
 	useClass: PrismaSesionSanitariaRepository,
+});
+container.register("SesionAccessService", {
+	useClass: SesionAccessService,
 });
 container.register("SesionSanitariaMapper", {
 	useClass: SesionSanitariaMapper,

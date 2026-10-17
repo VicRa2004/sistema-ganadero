@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
-import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "../services/GanadoAccessService";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
 import type { GanadoOutputDto } from "../dtos/GanadoDto";
 import type { GanadoMapper } from "../mappers/GanadoMapper";
@@ -9,15 +10,18 @@ export class RegistrarPesajeUseCase {
 	constructor(
 		@inject("GanadoRepository")
 		private readonly ganadoRepository: GanadoRepository,
+		@inject("GanadoAccessService")
+		private readonly accessService: GanadoAccessService,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 	) {}
 
-	public async run(id: number, peso: number): Promise<GanadoOutputDto> {
-		const ganado = await this.ganadoRepository.findById(id);
-		if (!ganado) {
-			throw new GanadoNotFoundError(id);
-		}
+	public async run(
+		id: number,
+		peso: number,
+		actor: Actor,
+	): Promise<GanadoOutputDto> {
+		const ganado = await this.accessService.obtenerGanado(id, actor);
 
 		ganado.registrarPesaje(peso);
 

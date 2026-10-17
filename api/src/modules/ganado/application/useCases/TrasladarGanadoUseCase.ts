@@ -1,35 +1,30 @@
 import { inject, injectable } from "tsyringe";
-import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
 import type { GanadoOutputDto } from "../dtos/GanadoDto";
 import type { GanadoMapper } from "../mappers/GanadoMapper";
-
-// Repositorio y errores externos
-import type { TerrenoRepository } from "@/modules/terreno/domain/repository/TerrenoRepository";
-import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
+import type { GanadoAccessService } from "../services/GanadoAccessService";
 
 @injectable()
 export class TrasladarGanadoUseCase {
 	constructor(
 		@inject("GanadoRepository")
 		private readonly ganadoRepository: GanadoRepository,
-		@inject("TerrenoRepository")
-		private readonly terrenoRepository: TerrenoRepository,
+		@inject("GanadoAccessService")
+		private readonly accessService: GanadoAccessService,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 	) {}
 
-	public async run(id: number, terrenoId: number): Promise<GanadoOutputDto> {
-		const ganado = await this.ganadoRepository.findById(id);
-		if (!ganado) {
-			throw new GanadoNotFoundError(id);
-		}
+	public async run(
+		id: number,
+		terrenoId: number,
+		actor: Actor,
+	): Promise<GanadoOutputDto> {
+		const ganado = await this.accessService.obtenerGanado(id, actor);
 
-		// Validar que el terreno destino exista
-		const terreno = await this.terrenoRepository.findById(terrenoId);
-		if (!terreno) {
-			throw new TerrenoNotFoundError(terrenoId);
-		}
+		// El terreno destino debe existir y pertenecer al usuario
+		await this.accessService.obtenerTerreno(terrenoId, actor);
 
 		ganado.cambiarDeTerreno(terrenoId);
 

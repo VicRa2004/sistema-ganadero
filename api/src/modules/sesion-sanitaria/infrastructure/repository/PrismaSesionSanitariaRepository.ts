@@ -85,6 +85,11 @@ export class PrismaSesionSanitariaRepository
 			whereClause.insumoId = filters.insumoId;
 		}
 
+		// La sesión pertenece al usuario dueño del veterinario
+		if (filters.usuarioId !== undefined) {
+			whereClause.veterinario = { usuarioId: filters.usuarioId };
+		}
+
 		if (filters.fechaInicio || filters.fechaFin) {
 			whereClause.fecha = {};
 			if (filters.fechaInicio) {

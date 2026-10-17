@@ -1,15 +1,16 @@
 import { inject, injectable } from "tsyringe";
-import type { GanadoRepository } from "@/modules/ganado/domain/repository/GanadoRepository";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
-import { SesionSanitariaNotFoundError } from "../../domain/error/SesionSanitariaNotFoundError";
 import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
 import type {
 	AplicacionSanitariaOutputDto,
 	RegistrarResultadoAnimalInputDto,
 } from "../dtos/SesionSanitariaDto";
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
+import type { SesionAccessService } from "../services/SesionAccessService";
 
 @injectable()
 export class RegistrarResultadoAnimalUseCase {
@@ -18,24 +19,24 @@ export class RegistrarResultadoAnimalUseCase {
 		private readonly sesionSanitariaRepository: SesionSanitariaRepository,
 		@inject("InsumoRepository")
 		private readonly insumoRepository: InsumoRepository,
-		@inject("GanadoRepository")
-		private readonly ganadoRepository: GanadoRepository,
+		@inject("SesionAccessService")
+		private readonly accessService: SesionAccessService,
+		@inject("GanadoAccessService")
+		private readonly ganadoAccessService: GanadoAccessService,
 		@inject("SesionSanitariaMapper")
 		private readonly mapper: SesionSanitariaMapper,
 	) {}
 
 	public async run(
 		dto: RegistrarResultadoAnimalInputDto,
+		actor: Actor,
 	): Promise<AplicacionSanitariaOutputDto> {
-		const sesion = await this.sesionSanitariaRepository.findById(dto.sesionId);
-		if (!sesion) {
-			throw new SesionSanitariaNotFoundError(dto.sesionId);
-		}
+		const sesion = await this.accessService.obtenerSesion(dto.sesionId, actor);
 
-		const animal = await this.ganadoRepository.findById(dto.ganadoId);
-		if (!animal) {
-			throw new Error(`El animal de ganado con ID ${dto.ganadoId} no existe`);
-		}
+		const animal = await this.ganadoAccessService.obtenerGanado(
+			dto.ganadoId,
+			actor,
+		);
 
 		const insumo = await this.insumoRepository.findById(sesion.getInsumoId());
 		if (!insumo) {

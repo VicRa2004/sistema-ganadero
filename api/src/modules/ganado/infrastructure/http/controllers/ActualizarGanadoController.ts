@@ -46,11 +46,15 @@ export class ActualizarGanadoController extends BaseController {
 					body.madreId === "" ? null : Number(body.madreId);
 
 			const dto = validate(actualizarGanadoSchema, dataToValidate);
-			const result = await this.actualizarGanadoUseCase.run(id, {
-				...dto,
-				imagenGanado:
-					body.imagenGanado instanceof File ? body.imagenGanado : undefined,
-			});
+			const result = await this.actualizarGanadoUseCase.run(
+				id,
+				{
+					...dto,
+					imagenGanado:
+						body.imagenGanado instanceof File ? body.imagenGanado : undefined,
+				},
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

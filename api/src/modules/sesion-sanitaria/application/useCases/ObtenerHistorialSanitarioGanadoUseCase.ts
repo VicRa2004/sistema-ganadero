@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
-import type { GanadoRepository } from "@/modules/ganado/domain/repository/GanadoRepository";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
 import type { VeterinarioRepository } from "@/modules/veterinario/domain/repository/VeterinarioRepository";
 import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
@@ -10,19 +11,19 @@ export class ObtenerHistorialSanitarioGanadoUseCase {
 	constructor(
 		@inject("SesionSanitariaRepository")
 		private readonly sesionSanitariaRepository: SesionSanitariaRepository,
-		@inject("GanadoRepository")
-		private readonly ganadoRepository: GanadoRepository,
+		@inject("GanadoAccessService")
+		private readonly ganadoAccessService: GanadoAccessService,
 		@inject("VeterinarioRepository")
 		private readonly veterinarioRepository: VeterinarioRepository,
 		@inject("InsumoRepository")
 		private readonly insumoRepository: InsumoRepository,
 	) {}
 
-	public async run(ganadoId: number): Promise<HistorialSanitarioGanadoDto[]> {
-		const animal = await this.ganadoRepository.findById(ganadoId);
-		if (!animal) {
-			throw new Error(`El animal con ID ${ganadoId} no fue encontrado`);
-		}
+	public async run(
+		ganadoId: number,
+		actor: Actor,
+	): Promise<HistorialSanitarioGanadoDto[]> {
+		await this.ganadoAccessService.obtenerGanado(ganadoId, actor);
 
 		const aplicaciones =
 			await this.sesionSanitariaRepository.findAplicacionesByGanadoId(ganadoId);

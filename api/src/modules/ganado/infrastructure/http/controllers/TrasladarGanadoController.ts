@@ -25,7 +25,11 @@ export class TrasladarGanadoController extends BaseController {
 			const body = await c.req.json();
 			const { terrenoId } = validate(trasladarGanadoSchema, body);
 
-			const result = await this.trasladarGanadoUseCase.run(id, terrenoId);
+			const result = await this.trasladarGanadoUseCase.run(
+				id,
+				terrenoId,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

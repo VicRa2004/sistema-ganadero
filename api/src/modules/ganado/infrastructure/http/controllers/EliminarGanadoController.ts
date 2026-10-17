@@ -19,7 +19,7 @@ export class EliminarGanadoController extends BaseController {
 			const idParam = c.req.param("id");
 			const { id } = validate(ganadoIdSchema, { id: idParam });
 
-			await this.eliminarGanadoUseCase.run(id);
+			await this.eliminarGanadoUseCase.run(id, this.getActor(c));
 			return this.ok(c, { success: true });
 		});
 	};

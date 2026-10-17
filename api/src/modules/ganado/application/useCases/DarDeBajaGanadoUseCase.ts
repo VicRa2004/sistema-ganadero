@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
-import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "../services/GanadoAccessService";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
 import type { MotivoBajaRepository } from "../../domain/repository/MotivoBajaRepository";
 import type {
@@ -28,6 +29,8 @@ export class DarDeBajaGanadoUseCase {
 		private readonly ganadoRepository: GanadoRepository,
 		@inject("MotivoBajaRepository")
 		private readonly motivoBajaRepository: MotivoBajaRepository,
+		@inject("GanadoAccessService")
+		private readonly accessService: GanadoAccessService,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 	) {}
@@ -35,12 +38,10 @@ export class DarDeBajaGanadoUseCase {
 	public async run(
 		id: number,
 		dto: DarDeBajaGanadoInputDto,
+		actor: Actor,
 	): Promise<GanadoOutputDto> {
-		// 1. Validar que el ganado exista
-		const ganado = await this.ganadoRepository.findById(id);
-		if (!ganado) {
-			throw new GanadoNotFoundError(id);
-		}
+		// 1. Validar que el ganado exista y pertenezca al usuario
+		const ganado = await this.accessService.obtenerGanado(id, actor);
 
 		// 2. Validar que no esté ya dado de baja
 		if (!ganado.estaActivo()) {

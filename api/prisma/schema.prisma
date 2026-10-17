@@ -27,6 +27,7 @@ model User {
   terrenos          Terreno[]
   veterinarios      Veterinario[]
   insumos           Insumo[]
+  propietarios      Propietario[]
 
   @@map("user")
 }
@@ -163,12 +164,15 @@ model Propietario {
   telefono    String?   @map("prop_telefono") @db.VarChar(20)
   correo      String?   @map("prop_correo") @db.VarChar(128)
   imagenMarca String?   @map("prop_imagen_marca") @db.VarChar(255)
+  usuarioId   Int       @map("prop_fkusuario")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime? @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
+  usuario User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   ganados Ganado[]
 
+  @@index([usuarioId])
   @@map("propietario")
 }
 

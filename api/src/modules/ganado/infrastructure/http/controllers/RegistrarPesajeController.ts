@@ -25,7 +25,11 @@ export class RegistrarPesajeController extends BaseController {
 			const body = await c.req.json();
 			const { peso } = validate(registrarPesajeSchema, body);
 
-			const result = await this.registrarPesajeUseCase.run(id, peso);
+			const result = await this.registrarPesajeUseCase.run(
+				id,
+				peso,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

@@ -18,17 +18,22 @@ export class ListarSesionesSanitariasController extends BaseController {
 			const query = c.req.query();
 			const validated = listarSesionesQuerySchema.parse(query);
 
-			const result = await this.listarSesionesSanitariasUseCase.run({
-				page: validated.page,
-				limit: validated.limit,
-				veterinarioId: validated.veterinarioId,
-				insumoId: validated.insumoId,
-				busqueda: validated.busqueda,
-				fechaInicio: validated.fechaInicio
-					? new Date(validated.fechaInicio)
-					: undefined,
-				fechaFin: validated.fechaFin ? new Date(validated.fechaFin) : undefined,
-			});
+			const result = await this.listarSesionesSanitariasUseCase.run(
+				{
+					page: validated.page,
+					limit: validated.limit,
+					veterinarioId: validated.veterinarioId,
+					insumoId: validated.insumoId,
+					busqueda: validated.busqueda,
+					fechaInicio: validated.fechaInicio
+						? new Date(validated.fechaInicio)
+						: undefined,
+					fechaFin: validated.fechaFin
+						? new Date(validated.fechaFin)
+						: undefined,
+				},
+				this.getActor(c),
+			);
 
 			return this.ok(c, result);
 		});

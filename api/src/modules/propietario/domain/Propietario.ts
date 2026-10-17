@@ -6,15 +6,18 @@ export class Propietario extends Entity {
 	private telefono: string | null;
 	private correo: string | null;
 	private imagenMarca: string | null;
+	private readonly usuarioId: number;
 
 	private constructor(
 		id: EntityId,
+		usuarioId: number,
 		nombre: string,
 		telefono: string | null = null,
 		correo: string | null = null,
 		imagenMarca: string | null = null,
 	) {
 		super(id);
+		this.usuarioId = usuarioId;
 		this.nombre = nombre;
 		this.telefono = telefono;
 		this.correo = correo;
@@ -22,6 +25,7 @@ export class Propietario extends Entity {
 	}
 
 	public static create(
+		usuarioId: number,
 		nombre: string,
 		telefono: string | null = null,
 		correo: string | null = null,
@@ -32,6 +36,7 @@ export class Propietario extends Entity {
 		}
 		return new Propietario(
 			new EntityId(),
+			usuarioId,
 			nombre,
 			telefono,
 			correo,
@@ -41,6 +46,7 @@ export class Propietario extends Entity {
 
 	public static reconstitute(
 		id: number,
+		usuarioId: number,
 		nombre: string,
 		telefono: string | null = null,
 		correo: string | null = null,
@@ -48,11 +54,16 @@ export class Propietario extends Entity {
 	): Propietario {
 		return new Propietario(
 			new EntityId(id),
+			usuarioId,
 			nombre,
 			telefono,
 			correo,
 			imagenMarca,
 		);
+	}
+
+	public getUsuarioId(): number {
+		return this.usuarioId;
 	}
 
 	public getNombre(): string {

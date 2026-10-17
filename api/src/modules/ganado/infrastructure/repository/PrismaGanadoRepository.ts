@@ -97,6 +97,11 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			whereClause.sexo = filters.sexo;
 		}
 
+		// El ganado pertenece al usuario dueño de su terreno
+		if (filters.usuarioId !== undefined) {
+			whereClause.terreno = { usuarioId: filters.usuarioId };
+		}
+
 		const [records, totalItems] = await Promise.all([
 			prisma.ganado.findMany({
 				where: whereClause,

@@ -1,4 +1,6 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "../services/GanadoAccessService";
 import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { Ganado } from "../../domain/Ganado";
 import { GanadoDuplicateIdentificadorError } from "../../domain/error/GanadoDuplicateIdentificadorError";
@@ -12,14 +14,9 @@ import type { GanadoMapper } from "../mappers/GanadoMapper";
 
 // Repositorios externos para validación
 import type { RazaRepository } from "@/modules/raza/domain/repository/RazaRepository";
-import type { TerrenoRepository } from "@/modules/terreno/domain/repository/TerrenoRepository";
-import type { PropietarioRepository } from "@/modules/propietario/domain/repository/PropietarioRepository";
 
 // Errores externos
 import { RazaNotFoundError } from "@/modules/raza/domain/error/RazaNotFoundError";
-import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
-import { PropietarioNotFoundError } from "@/modules/propietario/domain/error/PropietarioNotFoundError";
-import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
 
 @injectable()
 export class RegistrarGanadoUseCase {
@@ -28,17 +25,18 @@ export class RegistrarGanadoUseCase {
 		private readonly ganadoRepository: GanadoRepository,
 		@inject("RazaRepository")
 		private readonly razaRepository: RazaRepository,
-		@inject("TerrenoRepository")
-		private readonly terrenoRepository: TerrenoRepository,
-		@inject("PropietarioRepository")
-		private readonly propietarioRepository: PropietarioRepository,
+		@inject("GanadoAccessService")
+		private readonly accessService: GanadoAccessService,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 		@inject("ImageStorageService")
 		private readonly imageStorageService: ImageStorageService,
 	) {}
 
-	public async run(dto: RegistrarGanadoInputDto): Promise<GanadoOutputDto> {
+	public async run(
+		dto: RegistrarGanadoInputDto,
+		actor: Actor,
+	): Promise<GanadoOutputDto> {
 		// 1. Validar que el identificador del arete sea único
 		const existing = await this.ganadoRepository.findByIdentificador(
 			dto.identificador,
@@ -53,34 +51,20 @@ export class RegistrarGanadoUseCase {
 			throw new RazaNotFoundError(dto.razaId);
 		}
 
-		// 3. Validar que el terreno exista
-		const terreno = await this.terrenoRepository.findById(dto.terrenoId);
-		if (!terreno) {
-			throw new TerrenoNotFoundError(dto.terrenoId);
-		}
+		// 3. Validar que el terreno exista y pertenezca al usuario
+		await this.accessService.obtenerTerreno(dto.terrenoId, actor);
 
-		// 4. Validar que el propietario exista
-		const propietario = await this.propietarioRepository.findById(
-			dto.propietarioId,
-		);
-		if (!propietario) {
-			throw new PropietarioNotFoundError(dto.propietarioId);
-		}
+		// 4. Validar que el propietario exista y pertenezca al usuario
+		await this.accessService.obtenerPropietario(dto.propietarioId, actor);
 
 		// 5. Validar padre si se proporcionó
 		if (dto.padreId) {
-			const padre = await this.ganadoRepository.findById(dto.padreId);
-			if (!padre) {
-				throw new GanadoNotFoundError(dto.padreId);
-			}
+			await this.accessService.obtenerGanado(dto.padreId, actor);
 		}
 
 		// 6. Validar madre si se proporcionó
 		if (dto.madreId) {
-			const madre = await this.ganadoRepository.findById(dto.madreId);
-			if (!madre) {
-				throw new GanadoNotFoundError(dto.madreId);
-			}
+			await this.accessService.obtenerGanado(dto.madreId, actor);
 		}
 
 		// 7. Subir imagen si se proporcionó

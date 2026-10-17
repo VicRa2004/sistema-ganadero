@@ -65,9 +65,14 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 
 	public async obtenerFichaPorId(
 		id: number,
+		usuarioId?: number,
 	): Promise<GanadoDetalleOutputDto | null> {
 		const record = await prisma.ganado.findFirst({
-			where: { id, deletedAt: null },
+			where: {
+				id,
+				deletedAt: null,
+				...(usuarioId !== undefined && { terreno: { usuarioId } }),
+			},
 			include: this.includeRelaciones,
 		});
 
@@ -77,9 +82,14 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 
 	public async obtenerFichaPorIdentificador(
 		identificador: string,
+		usuarioId?: number,
 	): Promise<GanadoDetalleOutputDto | null> {
 		const record = await prisma.ganado.findFirst({
-			where: { identificador, deletedAt: null },
+			where: {
+				identificador,
+				deletedAt: null,
+				...(usuarioId !== undefined && { terreno: { usuarioId } }),
+			},
 			include: this.includeRelaciones,
 		});
 

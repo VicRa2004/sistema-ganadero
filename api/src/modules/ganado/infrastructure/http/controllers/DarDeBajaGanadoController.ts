@@ -25,7 +25,11 @@ export class DarDeBajaGanadoController extends BaseController {
 
 			const body = await c.req.json();
 			const dto = validate(darDeBajaSchema, body);
-			const result = await this.darDeBajaGanadoUseCase.run(id, dto);
+			const result = await this.darDeBajaGanadoUseCase.run(
+				id,
+				dto,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

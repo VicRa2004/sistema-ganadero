@@ -21,7 +21,10 @@ export class ObtenerFichaGanadoController extends BaseController {
 				idOrIdentificador: param,
 			});
 
-			const result = await this.obtenerFichaUseCase.run(idOrIdentificador);
+			const result = await this.obtenerFichaUseCase.run(
+				idOrIdentificador,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

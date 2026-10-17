@@ -1,7 +1,8 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "../services/GanadoAccessService";
 import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { GanadoDuplicateIdentificadorError } from "../../domain/error/GanadoDuplicateIdentificadorError";
-import { GanadoNotFoundError } from "../../domain/error/GanadoNotFoundError";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
 import type {
 	ActualizarGanadoInputDto,
@@ -11,13 +12,9 @@ import type { GanadoMapper } from "../mappers/GanadoMapper";
 
 // Repositorios externos para validación
 import type { RazaRepository } from "@/modules/raza/domain/repository/RazaRepository";
-import type { TerrenoRepository } from "@/modules/terreno/domain/repository/TerrenoRepository";
-import type { PropietarioRepository } from "@/modules/propietario/domain/repository/PropietarioRepository";
 
 // Errores externos
 import { RazaNotFoundError } from "@/modules/raza/domain/error/RazaNotFoundError";
-import { TerrenoNotFoundError } from "@/modules/terreno/domain/error/TerrenoNotFoundError";
-import { PropietarioNotFoundError } from "@/modules/propietario/domain/error/PropietarioNotFoundError";
 
 import { BaseError } from "@/core/shared/domain/error/BaseError";
 import type { MotivoBajaRepository } from "../../domain/repository/MotivoBajaRepository";
@@ -29,10 +26,8 @@ export class ActualizarGanadoUseCase {
 		private readonly ganadoRepository: GanadoRepository,
 		@inject("RazaRepository")
 		private readonly razaRepository: RazaRepository,
-		@inject("TerrenoRepository")
-		private readonly terrenoRepository: TerrenoRepository,
-		@inject("PropietarioRepository")
-		private readonly propietarioRepository: PropietarioRepository,
+		@inject("GanadoAccessService")
+		private readonly accessService: GanadoAccessService,
 		@inject("MotivoBajaRepository")
 		private readonly motivoBajaRepository: MotivoBajaRepository,
 		@inject("GanadoMapper")
@@ -44,12 +39,10 @@ export class ActualizarGanadoUseCase {
 	public async run(
 		id: number,
 		dto: ActualizarGanadoInputDto,
+		actor: Actor,
 	): Promise<GanadoOutputDto> {
-		// 1. Validar que el ganado exista
-		const ganado = await this.ganadoRepository.findById(id);
-		if (!ganado) {
-			throw new GanadoNotFoundError(id);
-		}
+		// 1. Validar que el ganado exista y pertenezca al usuario
+		const ganado = await this.accessService.obtenerGanado(id, actor);
 
 		// Determinar valores finales
 		const nuevoIdentificador = dto.identificador ?? ganado.getIdentificador();
@@ -86,36 +79,22 @@ export class ActualizarGanadoUseCase {
 
 		// 4. Validar que el terreno exista si se cambió
 		if (dto.terrenoId && dto.terrenoId !== ganado.getTerrenoId()) {
-			const terreno = await this.terrenoRepository.findById(dto.terrenoId);
-			if (!terreno) {
-				throw new TerrenoNotFoundError(dto.terrenoId);
-			}
+			await this.accessService.obtenerTerreno(dto.terrenoId, actor);
 		}
 
 		// 5. Validar que el propietario exista si se cambió
 		if (dto.propietarioId && dto.propietarioId !== ganado.getPropietarioId()) {
-			const propietario = await this.propietarioRepository.findById(
-				dto.propietarioId,
-			);
-			if (!propietario) {
-				throw new PropietarioNotFoundError(dto.propietarioId);
-			}
+			await this.accessService.obtenerPropietario(dto.propietarioId, actor);
 		}
 
 		// 6. Validar padre si se actualizó
 		if (nuevoPadreId && nuevoPadreId !== ganado.getPadreId()) {
-			const padre = await this.ganadoRepository.findById(nuevoPadreId);
-			if (!padre) {
-				throw new GanadoNotFoundError(nuevoPadreId);
-			}
+			await this.accessService.obtenerGanado(nuevoPadreId, actor);
 		}
 
 		// 7. Validar madre si se actualizó
 		if (nuevaMadreId && nuevaMadreId !== ganado.getMadreId()) {
-			const madre = await this.ganadoRepository.findById(nuevaMadreId);
-			if (!madre) {
-				throw new GanadoNotFoundError(nuevaMadreId);
-			}
+			await this.accessService.obtenerGanado(nuevaMadreId, actor);
 		}
 
 		// 8. Validar información de baja si se proporcionó

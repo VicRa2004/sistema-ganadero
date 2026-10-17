@@ -17,7 +17,7 @@ export class ObtenerDetallePropietarioController extends BaseController {
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
 			const { id } = validate(propietarioIdSchema, { id: c.req.param("id") });
-			const result = await this.obtenerDetalleUseCase.run(id);
+			const result = await this.obtenerDetalleUseCase.run(id, this.getActor(c));
 			return this.ok(c, result);
 		});
 	};

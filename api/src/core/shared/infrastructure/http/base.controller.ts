@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 // Asumiendo que z.treeifyError es una utilidad custom que tienes en tu proyecto.
 // Si no, Zod nativo usa error.flatten() o error.format()
 import z from "zod";
+import type { Actor } from "../../domain/Actor";
 import { BaseError } from "../../domain/error/BaseError";
 
 /**
@@ -42,6 +43,18 @@ export abstract class BaseController {
 			},
 			500,
 		);
+	}
+
+	/**
+	 * Obtiene el usuario autenticado (cargado por `authMiddleware`) como Actor.
+	 * @throws {BaseError} 401 si la petición no está autenticada.
+	 */
+	protected getActor(c: Context): Actor {
+		const user = c.get("user");
+		if (!user?.id) {
+			throw new BaseError("Usuario no autenticado", 401);
+		}
+		return { id: user.id, role: user.role };
 	}
 
 	/**

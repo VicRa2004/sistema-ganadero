@@ -1,5 +1,9 @@
 import type { PropietarioDetalleOutputDto } from "../dtos/PropietarioDto";
 
 export interface PropietarioDetalleQuery {
-	obtenerDetalle(id: number): Promise<PropietarioDetalleOutputDto | null>;
+	/** `usuarioId` restringe la consulta a los propietarios de ese usuario (undefined = sin restricción). */
+	obtenerDetalle(
+		id: number,
+		usuarioId?: number,
+	): Promise<PropietarioDetalleOutputDto | null>;
 }

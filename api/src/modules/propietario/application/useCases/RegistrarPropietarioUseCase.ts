@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { Propietario } from "../../domain/Propietario";
 import { PropietarioDuplicateEmailError } from "../../domain/error/PropietarioDuplicateEmailError";
@@ -22,9 +23,13 @@ export class RegistrarPropietarioUseCase {
 
 	public async run(
 		dto: RegistrarPropietarioInputDto,
+		actor: Actor,
 	): Promise<PropietarioOutputDto> {
 		if (dto.correo && dto.correo.trim() !== "") {
-			const existing = await this.propietarioRepository.findByEmail(dto.correo);
+			const existing = await this.propietarioRepository.findByEmail(
+				dto.correo,
+				actor.id,
+			);
 			if (existing) {
 				throw new PropietarioDuplicateEmailError(dto.correo);
 			}
@@ -39,6 +44,7 @@ export class RegistrarPropietarioUseCase {
 		}
 
 		const propietario = Propietario.create(
+			actor.id,
 			dto.nombre,
 			dto.telefono ?? null,
 			dto.correo ?? null,

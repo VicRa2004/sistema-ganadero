@@ -12,6 +12,7 @@ interface PrismaPropietarioRecord {
 	telefono: string | null;
 	correo: string | null;
 	imagenMarca: string | null;
+	usuarioId: number;
 	deletedAt: Date | null;
 }
 
@@ -20,6 +21,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 	private toDomain(record: PrismaPropietarioRecord): Propietario {
 		return Propietario.reconstitute(
 			record.id,
+			record.usuarioId,
 			record.nombre,
 			record.telefono,
 			record.correo,
@@ -35,10 +37,14 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 		return this.toDomain(record);
 	}
 
-	public async findByEmail(correo: string): Promise<Propietario | null> {
+	public async findByEmail(
+		correo: string,
+		usuarioId: number,
+	): Promise<Propietario | null> {
 		const record = await prisma.propietario.findFirst({
 			where: {
 				correo: { equals: correo, mode: "insensitive" },
+				usuarioId,
 				deletedAt: null,
 			},
 		});
@@ -57,6 +63,10 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 				contains: filters.nombre,
 				mode: "insensitive",
 			};
+		}
+
+		if (filters.usuarioId !== undefined) {
+			whereClause.usuarioId = filters.usuarioId;
 		}
 
 		const [records, totalItems] = await Promise.all([
@@ -85,6 +95,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 		if (propietario.esNuevo()) {
 			const record = await prisma.propietario.create({
 				data: {
+					usuarioId: propietario.getUsuarioId(),
 					nombre: propietario.getNombre(),
 					telefono: propietario.getTelefono(),
 					correo: propietario.getCorreo(),

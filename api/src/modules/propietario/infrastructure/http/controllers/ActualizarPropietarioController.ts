@@ -40,7 +40,11 @@ export class ActualizarPropietarioController extends BaseController {
 
 			const dto = validate(updatePropietarioSchema, dataToValidate);
 
-			const result = await this.actualizarUseCase.run(id, dto);
+			const result = await this.actualizarUseCase.run(
+				id,
+				dto,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

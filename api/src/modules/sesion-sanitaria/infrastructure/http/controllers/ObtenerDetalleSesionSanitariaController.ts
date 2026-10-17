@@ -20,7 +20,10 @@ export class ObtenerDetalleSesionSanitariaController extends BaseController {
 				throw new Error("El ID de la sesión debe ser un entero positivo");
 			}
 
-			const result = await this.obtenerDetalleSesionSanitariaUseCase.run(id);
+			const result = await this.obtenerDetalleSesionSanitariaUseCase.run(
+				id,
+				this.getActor(c),
+			);
 			return this.ok(c, result);
 		});
 	};

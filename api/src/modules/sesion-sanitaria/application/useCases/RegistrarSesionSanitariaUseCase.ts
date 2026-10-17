@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
-import type { GanadoRepository } from "@/modules/ganado/domain/repository/GanadoRepository";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
-import type { VeterinarioRepository } from "@/modules/veterinario/domain/repository/VeterinarioRepository";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
 import { SesionSanitaria } from "../../domain/SesionSanitaria";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
@@ -11,6 +11,7 @@ import type {
 	SesionSanitariaOutputDto,
 } from "../dtos/SesionSanitariaDto";
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
+import type { SesionAccessService } from "../services/SesionAccessService";
 
 @injectable()
 export class RegistrarSesionSanitariaUseCase {
@@ -19,28 +20,25 @@ export class RegistrarSesionSanitariaUseCase {
 		private readonly sesionSanitariaRepository: SesionSanitariaRepository,
 		@inject("InsumoRepository")
 		private readonly insumoRepository: InsumoRepository,
-		@inject("VeterinarioRepository")
-		private readonly veterinarioRepository: VeterinarioRepository,
-		@inject("GanadoRepository")
-		private readonly ganadoRepository: GanadoRepository,
+		@inject("SesionAccessService")
+		private readonly accessService: SesionAccessService,
+		@inject("GanadoAccessService")
+		private readonly ganadoAccessService: GanadoAccessService,
 		@inject("SesionSanitariaMapper")
 		private readonly mapper: SesionSanitariaMapper,
 	) {}
 
 	public async run(
 		dto: RegistrarSesionSanitariaInputDto,
+		actor: Actor,
 	): Promise<SesionSanitariaOutputDto> {
-		const veterinario = await this.veterinarioRepository.findById(
+		// El veterinario, el insumo y los animales deben existir y ser del usuario
+		const veterinario = await this.accessService.obtenerVeterinario(
 			dto.veterinarioId,
+			actor,
 		);
-		if (!veterinario) {
-			throw new Error(`El veterinario con ID ${dto.veterinarioId} no existe`);
-		}
 
-		const insumo = await this.insumoRepository.findById(dto.insumoId);
-		if (!insumo) {
-			throw new Error(`El insumo con ID ${dto.insumoId} no existe`);
-		}
+		const insumo = await this.accessService.obtenerInsumo(dto.insumoId, actor);
 
 		if (!dto.aplicaciones || dto.aplicaciones.length === 0) {
 			throw new Error(
@@ -52,12 +50,7 @@ export class RegistrarSesionSanitariaUseCase {
 		let totalDosisRequerida = 0;
 
 		for (const appDto of dto.aplicaciones) {
-			const animal = await this.ganadoRepository.findById(appDto.ganadoId);
-			if (!animal) {
-				throw new Error(
-					`El animal de ganado con ID ${appDto.ganadoId} no existe`,
-				);
-			}
+			await this.ganadoAccessService.obtenerGanado(appDto.ganadoId, actor);
 
 			const app = AplicacionSanitaria.create(
 				appDto.ganadoId,

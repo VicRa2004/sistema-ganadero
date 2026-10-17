@@ -19,7 +19,7 @@ export class ListarPropietariosController extends BaseController {
 			const queryParams = c.req.query();
 			const filters = validate(listarPropietariosQuerySchema, queryParams);
 
-			const result = await this.listarUseCase.run(filters);
+			const result = await this.listarUseCase.run(filters, this.getActor(c));
 			return this.ok(c, result);
 		});
 	};

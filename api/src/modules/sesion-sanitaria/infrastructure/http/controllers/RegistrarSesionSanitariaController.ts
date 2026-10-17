@@ -18,7 +18,10 @@ export class RegistrarSesionSanitariaController extends BaseController {
 			const body = await c.req.json();
 			const validated = registrarSesionSanitariaSchema.parse(body);
 
-			const result = await this.registrarSesionSanitariaUseCase.run(validated);
+			const result = await this.registrarSesionSanitariaUseCase.run(
+				validated,
+				this.getActor(c),
+			);
 			return this.created(c, result);
 		});
 	};

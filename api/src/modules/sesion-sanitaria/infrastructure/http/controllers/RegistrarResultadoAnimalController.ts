@@ -18,7 +18,10 @@ export class RegistrarResultadoAnimalController extends BaseController {
 			const body = await c.req.json();
 			const validated = registrarResultadoAnimalSchema.parse(body);
 
-			const result = await this.registrarResultadoAnimalUseCase.run(validated);
+			const result = await this.registrarResultadoAnimalUseCase.run(
+				validated,
+				this.getActor(c),
+			);
 			return this.created(c, result);
 		});
 	};

@@ -17,7 +17,7 @@ export class EliminarPropietarioController extends BaseController {
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
 			const { id } = validate(propietarioIdSchema, { id: c.req.param("id") });
-			await this.eliminarUseCase.run(id);
+			await this.eliminarUseCase.run(id, this.getActor(c));
 			return this.ok(c, { success: true });
 		});
 	};

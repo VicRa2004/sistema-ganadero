@@ -6,6 +6,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 
 ## U-1 · CORS refleja cualquier origen con credenciales
 
+> ✅ **Implementado** (commit `344d685`): lista blanca `CORS_ORIGINS`.
+
 - **Dónde:** `api/src/core/shared/infrastructure/http/server.ts` — `cors({ origin: (origin) => origin, credentials: true })`.
 - **Por qué importa:** cualquier sitio web puede hacer peticiones autenticadas (cookie `refreshToken`) en nombre del usuario. Con `SameSite=Lax` se mitiga parcialmente, pero no es una defensa suficiente.
 - **Propuesta:**
@@ -15,6 +17,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 - **Aceptación:** una petición con `Origin` no listado no recibe `Access-Control-Allow-Origin`; test que lo verifique.
 
 ## U-2 · Subida de archivos sin validación
+
+> ✅ **Implementado** (commit `344d685`): magic bytes JPEG/PNG/WebP, `UPLOAD_MAX_SIZE`, `bodyLimit`, cabeceras en `/uploads`, anti path traversal.
 
 - **Dónde:** `api/src/core/shared/infrastructure/libs/LocalImageStorageService.ts`; usado desde los casos de uso de `ganado`, `propietario` y `terreno`.
 - **Problema:**
@@ -32,6 +36,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 
 ## U-3 · Sin rate limiting en autenticación
 
+> ✅ **Implementado** (commit `344d685`) con middleware propio en memoria. Pendiente: quitar `express-rate-limit`/`cookie-parser` (m-1).
+
 - **Dónde:** `api/src/modules/auth/infrastructure/http/routes/AuthRouter.ts` (hay un `TODO`).
 - **Problema:** `/login`, `/register` y `/refresh` permiten fuerza bruta ilimitada. `express-rate-limit` está instalado pero es de Express y no funciona con Hono.
 - **Propuesta:**
@@ -42,6 +48,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 - **Aceptación:** el 6.º intento fallido devuelve 429 con `Retry-After`.
 
 ## U-4 · Falta aislamiento por usuario en Ganado y Propietario (IDOR)
+
+> ✅ **Implementado.** Ganado hereda el dueño de su terreno; `Propietario` tiene `usuarioId` (migración `20261017150000_add_usuario_to_propietario` con backfill); sesiones sanitarias heredan el dueño del veterinario. Servicios `GanadoAccessService` y `SesionAccessService`; recursos ajenos devuelven 404. Pruebas en `api/src/e2e/aislamiento-usuarios.e2e.spec.ts` (requieren `E2E_DATABASE_URL`). No existe módulo `tratamiento-medico` en la API (solo la tabla), por lo que no hubo qué proteger.
 
 - **Dónde:** `api/src/modules/ganado/**`, `api/src/modules/propietario/**` (y _verificar_ `sesion-sanitaria`, `tratamiento-medico`).
 - **Problema:** `Terreno`, `Insumo` y `Veterinario` tienen `usuarioId` y validan `rol !== "ADMIN" && x.usuarioId !== usuarioId`. `Ganado` y `Propietario` no, así que cualquier `USER` puede listar/editar/borrar los de otro usuario. Una sesión sanitaria también puede referenciar insumos o veterinarios ajenos.
@@ -54,6 +62,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 - **Aceptación:** tests donde el usuario B recibe 404/403 al leer, editar y borrar recursos del usuario A; el listado solo devuelve los propios.
 
 ## U-5 · `isActive` nunca se comprueba
+
+> ✅ **Implementado.** Login y refresh rechazan cuentas inactivas; un usuario inactivo no conserva permisos (`getEffectivePermissions` devuelve `[]`), así que su access token deja de servir de inmediato; desactivar o cambiar la contraseña revoca los refresh tokens. Además, login/registro/alta de usuario usan ahora `findByEmail` exacto (antes `contains`, que podía confundir `a@x.com` con `xa@x.com`).
 
 - **Dónde:** `LoginUseCase.ts`, `RefreshTokenUseCase.ts`, `authMiddleware.ts`.
 - **Problema:** `User.isActive` existe pero un usuario desactivado puede iniciar sesión y renovar tokens.
@@ -75,6 +85,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 - **Aceptación:** comportamiento acorde a la opción elegida y documentado en `README`.
 
 ## U-7 · `UpdateUserUseCase` no aplica los cambios
+
+> ✅ **Implementado.** Aplica nombre, correo (único), contraseña (hasheada) e `isActive`. Queda fuera el cambio de `role` (requiere gestionar `UserRole`).
 
 - **Dónde:** `api/src/core/user/application/useCases/UpdateUserUseCase.ts`.
 - **Problema:** recibe `dto` pero nunca lo aplica a la entidad; llama a `update(user)` sin cambios y devuelve el usuario intacto. `PUT /api/user/:id` es un no-op.

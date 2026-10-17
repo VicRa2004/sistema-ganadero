@@ -5,6 +5,8 @@ import type { UserFilters } from "./UserFilters";
 export interface UserRepository {
 	find: (filters: UserFilters) => Promise<Pagination<User>>;
 	findById: (id: number) => Promise<User | null>;
+	/** Búsqueda exacta (sin distinguir mayúsculas) por correo. */
+	findByEmail: (email: string) => Promise<User | null>;
 
 	create: (data: User) => Promise<User>;
 	update: (data: User) => Promise<User>;

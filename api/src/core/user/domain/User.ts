@@ -88,6 +88,22 @@ export class User extends Entity {
 		this.isActive = false;
 	}
 
+	public cambiarNombre(name: string): void {
+		this.name = name;
+	}
+
+	public cambiarEmail(emailStr: string): void {
+		this.email = new Email(emailStr);
+	}
+
+	public cambiarPasswordHash(passwordHash: string): void {
+		this.passwordHash = passwordHash;
+	}
+
+	public activate(): void {
+		this.isActive = true;
+	}
+
 	public addCreateEvent() {
 		this.addDomainEvent(
 			new CreateUserEvent({ id: this.getId(), email: this.email.value }),

@@ -21,6 +21,7 @@ export const updateUserSchema = z.object({
 	email: z.email("Debe ser un email válido").optional(),
 	name: z.string().optional(),
 	password: passwordSchema.optional(),
+	isActive: z.boolean().optional(),
 });
 
 export const userIdSchema = z.object({

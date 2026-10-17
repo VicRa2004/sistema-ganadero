@@ -46,6 +46,12 @@ export class RefreshTokenUseCase {
 			throw new BaseError("Usuario no encontrado", 401);
 		}
 
+		// Cuenta desactivada: se cierran todas sus sesiones
+		if (!user.getIsActive()) {
+			await this.refreshTokenRepo.revokeAllByUserId(user.getId());
+			throw new BaseError("Refresh token inválido o expirado", 401);
+		}
+
 		// Generar nuevo par de tokens
 		const newAccessToken = this.tokenService.generateToken({
 			id: user.getId(),

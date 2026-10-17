@@ -24,13 +24,7 @@ export class LoginUseCase {
 	async run(
 		dto: LoginDto,
 	): Promise<{ accessToken: string; refreshToken: string; user: UserDto }> {
-		const users = await this.userRepository.find({
-			page: 1,
-			limit: 1,
-			email: dto.email,
-		});
-
-		const [user] = users.data;
+		const user = await this.userRepository.findByEmail(dto.email);
 
 		if (!user) {
 			throw new BaseError("Credenciales inválidas", 401);
@@ -41,7 +35,8 @@ export class LoginUseCase {
 			user.getPasswordHash(),
 		);
 
-		if (!isPasswordValid) {
+		// Misma respuesta que con credenciales erróneas para no revelar el estado de la cuenta
+		if (!isPasswordValid || !user.getIsActive()) {
 			throw new BaseError("Credenciales inválidas", 401);
 		}
 

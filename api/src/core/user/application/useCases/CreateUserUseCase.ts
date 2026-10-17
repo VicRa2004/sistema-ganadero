@@ -18,12 +18,8 @@ export class CreateUserUseCase {
 	) {}
 
 	async run(dto: CreateUserDto): Promise<UserDto> {
-		const existingUsers = await this.userRepository.find({
-			page: 1,
-			limit: 1,
-			email: dto.email,
-		});
-		if (existingUsers?.data?.length > 0) {
+		const existingUser = await this.userRepository.findByEmail(dto.email);
+		if (existingUser) {
 			throw new BaseError(
 				"El usuario con este correo electrónico ya existe",
 				400,

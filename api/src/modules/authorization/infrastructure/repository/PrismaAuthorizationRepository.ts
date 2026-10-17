@@ -57,6 +57,11 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 			return [];
 		}
 
+		// Un usuario desactivado no conserva ningún permiso, aunque su access token siga vigente
+		if (!userWithRoles.isActive) {
+			return [];
+		}
+
 		// Construir un mapa de permisos usando "resource:action" como clave
 		const permissionMap = new Map<string, Permission>();
 

@@ -7,6 +7,8 @@ import type { RefreshTokenRepository } from "../../domain/repository/RefreshToke
 /** Duración del nuevo refresh token: 7 días */
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
+const TOKEN_INVALIDO = "Refresh token inválido o expirado";
+
 @injectable()
 export class RefreshTokenUseCase {
 	constructor(
@@ -20,24 +22,26 @@ export class RefreshTokenUseCase {
 	 * Rota el refresh token: revoca el anterior y genera uno nuevo.
 	 * También emite un nuevo access token.
 	 *
-	 * Implementa "Refresh Token Rotation" — si alguien reutiliza un token
-	 * ya revocado, se asume robo y se revocan TODOS los tokens del usuario.
+	 * Implementa "Refresh Token Rotation" con detección de reuso: si alguien presenta
+	 * un token ya revocado (o pierde la carrera contra otra petición con el mismo token),
+	 * se asume robo y se revocan TODOS los tokens del usuario.
 	 */
 	async run(
 		currentRefreshToken: string,
 	): Promise<{ accessToken: string; refreshToken: string }> {
 		const tokenHash = this.tokenService.hashRefreshToken(currentRefreshToken);
 
-		const storedToken = await this.refreshTokenRepo.findValidByHash(tokenHash);
+		const storedToken = await this.refreshTokenRepo.findByHash(tokenHash);
 
-		if (!storedToken) {
-			// El token no existe o ya fue revocado → posible robo
-			// Intentamos detectar a quién pertenecía para revocar toda la familia
-			throw new BaseError("Refresh token inválido o expirado", 401);
+		if (!storedToken || storedToken.expiresAt <= new Date()) {
+			throw new BaseError(TOKEN_INVALIDO, 401);
 		}
 
-		// Revocar el token usado (rotación)
-		await this.refreshTokenRepo.revokeById(storedToken.id);
+		// Token ya usado: posible robo, se cierran todas las sesiones del usuario
+		if (storedToken.revoked) {
+			await this.refreshTokenRepo.revokeAllByUserId(storedToken.userId);
+			throw new BaseError(TOKEN_INVALIDO, 401);
+		}
 
 		// Verificar que el usuario exista y esté activo
 		const user = await this.userRepository.findById(storedToken.userId);
@@ -49,7 +53,7 @@ export class RefreshTokenUseCase {
 		// Cuenta desactivada: se cierran todas sus sesiones
 		if (!user.getIsActive()) {
 			await this.refreshTokenRepo.revokeAllByUserId(user.getId());
-			throw new BaseError("Refresh token inválido o expirado", 401);
+			throw new BaseError(TOKEN_INVALIDO, 401);
 		}
 
 		// Generar nuevo par de tokens
@@ -65,11 +69,17 @@ export class RefreshTokenUseCase {
 		const expiresAt = new Date();
 		expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
 
-		await this.refreshTokenRepo.create({
+		// Rotación atómica: si otra petición ya consumió este token, se trata como reuso
+		const rotated = await this.refreshTokenRepo.rotate(storedToken.id, {
 			tokenHash: newTokenHash,
 			userId: user.getId(),
 			expiresAt,
 		});
+
+		if (!rotated) {
+			await this.refreshTokenRepo.revokeAllByUserId(storedToken.userId);
+			throw new BaseError(TOKEN_INVALIDO, 401);
+		}
 
 		return {
 			accessToken: newAccessToken,

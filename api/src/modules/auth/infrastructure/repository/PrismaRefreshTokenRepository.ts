@@ -38,6 +38,50 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
 		};
 	}
 
+	async findByHash(tokenHash: string): Promise<{
+		id: number;
+		userId: number;
+		expiresAt: Date;
+		revoked: boolean;
+	} | null> {
+		const record = await prisma.refreshToken.findUnique({
+			where: { tokenHash },
+		});
+
+		if (!record) return null;
+
+		return {
+			id: record.id,
+			userId: record.userId,
+			expiresAt: record.expiresAt,
+			revoked: record.revoked,
+		};
+	}
+
+	async rotate(
+		currentId: number,
+		next: { tokenHash: string; userId: number; expiresAt: Date },
+	): Promise<boolean> {
+		return prisma.$transaction(async (tx) => {
+			// El updateMany condicionado garantiza que solo una petición concurrente gane
+			const { count } = await tx.refreshToken.updateMany({
+				where: { id: currentId, revoked: false },
+				data: { revoked: true },
+			});
+
+			if (count !== 1) return false;
+
+			await tx.refreshToken.create({
+				data: {
+					tokenHash: next.tokenHash,
+					userId: next.userId,
+					expiresAt: next.expiresAt,
+				},
+			});
+			return true;
+		});
+	}
+
 	async revokeById(id: number): Promise<void> {
 		await prisma.refreshToken.update({
 			where: { id },
@@ -54,9 +98,7 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
 
 	async deleteExpired(): Promise<void> {
 		await prisma.refreshToken.deleteMany({
-			where: {
-				OR: [{ expiresAt: { lt: new Date() } }, { revoked: true }],
-			},
+			where: { expiresAt: { lt: new Date() } },
 		});
 	}
 }

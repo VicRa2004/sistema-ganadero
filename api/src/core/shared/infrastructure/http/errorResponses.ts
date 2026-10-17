@@ -42,3 +42,14 @@ export function internalErrorResponse(c: Context, error: unknown): Response {
 
 	return c.json({ error: "Error interno del servidor", requestId }, 500);
 }
+
+export const BODY_TOO_LARGE_MESSAGE =
+	"El cuerpo de la petición excede el tamaño máximo";
+
+/**
+ * `bodyLimit` de Hono lanza un BodyLimitError (no exportado) al leer un cuerpo que
+ * excede el máximo cuando la petición no trae Content-Length.
+ */
+export function isBodyLimitError(error: unknown): boolean {
+	return error instanceof Error && error.name === "BodyLimitError";
+}

@@ -1,11 +1,17 @@
 import type { Context } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
 // Asumiendo que z.treeifyError es una utilidad custom que tienes en tu proyecto.
 // Si no, Zod nativo usa error.flatten() o error.format()
 import z from "zod";
 import type { Actor } from "../../domain/Actor";
 import { BaseError } from "../../domain/error/BaseError";
-import { internalErrorResponse, mapPrismaError } from "./errorResponses";
+import {
+	BODY_TOO_LARGE_MESSAGE,
+	internalErrorResponse,
+	isBodyLimitError,
+	mapPrismaError,
+} from "./errorResponses";
 
 /**
  * Controlador base para Hono.
@@ -36,6 +42,15 @@ export abstract class BaseController {
 				// para evitar conflictos si error.code es de tipo 'number' genérico.
 				error.code as any,
 			);
+		}
+
+		// Errores HTTP de Hono (p. ej. bodyLimit al leer un cuerpo sin Content-Length) traen su respuesta
+		if (error instanceof HTTPException) {
+			return error.getResponse();
+		}
+
+		if (isBodyLimitError(error)) {
+			return c.json({ error: BODY_TOO_LARGE_MESSAGE }, 413);
 		}
 
 		// JSON malformado en el cuerpo de la petición

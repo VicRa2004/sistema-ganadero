@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+	limitQuerySchema,
+	pageQuerySchema,
+} from "@/core/shared/infrastructure/libs/paginationSchemas";
 
 export const registrarVeterinarioSchema = z.object({
 	nombre: z
@@ -51,22 +55,8 @@ export const veterinarioIdSchema = z.object({
 });
 
 export const listarVeterinariosQuerySchema = z.object({
-	page: z
-		.string()
-		.optional()
-		.default("1")
-		.transform((v) => {
-			const n = Number(v);
-			return Number.isNaN(n) || n < 1 ? 1 : n;
-		}),
-	limit: z
-		.string()
-		.optional()
-		.default("10")
-		.transform((v) => {
-			const n = Number(v);
-			return Number.isNaN(n) || n < 1 ? 10 : n;
-		}),
+	page: pageQuerySchema,
+	limit: limitQuerySchema(),
 	nombre: z.string().optional(),
 	especialidad: z.string().optional(),
 });

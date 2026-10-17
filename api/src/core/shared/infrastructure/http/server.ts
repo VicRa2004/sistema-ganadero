@@ -1,6 +1,7 @@
 import path from "node:path";
 import { existsSync } from "node:fs";
 import { Hono } from "hono";
+import type { Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
@@ -13,6 +14,7 @@ import { env } from "@/core/config/env";
 import { swaggerSpec } from "@/core/config/swagger";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
 import {
+	BODY_TOO_LARGE_MESSAGE,
 	internalErrorResponse,
 	mapPrismaError,
 } from "@/core/shared/infrastructure/http/errorResponses";
@@ -45,17 +47,22 @@ app.use(
 app.use("*", requestId());
 app.use("*", logger());
 
-// Límite de tamaño del body: imagen máxima + margen para el resto del multipart
-app.use(
-	"*",
-	bodyLimit({
-		maxSize: env.UPLOAD_MAX_SIZE + 1024 * 1024,
-		onError: (c) =>
-			c.json(
-				{ error: "El cuerpo de la petición excede el tamaño máximo" },
-				413,
-			),
-	}),
+// Límite de tamaño del body: pequeño para JSON y mayor solo para multipart (imágenes)
+const onBodyTooLarge = (c: Context) =>
+	c.json({ error: BODY_TOO_LARGE_MESSAGE }, 413);
+const limiteJson = bodyLimit({
+	maxSize: env.BODY_MAX_SIZE,
+	onError: onBodyTooLarge,
+});
+// Imagen máxima + margen para el resto de campos del formulario
+const limiteMultipart = bodyLimit({
+	maxSize: env.UPLOAD_MAX_SIZE + 1024 * 1024,
+	onError: onBodyTooLarge,
+});
+app.use("*", (c, next) =>
+	c.req.header("content-type")?.startsWith("multipart/form-data")
+		? limiteMultipart(c, next)
+		: limiteJson(c, next),
 );
 
 // Servir la carpeta de subidas (uploads) de manera estática.
@@ -74,9 +81,13 @@ app.use("/uploads/*", serveStatic({ root: "./" }));
 // cuando llamas a c.req.json() en tus controladores.
 
 // 2. Documentación de la API (Swagger)
-// Hono necesita que expongas el JSON y luego le digas a la UI dónde leerlo
-app.get("/api-docs.json", (c) => c.json(swaggerSpec));
-app.get("/api-docs", swaggerUI({ url: "/api-docs.json" }));
+// Solo fuera de producción, o si se activa explícitamente con ENABLE_API_DOCS=true
+const isProd = env.NODE_ENV === "prod" || env.NODE_ENV === "production";
+if (env.ENABLE_API_DOCS ?? !isProd) {
+	// Hono necesita que expongas el JSON y luego le digas a la UI dónde leerlo
+	app.get("/api-docs.json", (c) => c.json(swaggerSpec));
+	app.get("/api-docs", swaggerUI({ url: "/api-docs.json" }));
+}
 
 // 3. Resolución de dependencias (TSyringe sigue intacto)
 const userRouter = container.resolve(UserRouter);
@@ -104,7 +115,6 @@ app.route("/api/veterinarios", veterinarioRouter.router);
 app.route("/api/sesiones-sanitarias", sesionSanitariaRouter.router);
 
 // 5. Servir Frontend (Vite SPA) en producción
-const isProd = env.NODE_ENV === "prod" || env.NODE_ENV === "production";
 const distPath = existsSync(path.resolve(process.cwd(), "web/dist"))
 	? path.resolve(process.cwd(), "web/dist")
 	: path.resolve(process.cwd(), "../web/dist");

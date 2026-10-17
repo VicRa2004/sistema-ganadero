@@ -27,6 +27,19 @@ export const EnvSchema = z
 			.int()
 			.positive()
 			.default(5 * 1024 * 1024),
+		// Tamaño máximo (en bytes) de las peticiones que no son multipart (JSON). Por defecto 100 KB.
+		BODY_MAX_SIZE: z.coerce
+			.number("BODY_MAX_SIZE debe ser un numero")
+			.int()
+			.positive()
+			.default(100 * 1024),
+		// Exponer Swagger (/api-docs). Por defecto solo fuera de producción.
+		ENABLE_API_DOCS: z
+			.enum(["true", "false"])
+			.optional()
+			.transform((value) =>
+				value === undefined ? undefined : value === "true",
+			),
 		// Leer la IP real desde X-Forwarded-For (activar solo detrás de un proxy de confianza)
 		TRUST_PROXY: z
 			.enum(["true", "false"])
@@ -65,6 +78,8 @@ const envPrev = {
 	CORS_ORIGINS: process.env.CORS_ORIGINS,
 	UPLOAD_MAX_SIZE: process.env.UPLOAD_MAX_SIZE,
 	TRUST_PROXY: process.env.TRUST_PROXY,
+	BODY_MAX_SIZE: process.env.BODY_MAX_SIZE,
+	ENABLE_API_DOCS: process.env.ENABLE_API_DOCS,
 };
 
 export const env = EnvSchema.parse(envPrev);

@@ -29,16 +29,22 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-4 · Enumeración de usuarios en registro y login
 
+> 🟡 **Parcial.** Login: ahora siempre se ejecuta bcrypt (contra un hash ficticio si el correo no existe), así que el tiempo de respuesta ya no delata los correos registrados; probado con bcrypt real. **Pendiente:** el registro sigue respondiendo «el usuario ya existe». Ocultarlo exige verificación de correo (enviar un mail «ya tienes cuenta») y decidir la política de registro (U-6); ver `mejoras/feature-plataforma.md`.
+
 - **Dónde:** `RegisterUseCase.ts`, `LoginUseCase.ts`.
 - **Problema:** "el usuario ya existe" revela correos registrados; en login bcrypt solo se ejecuta si el usuario existe, lo que filtra por tiempo de respuesta.
 - **Propuesta:** comparar siempre contra un hash dummy cuando el usuario no existe; en registro responder genérico y notificar por correo (ver verificación de email).
 
 ## M-5 · Sin límites de tamaño de body ni tope de paginación
 
+> ✅ **Implementado.** JSON limitado a `BODY_MAX_SIZE` (100 KB) y multipart a `UPLOAD_MAX_SIZE` + 1 MB, con 413 también cuando no hay `Content-Length`; `limit` acotado a 100 en todos los listados mediante `paginationSchemas.ts` (valores inválidos usan el defecto, mayores se reducen al tope). **Excepción:** el listado de ganado admite hasta 1000 porque el web lo pide así para los selectores de padre/madre; hay que paginar esos selectores para bajar el tope a 100.
+
 - **Dónde:** `server.ts`, schemas de filtros (`*Schemas.ts`).
 - **Propuesta:** `bodyLimit` global de Hono (JSON pequeño, multipart mayor solo en rutas con imagen); `limit` máximo (p. ej. 100) en todos los schemas de filtros.
 
 ## M-6 · `/api-docs` expuesto en producción
+
+> ✅ **Implementado.** Swagger solo se registra fuera de producción; `ENABLE_API_DOCS=true|false` fuerza el comportamiento. En producción `/api-docs` responde 404.
 
 - **Dónde:** `server.ts`.
 - **Propuesta:** habilitar solo en `dev`, o protegerlo con autenticación/permiso admin.

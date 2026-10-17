@@ -3,12 +3,20 @@ import { existsSync } from "node:fs";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
+import { requestId } from "hono/request-id";
 import { logger } from "hono/logger";
 import { serveStatic } from "hono/bun";
 import { secureHeaders } from "hono/secure-headers";
 import { swaggerUI } from "@hono/swagger-ui";
 import { env } from "@/core/config/env";
 import { swaggerSpec } from "@/core/config/swagger";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
+import {
+	internalErrorResponse,
+	mapPrismaError,
+} from "@/core/shared/infrastructure/http/errorResponses";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { container } from "@/core/shared/infrastructure/di/container";
 import { UserRouter } from "@/core/user/infrastructure/http/routes/UserRouter";
@@ -34,6 +42,7 @@ app.use(
 		credentials: true,
 	}),
 );
+app.use("*", requestId());
 app.use("*", logger());
 
 // Límite de tamaño del body: imagen máxima + margen para el resto del multipart
@@ -122,17 +131,23 @@ if (isProd && existsSync(distPath)) {
 	});
 }
 
-// 5. Global Error Handler
+// 6. Global Error Handler
 app.onError((err, c) => {
-	console.error(err);
+	// Errores HTTP controlados por Hono (p. ej. bodyLimit) ya traen su respuesta
+	if (err instanceof HTTPException) {
+		return err.getResponse();
+	}
 
-	// Extraemos el status (forzando tipo de manera segura para Hono)
-	const status = (err as any).status || 500;
+	if (err instanceof BaseError) {
+		return c.json({ error: err.message }, err.code as ContentfulStatusCode);
+	}
 
-	return c.json(
-		{ error: err.message || "Internal Server Error" },
-		status as any, // Casteo necesario porque Hono es muy estricto con los códigos HTTP (StatusCode)
-	);
+	const prismaError = mapPrismaError(err);
+	if (prismaError) {
+		return c.json({ error: prismaError.message }, prismaError.status);
+	}
+
+	return internalErrorResponse(c, err);
 });
 
 export { app };

@@ -1,5 +1,6 @@
 import { Entity } from "@/core/shared/domain/Entity";
 import { EntityId } from "@/core/shared/domain/EntityId";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export class Raza extends Entity {
 	private nombre: string;
@@ -56,7 +57,7 @@ export class Raza extends Entity {
 	 */
 	public actualizar(nombre: string, descripcion: string | null): void {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre de la raza no puede estar vacío");
+			throw new ValidationError("El nombre de la raza no puede estar vacío");
 		}
 		this.nombre = nombre;
 		this.descripcion = descripcion;

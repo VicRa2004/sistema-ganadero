@@ -1,5 +1,6 @@
 import { Entity } from "@/core/shared/domain/Entity";
 import { EntityId } from "@/core/shared/domain/EntityId";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export class Propietario extends Entity {
 	private nombre: string;
@@ -32,7 +33,9 @@ export class Propietario extends Entity {
 		imagenMarca: string | null = null,
 	): Propietario {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del propietario no puede estar vacío");
+			throw new ValidationError(
+				"El nombre del propietario no puede estar vacío",
+			);
 		}
 		return new Propietario(
 			new EntityId(),
@@ -93,7 +96,9 @@ export class Propietario extends Entity {
 		imagenMarca: string | null,
 	): void {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del propietario no puede estar vacío");
+			throw new ValidationError(
+				"El nombre del propietario no puede estar vacío",
+			);
 		}
 		this.nombre = nombre;
 		this.telefono = telefono;

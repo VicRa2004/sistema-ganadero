@@ -1,4 +1,5 @@
 import type { AplicacionSanitaria } from "./AplicacionSanitaria";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export class SesionSanitaria {
 	private constructor(
@@ -19,13 +20,17 @@ export class SesionSanitaria {
 		id?: number | null,
 	): SesionSanitaria {
 		if (!descripcion || descripcion.trim().length === 0) {
-			throw new Error("La descripción de la sesión sanitaria es obligatoria");
+			throw new ValidationError(
+				"La descripción de la sesión sanitaria es obligatoria",
+			);
 		}
 		if (veterinarioId <= 0) {
-			throw new Error("El ID de veterinario debe ser un entero positivo");
+			throw new ValidationError(
+				"El ID de veterinario debe ser un entero positivo",
+			);
 		}
 		if (insumoId <= 0) {
-			throw new Error("El ID de insumo debe ser un entero positivo");
+			throw new ValidationError("El ID de insumo debe ser un entero positivo");
 		}
 
 		return new SesionSanitaria(
@@ -74,7 +79,7 @@ export class SesionSanitaria {
 			(a) => a.getGanadoId() === aplicacion.getGanadoId(),
 		);
 		if (yaExiste) {
-			throw new Error(
+			throw new ValidationError(
 				`El animal con ID ${aplicacion.getGanadoId()} ya tiene una aplicación registrada en esta sesión`,
 			);
 		}
@@ -88,7 +93,9 @@ export class SesionSanitaria {
 		insumoId: number,
 	): void {
 		if (!descripcion || descripcion.trim().length === 0) {
-			throw new Error("La descripción de la sesión sanitaria es obligatoria");
+			throw new ValidationError(
+				"La descripción de la sesión sanitaria es obligatoria",
+			);
 		}
 		this.fecha = fecha;
 		this.veterinarioId = veterinarioId;

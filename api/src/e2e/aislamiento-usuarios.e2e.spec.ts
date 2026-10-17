@@ -495,4 +495,136 @@ describe.skipIf(!E2E_URL)("Aislamiento de datos por usuario (e2e)", () => {
 			expect((await call("a", "GET", "/api/ganado")).status).toBe(200);
 		});
 	});
+
+	describe("refresh tokens (M-1)", () => {
+		const post = (cookie: string) =>
+			app.request("/api/auth/refresh", {
+				method: "POST",
+				headers: { Cookie: cookie },
+			});
+		const cookieDe = (res: Response) =>
+			res.headers.get("set-cookie")?.split(";")[0] as string;
+
+		const iniciarSesion = async () => {
+			const email = `rt-${sufijo}-${Math.random().toString(36).slice(2)}@e2e.test`;
+			const hash = await Bun.password.hash("ClaveSegura#123", {
+				algorithm: "bcrypt",
+			});
+			const user = await prisma.user.create({
+				data: {
+					email,
+					name: "rt",
+					password: hash,
+					roles: { create: { role: { connect: { name: "USER" } } } },
+				},
+			});
+			usuarios[email] = { id: user.id, token: "" };
+			const res = await app.request("/api/auth/login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ email, password: "ClaveSegura#123" }),
+			});
+			expect(res.status).toBe(200);
+			return { userId: user.id, cookie: cookieDe(res) };
+		};
+
+		const activos = (userId: number) =>
+			prisma.refreshToken.count({ where: { userId, revoked: false } });
+
+		it("rota el token y el anterior queda revocado", async () => {
+			const { userId, cookie } = await iniciarSesion();
+			const res = await post(cookie);
+			expect(res.status).toBe(200);
+			expect(cookieDe(res)).not.toBe(cookie);
+			expect(await activos(userId)).toBe(1);
+		});
+
+		it("reusar un token ya rotado revoca todas las sesiones del usuario", async () => {
+			const { userId, cookie } = await iniciarSesion();
+			const rotado = await post(cookie);
+			const nuevaCookie = cookieDe(rotado);
+			expect(await activos(userId)).toBe(1);
+
+			// Un atacante presenta el token viejo
+			expect((await post(cookie)).status).toBe(401);
+			expect(await activos(userId)).toBe(0);
+
+			// El token legítimo más reciente también queda invalidado
+			expect((await post(nuevaCookie)).status).toBe(401);
+		});
+
+		it("dos refresh simultáneos con el mismo token no pueden prosperar ambos", async () => {
+			const { userId, cookie } = await iniciarSesion();
+			const respuestas = await Promise.all([post(cookie), post(cookie)]);
+			const exitosas = respuestas.filter((r) => r.status === 200);
+
+			expect(exitosas.length).toBeLessThanOrEqual(1);
+			expect(respuestas.some((r) => r.status === 401)).toBe(true);
+			// La pérdida de la carrera se trata como reuso: no quedan sesiones activas
+			expect(await activos(userId)).toBe(0);
+		});
+
+		it("un token expirado se rechaza sin tocar el resto de sesiones", async () => {
+			const { userId, cookie } = await iniciarSesion();
+			await prisma.refreshToken.updateMany({
+				where: { userId },
+				data: { expiresAt: new Date(Date.now() - 1000) },
+			});
+			const otraSesion = await prisma.refreshToken.create({
+				data: {
+					tokenHash: `otro-${sufijo}-${userId}`,
+					userId,
+					expiresAt: new Date(Date.now() + 86_400_000),
+				},
+			});
+
+			expect((await post(cookie)).status).toBe(401);
+			const intacta = await prisma.refreshToken.findUnique({
+				where: { id: otraSesion.id },
+			});
+			expect(intacta?.revoked).toBe(false);
+		});
+	});
+
+	describe("errores y autenticación (M-2 y M-3)", () => {
+		it("rechaza un JWT válido pero sin id de usuario", async () => {
+			const token = jwt.sign(
+				{ role: "ADMIN" },
+				process.env.JWT_SECRET as string,
+			);
+			const res = await app.request("/api/ganado", {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			expect(res.status).toBe(401);
+		});
+
+		it("rechaza un JWT firmado con otro algoritmo", async () => {
+			const token = jwt.sign(
+				{ id: 1, role: "ADMIN" },
+				process.env.JWT_SECRET as string,
+				{
+					algorithm: "HS512",
+				},
+			);
+			const res = await app.request("/api/ganado", {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			expect(res.status).toBe(401);
+		});
+
+		it("un conflicto de unicidad devuelve 409 sin detalles de la BD", async () => {
+			const cedula = `DUP-${sufijo}`;
+			const alta = () =>
+				call("a", "POST", "/api/veterinarios", {
+					nombre: "Dup",
+					telefono: "1",
+					cedulaProfesional: cedula,
+				});
+			expect((await alta()).status).toBe(201);
+			const res = await alta();
+			expect(res.status).toBeGreaterThanOrEqual(400);
+			expect(res.status).toBeLessThan(500);
+			expect(JSON.stringify(await res.json())).not.toContain("prisma");
+		});
+	});
 });

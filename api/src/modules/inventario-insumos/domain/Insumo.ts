@@ -3,6 +3,7 @@ import { EntityId } from "@/core/shared/domain/EntityId";
 import type { TipoInsumo } from "./TipoInsumo";
 import { InsumoCantidadInvalidaError } from "./error/InsumoCantidadInvalidaError";
 import { InsumoStockInsuficienteError } from "./error/InsumoStockInsuficienteError";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export class Insumo extends Entity {
 	private nombre: string;
@@ -47,22 +48,22 @@ export class Insumo extends Entity {
 		usuarioId: number,
 	): Insumo {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del insumo no puede estar vacío");
+			throw new ValidationError("El nombre del insumo no puede estar vacío");
 		}
 		if (stock < 0) {
-			throw new Error("El stock inicial no puede ser negativo");
+			throw new ValidationError("El stock inicial no puede ser negativo");
 		}
 		if (stockMinimo < 0) {
-			throw new Error("El stock mínimo no puede ser negativo");
+			throw new ValidationError("El stock mínimo no puede ser negativo");
 		}
 		if (!unidadMedida || unidadMedida.trim() === "") {
-			throw new Error("La unidad de medida no puede estar vacía");
+			throw new ValidationError("La unidad de medida no puede estar vacía");
 		}
 		if (!lote || lote.trim() === "") {
-			throw new Error("El lote del insumo no puede estar vacío");
+			throw new ValidationError("El lote del insumo no puede estar vacío");
 		}
 		if (!usuarioId || usuarioId <= 0) {
-			throw new Error("El usuarioId debe ser un ID válido");
+			throw new ValidationError("El usuarioId debe ser un ID válido");
 		}
 		return new Insumo(
 			new EntityId(),
@@ -173,16 +174,16 @@ export class Insumo extends Entity {
 		fechaCaducidad: Date,
 	): void {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del insumo no puede estar vacío");
+			throw new ValidationError("El nombre del insumo no puede estar vacío");
 		}
 		if (stockMinimo < 0) {
-			throw new Error("El stock mínimo no puede ser negativo");
+			throw new ValidationError("El stock mínimo no puede ser negativo");
 		}
 		if (!unidadMedida || unidadMedida.trim() === "") {
-			throw new Error("La unidad de medida no puede estar vacía");
+			throw new ValidationError("La unidad de medida no puede estar vacía");
 		}
 		if (!lote || lote.trim() === "") {
-			throw new Error("El lote del insumo no puede estar vacío");
+			throw new ValidationError("El lote del insumo no puede estar vacío");
 		}
 		this.nombre = nombre;
 		this.tipo = tipo;

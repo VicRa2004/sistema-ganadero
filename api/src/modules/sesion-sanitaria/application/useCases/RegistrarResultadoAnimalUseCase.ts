@@ -1,6 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
+import { InsumoNotFoundError } from "@/modules/inventario-insumos/domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
@@ -40,7 +41,7 @@ export class RegistrarResultadoAnimalUseCase {
 
 		const insumo = await this.insumoRepository.findById(sesion.getInsumoId());
 		if (!insumo) {
-			throw new Error(`El insumo de la sesión no fue encontrado`);
+			throw new InsumoNotFoundError(sesion.getInsumoId());
 		}
 
 		if (insumo.getStock() < dto.dosisAplicada) {

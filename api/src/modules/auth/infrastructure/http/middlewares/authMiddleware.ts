@@ -1,5 +1,6 @@
 import type { Context, Next } from "hono";
 import { injectable, inject } from "tsyringe";
+import { env } from "@/core/config/env";
 import type { JwtService } from "../../service/JwtService";
 
 /**
@@ -49,14 +50,26 @@ export class AuthMiddleware {
 		try {
 			const decoded = this.jwtService.verifyToken(token);
 
+			// Un JWT válido pero sin la forma esperada no identifica a ningún usuario
+			if (
+				typeof decoded === "string" ||
+				typeof (decoded as { id?: unknown }).id !== "number"
+			) {
+				return c.json({ success: false, error: "Token inválido" }, 401);
+			}
+
 			// En lugar de mutar req (ej. req.user), en Hono guardamos datos en el contexto
 			// usando c.set() para que otros middlewares/controladores puedan leerlo con c.get()
 			c.set("user", decoded);
 
 			await next(); // Siempre debe llevar await en Hono
 		} catch (error) {
-			console.log("Error auth middleware");
-			console.log(error);
+			// Un token inválido o expirado es un caso normal; solo se anota en desarrollo
+			if (env.NODE_ENV === "dev") {
+				console.debug(
+					`[auth] token rechazado: ${error instanceof Error ? error.message : "desconocido"}`,
+				);
+			}
 
 			return c.json(
 				{ success: false, error: "Token inválido o expirado" },

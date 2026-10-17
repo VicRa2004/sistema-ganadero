@@ -1,5 +1,6 @@
 import { Entity } from "@/core/shared/domain/Entity";
 import { EntityId } from "@/core/shared/domain/EntityId";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export type SexoGanado = "MACHO" | "HEMBRA";
 
@@ -60,31 +61,33 @@ export class Ganado extends Entity {
 		madreId: number | null,
 	): Ganado {
 		if (!identificador || identificador.trim() === "") {
-			throw new Error("El identificador del ganado no puede estar vacío");
+			throw new ValidationError(
+				"El identificador del ganado no puede estar vacío",
+			);
 		}
 		if (peso <= 0) {
-			throw new Error("El peso inicial debe ser mayor que cero");
+			throw new ValidationError("El peso inicial debe ser mayor que cero");
 		}
 		if (
 			!(fechaNacimiento instanceof Date) ||
 			Number.isNaN(fechaNacimiento.getTime())
 		) {
-			throw new Error("La fecha de nacimiento no es válida");
+			throw new ValidationError("La fecha de nacimiento no es válida");
 		}
 		if (fechaNacimiento > new Date()) {
-			throw new Error("La fecha de nacimiento no puede ser futura");
+			throw new ValidationError("La fecha de nacimiento no puede ser futura");
 		}
 		if (sexo !== "MACHO" && sexo !== "HEMBRA") {
-			throw new Error("El sexo del ganado debe ser MACHO o HEMBRA");
+			throw new ValidationError("El sexo del ganado debe ser MACHO o HEMBRA");
 		}
 		if (razaId <= 0) {
-			throw new Error("La raza especificada no es válida");
+			throw new ValidationError("La raza especificada no es válida");
 		}
 		if (terrenoId <= 0) {
-			throw new Error("El terreno especificado no es válido");
+			throw new ValidationError("El terreno especificado no es válido");
 		}
 		if (propietarioId <= 0) {
-			throw new Error("El propietario especificado no es válido");
+			throw new ValidationError("El propietario especificado no es válido");
 		}
 
 		return new Ganado(
@@ -198,27 +201,27 @@ export class Ganado extends Entity {
 
 	public registrarPesaje(nuevoPeso: number): void {
 		if (nuevoPeso <= 0) {
-			throw new Error("El peso registrado debe ser mayor que cero");
+			throw new ValidationError("El peso registrado debe ser mayor que cero");
 		}
 		this.peso = nuevoPeso;
 	}
 
 	public cambiarDeTerreno(nuevoTerrenoId: number): void {
 		if (nuevoTerrenoId <= 0) {
-			throw new Error("El terreno destino no es válido");
+			throw new ValidationError("El terreno destino no es válido");
 		}
 		this.terrenoId = nuevoTerrenoId;
 	}
 
 	public darDeBaja(fecha: Date, motivoBajaId: number): void {
 		if (!this.estaActivo()) {
-			throw new Error("El ganado ya se encuentra dado de baja");
+			throw new ValidationError("El ganado ya se encuentra dado de baja");
 		}
 		if (!(fecha instanceof Date) || Number.isNaN(fecha.getTime())) {
-			throw new Error("La fecha de baja no es válida");
+			throw new ValidationError("La fecha de baja no es válida");
 		}
 		if (motivoBajaId <= 0) {
-			throw new Error("El motivo de baja no es válido");
+			throw new ValidationError("El motivo de baja no es válido");
 		}
 		this.fechaBaja = fecha;
 		this.motivoBajaId = motivoBajaId;
@@ -229,7 +232,7 @@ export class Ganado extends Entity {
 		motivoBajaId: number | null,
 	): void {
 		if (motivoBajaId !== null && fechaBaja === null && this.estaActivo()) {
-			throw new Error(
+			throw new ValidationError(
 				"El motivo de baja solo se puede establecer si el ganado está dado de baja",
 			);
 		}
@@ -249,37 +252,43 @@ export class Ganado extends Entity {
 		madreId: number | null,
 	): void {
 		if (!identificador || identificador.trim() === "") {
-			throw new Error("El identificador del ganado no puede estar vacío");
+			throw new ValidationError(
+				"El identificador del ganado no puede estar vacío",
+			);
 		}
 		if (peso <= 0) {
-			throw new Error("El peso debe ser mayor que cero");
+			throw new ValidationError("El peso debe ser mayor que cero");
 		}
 		if (
 			!(fechaNacimiento instanceof Date) ||
 			Number.isNaN(fechaNacimiento.getTime())
 		) {
-			throw new Error("La fecha de nacimiento no es válida");
+			throw new ValidationError("La fecha de nacimiento no es válida");
 		}
 		if (fechaNacimiento > new Date()) {
-			throw new Error("La fecha de nacimiento no puede ser futura");
+			throw new ValidationError("La fecha de nacimiento no puede ser futura");
 		}
 		if (sexo !== "MACHO" && sexo !== "HEMBRA") {
-			throw new Error("El sexo del ganado debe ser MACHO o HEMBRA");
+			throw new ValidationError("El sexo del ganado debe ser MACHO o HEMBRA");
 		}
 		if (razaId <= 0) {
-			throw new Error("La raza especificada no es válida");
+			throw new ValidationError("La raza especificada no es válida");
 		}
 		if (terrenoId <= 0) {
-			throw new Error("El terreno especificado no es válido");
+			throw new ValidationError("El terreno especificado no es válido");
 		}
 		if (propietarioId <= 0) {
-			throw new Error("El propietario especificado no es válido");
+			throw new ValidationError("El propietario especificado no es válido");
 		}
 		if (padreId && !this.esNuevo() && padreId === this.getId()) {
-			throw new Error("Un ganado no puede ser registrado como su propio padre");
+			throw new ValidationError(
+				"Un ganado no puede ser registrado como su propio padre",
+			);
 		}
 		if (madreId && !this.esNuevo() && madreId === this.getId()) {
-			throw new Error("Un ganado no puede ser registrado como su propia madre");
+			throw new ValidationError(
+				"Un ganado no puede ser registrado como su propia madre",
+			);
 		}
 
 		this.identificador = identificador;

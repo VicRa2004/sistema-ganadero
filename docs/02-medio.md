@@ -6,16 +6,22 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-1 · Reuso de refresh token no se detecta + rotación no atómica
 
+> ✅ **Implementado.** `findByHash` (cualquier estado) detecta el reuso y revoca todas las sesiones; `rotate` revoca y crea en una transacción con `updateMany where revoked=false`, y perder la carrera cuenta como reuso. `deleteExpired` ya no borra los revocados (se necesitan para detectar reuso) y corre cada 6 h desde `index.ts`. Limitación: dos pestañas que refrescan a la vez con la misma cookie cierran la sesión.
+
 - **Dónde:** `RefreshTokenUseCase.ts`, `PrismaRefreshTokenRepository.ts`.
 - **Problema:** el comentario promete revocar todos los tokens del usuario si se reutiliza uno revocado, pero `findValidByHash` solo devuelve tokens válidos, así que el reuso nunca se detecta. Además, dos refresh simultáneos con el mismo token pueden pasar ambos.
 - **Propuesta:** buscar por hash sin filtrar por estado; si está `revoked`, revocar toda la familia del usuario y devolver 401. Hacer revocar + crear dentro de una transacción con `updateMany where revoked=false` y comprobar `count === 1`. Limpiar tokens expirados con una tarea periódica.
 
 ## M-2 · `JWT_SECRET` débil y JWT sin algoritmo fijado
 
+> ✅ **Implementado.** `JWT_SECRET` ≥ 32 caracteres (salvo `NODE_ENV=test`) y se rechazan en producción los valores de ejemplo; HS256 fijado al firmar y verificar; el middleware exige un `id` numérico en el payload. Los `.env.example` cambiaron. **Limitación documentada:** el `role` del token no se revalida durante sus 15 min (un ADMIN degradado conserva privilegios de propiedad hasta que expire); los permisos sí se leen de la BD en cada petición.
+
 - **Dónde:** `core/config/env.ts`, `JwtService.ts`.
 - **Propuesta:** exigir ≥ 32 caracteres y rechazar los valores de `.env.example` si `NODE_ENV` es prod; fijar `algorithms: ["HS256"]` en `verify` y `algorithm` en `sign`; el `role` del token no se revalida durante 15 min, así que o se lee de BD en el middleware de permisos o se documenta la limitación.
 
 ## M-3 · Detalles internos filtrados al cliente y logs ruidosos
+
+> ✅ **Implementado.** Los 5xx responden «Error interno del servidor» + `requestId` (middleware `hono/request-id`, cabecera `X-Request-Id`) y el detalle va al log; Prisma `P2002`/`P2003` → 409 y `P2025` → 404; JSON malformado → 400; el log de token inválido solo aparece en `dev`. Para no perder mensajes útiles, los `throw new Error(...)` de validación del dominio pasaron a `ValidationError` (400).
 
 - **Dónde:** `base.controller.ts` (`handleError`), `server.ts` (`onError`), `authMiddleware.ts`.
 - **Problema:** los 500 devuelven `err.message` (puede exponer detalles de Prisma/BD); el middleware de auth hace `console.log(error)` completo en cada token inválido.

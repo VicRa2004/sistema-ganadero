@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import z from "zod";
 import type { Actor } from "../../domain/Actor";
 import { BaseError } from "../../domain/error/BaseError";
+import { internalErrorResponse, mapPrismaError } from "./errorResponses";
 
 /**
  * Controlador base para Hono.
@@ -37,12 +38,21 @@ export abstract class BaseController {
 			);
 		}
 
-		return c.json(
-			{
-				error: (error as Error)?.message || "Internal server error",
-			},
-			500,
-		);
+		// JSON malformado en el cuerpo de la petición
+		if (error instanceof SyntaxError) {
+			return c.json(
+				{ error: "El cuerpo de la petición no es un JSON válido" },
+				400,
+			);
+		}
+
+		const prismaError = mapPrismaError(error);
+		if (prismaError) {
+			return c.json({ error: prismaError.message }, prismaError.status);
+		}
+
+		// Cualquier otro error es inesperado: se registra y no se expone su mensaje
+		return internalErrorResponse(c, error);
 	}
 
 	/**

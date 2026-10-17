@@ -1,3 +1,5 @@
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
+
 export class AplicacionSanitaria {
 	private constructor(
 		private readonly id: number | null,
@@ -15,7 +17,7 @@ export class AplicacionSanitaria {
 		sesionId?: number | null,
 	): AplicacionSanitaria {
 		if (dosisAplicada <= 0) {
-			throw new Error(
+			throw new ValidationError(
 				"La dosis aplicada debe ser un número positivo mayor a 0",
 			);
 		}
@@ -51,7 +53,7 @@ export class AplicacionSanitaria {
 
 	public actualizarDosis(nuevaDosis: number): void {
 		if (nuevaDosis <= 0) {
-			throw new Error(
+			throw new ValidationError(
 				"La dosis aplicada debe ser un número positivo mayor a 0",
 			);
 		}

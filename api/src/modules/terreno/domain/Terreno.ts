@@ -1,5 +1,6 @@
 import { Entity } from "@/core/shared/domain/Entity";
 import { EntityId } from "@/core/shared/domain/EntityId";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export class Terreno extends Entity {
 	private nombre: string;
@@ -36,16 +37,20 @@ export class Terreno extends Entity {
 		usuarioId: number,
 	): Terreno {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del terreno no puede estar vacío");
+			throw new ValidationError("El nombre del terreno no puede estar vacío");
 		}
 		if (!ubicacion || ubicacion.trim() === "") {
-			throw new Error("La ubicación del terreno no puede estar vacía");
+			throw new ValidationError(
+				"La ubicación del terreno no puede estar vacía",
+			);
 		}
 		if (extensionHectareas <= 0) {
-			throw new Error("La extensión en hectáreas debe ser mayor que cero");
+			throw new ValidationError(
+				"La extensión en hectáreas debe ser mayor que cero",
+			);
 		}
 		if (capacidadMaxima <= 0) {
-			throw new Error("La capacidad máxima debe ser mayor que cero");
+			throw new ValidationError("La capacidad máxima debe ser mayor que cero");
 		}
 
 		return new Terreno(
@@ -115,16 +120,20 @@ export class Terreno extends Entity {
 		imagenTerreno: string | null,
 	): void {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del terreno no puede estar vacío");
+			throw new ValidationError("El nombre del terreno no puede estar vacío");
 		}
 		if (!ubicacion || ubicacion.trim() === "") {
-			throw new Error("La ubicación del terreno no puede estar vacía");
+			throw new ValidationError(
+				"La ubicación del terreno no puede estar vacía",
+			);
 		}
 		if (extensionHectareas <= 0) {
-			throw new Error("La extensión en hectáreas debe ser mayor que cero");
+			throw new ValidationError(
+				"La extensión en hectáreas debe ser mayor que cero",
+			);
 		}
 		if (capacidadMaxima <= 0) {
-			throw new Error("La capacidad máxima debe ser mayor que cero");
+			throw new ValidationError("La capacidad máxima debe ser mayor que cero");
 		}
 
 		this.nombre = nombre;

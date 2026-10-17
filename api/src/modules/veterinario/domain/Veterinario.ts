@@ -1,5 +1,6 @@
 import { Entity } from "@/core/shared/domain/Entity";
 import { EntityId } from "@/core/shared/domain/EntityId";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 export class Veterinario extends Entity {
 	private nombre: string;
@@ -32,18 +33,22 @@ export class Veterinario extends Entity {
 		especialidad: string | null = null,
 	): Veterinario {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del veterinario no puede estar vacío");
+			throw new ValidationError(
+				"El nombre del veterinario no puede estar vacío",
+			);
 		}
 		if (!telefono || telefono.trim() === "") {
-			throw new Error("El teléfono del veterinario no puede estar vacío");
+			throw new ValidationError(
+				"El teléfono del veterinario no puede estar vacío",
+			);
 		}
 		if (!cedulaProfesional || cedulaProfesional.trim() === "") {
-			throw new Error(
+			throw new ValidationError(
 				"La cédula profesional del veterinario no puede estar vacía",
 			);
 		}
 		if (!usuarioId || usuarioId <= 0) {
-			throw new Error("El ID de usuario asociado es inválido");
+			throw new ValidationError("El ID de usuario asociado es inválido");
 		}
 		return new Veterinario(
 			new EntityId(),
@@ -104,13 +109,17 @@ export class Veterinario extends Entity {
 		especialidad: string | null,
 	): void {
 		if (!nombre || nombre.trim() === "") {
-			throw new Error("El nombre del veterinario no puede estar vacío");
+			throw new ValidationError(
+				"El nombre del veterinario no puede estar vacío",
+			);
 		}
 		if (!telefono || telefono.trim() === "") {
-			throw new Error("El teléfono del veterinario no puede estar vacío");
+			throw new ValidationError(
+				"El teléfono del veterinario no puede estar vacío",
+			);
 		}
 		if (!cedulaProfesional || cedulaProfesional.trim() === "") {
-			throw new Error(
+			throw new ValidationError(
 				"La cédula profesional del veterinario no puede estar vacía",
 			);
 		}

@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { inject, injectable } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import type { ObtenerHistorialSanitarioGanadoUseCase } from "@/modules/sesion-sanitaria/application/useCases/ObtenerHistorialSanitarioGanadoUseCase";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 @injectable()
 export class ObtenerHistorialSanitarioGanadoController extends BaseController {
@@ -17,7 +18,9 @@ export class ObtenerHistorialSanitarioGanadoController extends BaseController {
 			const ganadoIdParam = c.req.param("ganadoId");
 			const ganadoId = Number(ganadoIdParam);
 			if (Number.isNaN(ganadoId) || ganadoId <= 0) {
-				throw new Error("El ID de ganado debe ser un entero positivo");
+				throw new ValidationError(
+					"El ID de ganado debe ser un entero positivo",
+				);
 			}
 
 			const result = await this.obtenerHistorialSanitarioGanadoUseCase.run(

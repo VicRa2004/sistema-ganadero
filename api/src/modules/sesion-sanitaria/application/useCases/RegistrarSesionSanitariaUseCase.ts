@@ -12,6 +12,7 @@ import type {
 } from "../dtos/SesionSanitariaDto";
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
 import type { SesionAccessService } from "../services/SesionAccessService";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
 @injectable()
 export class RegistrarSesionSanitariaUseCase {
@@ -41,7 +42,7 @@ export class RegistrarSesionSanitariaUseCase {
 		const insumo = await this.accessService.obtenerInsumo(dto.insumoId, actor);
 
 		if (!dto.aplicaciones || dto.aplicaciones.length === 0) {
-			throw new Error(
+			throw new ValidationError(
 				"Debe incluir al menos una aplicación a un animal de ganado para registrar la sesión",
 			);
 		}

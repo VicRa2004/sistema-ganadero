@@ -1,24 +1,46 @@
 import { injectable } from "tsyringe";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { env } from "@/core/config/env";
+import { BaseError } from "../../domain/error/BaseError";
 import type { ImageStorageService } from "../../domain/services/ImageStorageService";
+import { detectImageType } from "./detectImageType";
 
 @injectable()
 export class LocalImageStorageService implements ImageStorageService {
 	private readonly uploadDir = path.join(process.cwd(), "uploads");
 
 	public async upload(file: File, folder: string): Promise<string> {
+		if (file.size === 0) {
+			throw new BaseError("El archivo de imagen está vacío", 400);
+		}
+
+		if (file.size > env.UPLOAD_MAX_SIZE) {
+			throw new BaseError(
+				`La imagen excede el tamaño máximo de ${Math.floor(env.UPLOAD_MAX_SIZE / (1024 * 1024))} MB`,
+				413,
+			);
+		}
+
+		// El tipo se deduce del contenido real; el nombre y el MIME del cliente no son fiables
+		const arrayBuffer = await file.arrayBuffer();
+		const imageType = detectImageType(new Uint8Array(arrayBuffer));
+		if (!imageType) {
+			throw new BaseError(
+				"Formato de imagen no permitido. Usa JPEG, PNG o WebP",
+				400,
+			);
+		}
+
 		// Crear el directorio de destino si no existe
 		const targetDir = path.join(this.uploadDir, folder);
 		await fs.mkdir(targetDir, { recursive: true });
 
-		// Generar un nombre único para evitar colisiones de nombres de archivos
-		const extension = path.extname(file.name) || ".png";
-		const uniqueName = `${crypto.randomUUID()}${extension}`;
+		// Generar un nombre único con la extensión derivada del tipo detectado
+		const uniqueName = `${crypto.randomUUID()}${imageType.extension}`;
 		const filePath = path.join(targetDir, uniqueName);
 
 		// Escribir el archivo usando Bun.write (método nativo rápido)
-		const arrayBuffer = await file.arrayBuffer();
 		await Bun.write(filePath, arrayBuffer);
 
 		// Retornar la ruta relativa de acceso público
@@ -30,7 +52,15 @@ export class LocalImageStorageService implements ImageStorageService {
 
 		// Reemplazar el prefijo del endpoint estático para obtener la ruta relativa física
 		const relativePath = filePath.replace(/^\/uploads\//, "");
-		const fullPath = path.join(this.uploadDir, relativePath);
+		const fullPath = path.resolve(this.uploadDir, relativePath);
+
+		// Evitar path traversal: el archivo debe quedar dentro del directorio de subidas
+		if (!fullPath.startsWith(this.uploadDir + path.sep)) {
+			console.warn(
+				`Ruta de imagen fuera del directorio de subidas: ${filePath}`,
+			);
+			return;
+		}
 
 		try {
 			// Verificar si existe antes de intentar borrar

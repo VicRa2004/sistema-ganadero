@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import { inject, injectable } from "tsyringe";
+import {
+	getClientIp,
+	rateLimit,
+} from "@/core/shared/infrastructure/http/rateLimit";
 
 import type { LoginController } from "../controllers/LoginController";
 import type { RegisterController } from "../controllers/RegisterController";
@@ -25,9 +29,38 @@ export class AuthRouter {
 	}
 
 	private initRoutes() {
-		// TODO: Implement rate limiting for Hono (e.g., using a custom middleware or a package)
-		// - Rate limiting: máx 5 intentos por IP en 15 minutos para login
-		// - Rate limiting: máx 4 registros por IP en 1 hora
+		const QUINCE_MINUTOS = 15 * 60 * 1000;
+		const UNA_HORA = 60 * 60 * 1000;
+
+		// Login: 5 intentos fallidos por IP + email y 20 por IP cada 15 minutos
+		const loginPorCuenta = rateLimit({
+			windowMs: QUINCE_MINUTOS,
+			max: 5,
+			skipSuccessfulRequests: true,
+			message: "Demasiados intentos de inicio de sesión, inténtalo más tarde",
+			keyGenerator: async (c) => {
+				const body = await c.req.json().catch(() => null);
+				const email =
+					typeof body?.email === "string"
+						? body.email.trim().toLowerCase()
+						: "";
+				return `${getClientIp(c)}:${email}`;
+			},
+		});
+		const loginPorIp = rateLimit({
+			windowMs: QUINCE_MINUTOS,
+			max: 20,
+			skipSuccessfulRequests: true,
+			message: "Demasiados intentos de inicio de sesión, inténtalo más tarde",
+		});
+		// Registro: 4 por IP cada hora
+		const registroPorIp = rateLimit({
+			windowMs: UNA_HORA,
+			max: 4,
+			message: "Demasiados registros desde esta dirección, inténtalo más tarde",
+		});
+		// Refresh: 30 por IP cada 15 minutos
+		const refreshPorIp = rateLimit({ windowMs: QUINCE_MINUTOS, max: 30 });
 
 		/**
 		 * @openapi
@@ -52,7 +85,12 @@ export class AuthRouter {
 		 *       401:
 		 *         description: Credenciales inválidas
 		 */
-		this.router.post("/login", this.loginController.run);
+		this.router.post(
+			"/login",
+			loginPorIp,
+			loginPorCuenta,
+			this.loginController.run,
+		);
 
 		/**
 		 * @openapi
@@ -77,7 +115,7 @@ export class AuthRouter {
 		 *       201:
 		 *         description: Usuario registrado exitosamente, devuelve accessToken y guarda refreshToken en una cookie HttpOnly.
 		 */
-		this.router.post("/register", this.registerController.run);
+		this.router.post("/register", registroPorIp, this.registerController.run);
 
 		/**
 		 * @openapi
@@ -94,7 +132,7 @@ export class AuthRouter {
 		 *       401:
 		 *         description: Refresh token inválido o expirado en la cookie
 		 */
-		this.router.post("/refresh", this.refreshTokenController.run);
+		this.router.post("/refresh", refreshPorIp, this.refreshTokenController.run);
 
 		/**
 		 * @openapi

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { existsSync } from "node:fs";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { serveStatic } from "hono/bun";
@@ -28,13 +29,36 @@ app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
 app.use(
 	"*",
 	cors({
-		origin: (origin) => origin,
+		// Lista blanca (CORS_ORIGINS). Vacía = no se emiten cabeceras CORS (solo mismo origen).
+		origin: (origin) => (env.CORS_ORIGINS.includes(origin) ? origin : null),
 		credentials: true,
 	}),
 );
 app.use("*", logger());
 
-// Servir la carpeta de subidas (uploads) de manera estática
+// Límite de tamaño del body: imagen máxima + margen para el resto del multipart
+app.use(
+	"*",
+	bodyLimit({
+		maxSize: env.UPLOAD_MAX_SIZE + 1024 * 1024,
+		onError: (c) =>
+			c.json(
+				{ error: "El cuerpo de la petición excede el tamaño máximo" },
+				413,
+			),
+	}),
+);
+
+// Servir la carpeta de subidas (uploads) de manera estática.
+// Los archivos subidos nunca deben ejecutarse ni interpretarse como documentos.
+app.use("/uploads/*", async (c, next) => {
+	await next();
+	c.header("X-Content-Type-Options", "nosniff");
+	c.header(
+		"Content-Security-Policy",
+		"default-src 'none'; img-src 'self'; sandbox",
+	);
+});
 app.use("/uploads/*", serveStatic({ root: "./" }));
 
 // Nota: express.json() desaparece. Hono procesa el JSON automáticamente

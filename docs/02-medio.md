@@ -51,16 +51,22 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-7 · Dos consultas por request para resolver permisos
 
+> ✅ **Implementado.** `getEffectivePermissions` hace una sola consulta anidada (roles → permisos y permisos directos). **Sin caché por decisión:** un TTL retrasaría la revocación al desactivar un usuario (U-5). Nota: el router de razas exige el recurso `raza` pero el seed crea `razas`, así que ningún rol lo tiene (pendiente de revisar).
+
 - **Dónde:** `PrismaAuthorizationRepository.getEffectivePermissions`.
 - **Problema:** hace dos `findUnique` sobre `user` en cada endpoint protegido.
 - **Propuesta:** una sola consulta con `include` de roles y `directPermissions`, o cache en memoria con TTL corto (30–60 s) invalidado al modificar roles/permisos.
 
 ## M-8 · Insumos críticos filtrados en memoria
 
+> ✅ **Implementado.** `findCriticos` filtra en la BD (`stock <= stockMinimo` comparando columnas, sin eliminados y por usuario). Se mantiene el contrato de array sin paginar porque el web lo consume así.
+
 - **Dónde:** `PrismaInsumoRepository` (filtra `stock <= stockMinimo` en JS tras traer todo).
 - **Propuesta:** consulta SQL (`$queryRaw`) con `WHERE stock <= ins_stock_minimo AND deleted_at IS NULL AND ins_fkusuario = $1`, paginada.
 
 ## M-9 · Condición de carrera al descontar stock
+
+> ✅ **Implementado.** `descontarStock`/`adicionarStock` son `updateMany` atómicos (`stock >= cantidad`, `decrement`/`increment`); `save` ya no escribe el stock al actualizar (evita pisarlo desde `PUT /insumos/:id`). Las sesiones sanitarias descuentan y guardan en una misma transacción (`TransactionRunner` + `db()` con `AsyncLocalStorage`). Pruebas de concurrencia y rollback en `api/src/e2e/stock-y-permisos.e2e.spec.ts`.
 
 - **Dónde:** `ConsumirInsumoUseCase`, `AbastecerInsumoUseCase`, `PrismaInsumoRepository.save`.
 - **Problema:** leer → modificar → guardar permite pérdida de actualizaciones con consumos simultáneos (también desde sesiones sanitarias y tratamientos).

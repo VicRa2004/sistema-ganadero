@@ -32,8 +32,13 @@ export class AbastecerInsumoUseCase {
 			throw new BaseError("No tienes permiso para abastecer este insumo", 403);
 		}
 
-		insumo.adicionarStock(dto.cantidad);
-		const saved = await this.insumoRepository.save(insumo);
+		insumo.validarAdicion(dto.cantidad);
+
+		// Suma atómica sobre el stock actual de la BD
+		const saved = await this.insumoRepository.adicionarStock(id, dto.cantidad);
+		if (!saved) {
+			throw new InsumoNotFoundError(id);
+		}
 		return this.mapper.toDto(saved);
 	}
 }

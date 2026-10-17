@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import { db } from "@/core/config/transaction";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { Prisma } from "@/generated/prisma/client";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
@@ -139,7 +140,7 @@ export class PrismaSesionSanitariaRepository
 
 		if (!id) {
 			// Crear nueva sesión con sus aplicaciones
-			const record = await prisma.sesionSanitaria.create({
+			const record = await db().sesionSanitaria.create({
 				data: {
 					fecha: sesion.getFecha(),
 					veterinarioId: sesion.getVeterinarioId(),
@@ -164,7 +165,7 @@ export class PrismaSesionSanitariaRepository
 		}
 
 		// Actualizar sesión existente
-		const record = await prisma.sesionSanitaria.update({
+		const record = await db().sesionSanitaria.update({
 			where: { id },
 			data: {
 				fecha: sesion.getFecha(),
@@ -216,7 +217,7 @@ export class PrismaSesionSanitariaRepository
 		sesionId: number,
 		aplicacion: AplicacionSanitaria,
 	): Promise<AplicacionSanitaria> {
-		const record = await prisma.aplicacionSanitaria.upsert({
+		const record = await db().aplicacionSanitaria.upsert({
 			where: {
 				sesionId_ganadoId: {
 					sesionId,

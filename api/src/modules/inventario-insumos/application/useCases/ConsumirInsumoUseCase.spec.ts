@@ -38,6 +38,22 @@ describe("ConsumirInsumoUseCase", () => {
 			),
 			findCriticos: mock(() => Promise.resolve([])),
 			save: mock((insumo: Insumo) => Promise.resolve(insumo)),
+			descontarStock: mock((id: number, cantidad: number) =>
+				Promise.resolve(
+					Insumo.reconstitute(
+						id,
+						"Vacuna",
+						"VACUNA",
+						50 - cantidad,
+						20,
+						"dosis",
+						"LOT-200",
+						new Date("2027-01-01"),
+						1,
+					),
+				),
+			),
+			adicionarStock: mock(() => Promise.resolve(null)),
 			delete: mock(() => Promise.resolve()),
 		};
 		useCase = new ConsumirInsumoUseCase(repository, mapper);
@@ -47,7 +63,8 @@ describe("ConsumirInsumoUseCase", () => {
 		const result = await useCase.run(5, { cantidad: 20 }, 1, "USER");
 
 		expect(repository.findById).toHaveBeenCalledWith(5);
-		expect(repository.save).toHaveBeenCalled();
+		expect(repository.descontarStock).toHaveBeenCalledWith(5, 20);
+		expect(repository.save).not.toHaveBeenCalled();
 		expect(result.stock).toBe(30);
 		expect(result.esBajoStock).toBeFalse();
 	});
@@ -61,6 +78,21 @@ describe("ConsumirInsumoUseCase", () => {
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {
 		expect(useCase.run(99, { cantidad: 5 }, 1, "USER")).rejects.toThrow(
 			InsumoNotFoundError,
+		);
+	});
+
+	it("no descuenta si la cantidad supera el stock leído", async () => {
+		await expect(useCase.run(5, { cantidad: 100 }, 1, "USER")).rejects.toThrow(
+			InsumoStockInsuficienteError,
+		);
+		expect(repository.descontarStock).not.toHaveBeenCalled();
+	});
+
+	it("falla con stock insuficiente si otra petición consumió el stock entretanto", async () => {
+		repository.descontarStock = mock(() => Promise.resolve(null));
+
+		await expect(useCase.run(5, { cantidad: 20 }, 1, "USER")).rejects.toThrow(
+			InsumoStockInsuficienteError,
 		);
 	});
 });

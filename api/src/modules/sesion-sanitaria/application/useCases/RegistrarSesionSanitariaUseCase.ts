@@ -10,6 +10,7 @@ import type {
 	RegistrarSesionSanitariaInputDto,
 	SesionSanitariaOutputDto,
 } from "../dtos/SesionSanitariaDto";
+import type { TransactionRunner } from "@/core/shared/domain/services/TransactionRunner";
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
 import type { SesionAccessService } from "../services/SesionAccessService";
 import { ValidationError } from "@/core/shared/domain/error/ValidationError";
@@ -21,6 +22,8 @@ export class RegistrarSesionSanitariaUseCase {
 		private readonly sesionSanitariaRepository: SesionSanitariaRepository,
 		@inject("InsumoRepository")
 		private readonly insumoRepository: InsumoRepository,
+		@inject("TransactionRunner")
+		private readonly transactionRunner: TransactionRunner,
 		@inject("SesionAccessService")
 		private readonly accessService: SesionAccessService,
 		@inject("GanadoAccessService")
@@ -70,9 +73,6 @@ export class RegistrarSesionSanitariaUseCase {
 			);
 		}
 
-		insumo.descontarStock(totalDosisRequerida);
-		await this.insumoRepository.save(insumo);
-
 		const sesion = SesionSanitaria.create(
 			new Date(dto.fecha),
 			dto.veterinarioId,
@@ -81,7 +81,24 @@ export class RegistrarSesionSanitariaUseCase {
 			aplicaciones,
 		);
 
-		const sesionGuardada = await this.sesionSanitariaRepository.save(sesion);
+		// El descuento de stock y la sesión se guardan juntos: si algo falla, no se pierde stock
+		const sesionGuardada = await this.transactionRunner.run(async () => {
+			const actualizado = await this.insumoRepository.descontarStock(
+				insumo.getId(),
+				totalDosisRequerida,
+			);
+			if (!actualizado) {
+				// Otra operación consumió stock entre la lectura y el descuento
+				const actual = await this.insumoRepository.findById(insumo.getId());
+				throw new InsuficienteStockInsumoError(
+					insumo.getId(),
+					actual?.getStock() ?? 0,
+					totalDosisRequerida,
+				);
+			}
+
+			return this.sesionSanitariaRepository.save(sesion);
+		});
 
 		return this.mapper.toDto(sesionGuardada, {
 			nombreVeterinario: veterinario.getNombre(),

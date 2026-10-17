@@ -34,6 +34,22 @@ describe("AbastecerInsumoUseCase", () => {
 			),
 			findCriticos: mock(() => Promise.resolve([])),
 			save: mock((insumo: Insumo) => Promise.resolve(insumo)),
+			descontarStock: mock(() => Promise.resolve(null)),
+			adicionarStock: mock((id: number, cantidad: number) =>
+				Promise.resolve(
+					Insumo.reconstitute(
+						id,
+						"Antibiótico",
+						"MEDICAMENTO",
+						mockInsumo.getStock() + cantidad,
+						20,
+						"ml",
+						"LOT-100",
+						new Date("2027-01-01"),
+						1,
+					),
+				),
+			),
 			delete: mock(() => Promise.resolve()),
 		};
 		useCase = new AbastecerInsumoUseCase(repository, mapper);
@@ -43,8 +59,16 @@ describe("AbastecerInsumoUseCase", () => {
 		const result = await useCase.run(5, { cantidad: 30 }, 1, "USER");
 
 		expect(repository.findById).toHaveBeenCalledWith(5);
-		expect(repository.save).toHaveBeenCalled();
+		expect(repository.adicionarStock).toHaveBeenCalledWith(5, 30);
+		expect(repository.save).not.toHaveBeenCalled();
 		expect(result.stock).toBe(80);
+	});
+
+	it("debe rechazar cantidades no positivas sin tocar la BD", async () => {
+		await expect(useCase.run(5, { cantidad: 0 }, 1, "USER")).rejects.toThrow(
+			"mayor a cero",
+		);
+		expect(repository.adicionarStock).not.toHaveBeenCalled();
 	});
 
 	it("debe lanzar InsumoNotFoundError si el insumo no existe", async () => {

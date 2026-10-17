@@ -138,16 +138,17 @@ export class Insumo extends Entity {
 		return this.id.isNew();
 	}
 
-	public adicionarStock(cantidad: number): void {
+	/** Valida una adición de stock sin modificar el insumo. */
+	public validarAdicion(cantidad: number): void {
 		if (cantidad <= 0) {
 			throw new InsumoCantidadInvalidaError(
 				"La cantidad a adicionar debe ser mayor a cero",
 			);
 		}
-		this.stock += cantidad;
 	}
 
-	public descontarStock(cantidad: number): void {
+	/** Valida un descuento de stock contra el stock actual sin modificar el insumo. */
+	public validarDescuento(cantidad: number): void {
 		if (cantidad <= 0) {
 			throw new InsumoCantidadInvalidaError(
 				"La cantidad a descontar debe ser mayor a cero",
@@ -158,6 +159,15 @@ export class Insumo extends Entity {
 				`Stock insuficiente para descontar ${cantidad} ${this.unidadMedida}. Stock disponible: ${this.stock}`,
 			);
 		}
+	}
+
+	public adicionarStock(cantidad: number): void {
+		this.validarAdicion(cantidad);
+		this.stock += cantidad;
+	}
+
+	public descontarStock(cantidad: number): void {
+		this.validarDescuento(cantidad);
 		this.stock -= cantidad;
 	}
 

@@ -21,44 +21,38 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 	// ── Permisos efectivos ──────────────────────────────────────────────────────
 
 	async getEffectivePermissions(userId: number): Promise<Permission[]> {
-		// 1. Permisos heredados por roles
-		const userWithRoles = await prisma.user.findUnique({
+		const permissionSelect = {
+			select: { id: true, resource: true, action: true },
+		} as const;
+
+		// Una sola consulta: permisos heredados por los roles y excepciones directas del usuario
+		const user = await prisma.user.findUnique({
 			where: { id: userId },
-			include: {
+			select: {
+				isActive: true,
 				roles: {
-					include: {
+					select: {
 						role: {
-							include: {
+							select: {
 								permissions: {
-									include: {
-										permission: true,
-									},
+									select: { permission: permissionSelect },
 								},
 							},
 						},
 					},
 				},
-			},
-		});
-
-		// 2. Permisos directos del usuario (excepciones)
-		const userWithDirectPerms = await prisma.user.findUnique({
-			where: { id: userId },
-			include: {
 				directPermissions: {
-					include: {
-						permission: true,
-					},
+					select: { granted: true, permission: permissionSelect },
 				},
 			},
 		});
 
-		if (!userWithRoles || !userWithDirectPerms) {
+		if (!user) {
 			return [];
 		}
 
 		// Un usuario desactivado no conserva ningún permiso, aunque su access token siga vigente
-		if (!userWithRoles.isActive) {
+		if (!user.isActive) {
 			return [];
 		}
 
@@ -66,19 +60,18 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 		const permissionMap = new Map<string, Permission>();
 
 		// Agregar los permisos que vienen de todos los roles del usuario
-		for (const userRole of userWithRoles.roles) {
+		for (const userRole of user.roles) {
 			for (const rolePermission of userRole.role.permissions) {
 				const p = rolePermission.permission;
-				const key = `${p.resource}:${p.action}`;
 				permissionMap.set(
-					key,
+					`${p.resource}:${p.action}`,
 					Permission.reconstitute(p.id, p.resource, p.action),
 				);
 			}
 		}
 
 		// Aplicar las excepciones directas del usuario
-		for (const userPerm of userWithDirectPerms.directPermissions) {
+		for (const userPerm of user.directPermissions) {
 			const p = userPerm.permission;
 			const key = `${p.resource}:${p.action}`;
 

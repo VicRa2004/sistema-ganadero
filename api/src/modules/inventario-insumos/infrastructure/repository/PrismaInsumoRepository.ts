@@ -1,6 +1,6 @@
 import { injectable } from "tsyringe";
 import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/core/config/prisma";
+import { db } from "@/core/config/transaction";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import { Insumo } from "../../domain/Insumo";
 import type { TipoInsumo } from "../../domain/TipoInsumo";
@@ -37,7 +37,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 	}
 
 	public async findById(id: number): Promise<Insumo | null> {
-		const record = await prisma.insumo.findFirst({
+		const record = await db().insumo.findFirst({
 			where: { id, deletedAt: null },
 		});
 		if (!record) return null;
@@ -64,13 +64,13 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		}
 
 		const [records, totalItems] = await Promise.all([
-			prisma.insumo.findMany({
+			db().insumo.findMany({
 				where: whereClause,
 				skip,
 				take: filters.limit,
 				orderBy: { id: "asc" },
 			}),
-			prisma.insumo.count({
+			db().insumo.count({
 				where: whereClause,
 			}),
 		]);
@@ -88,26 +88,28 @@ export class PrismaInsumoRepository implements InsumoRepository {
 	}
 
 	public async findCriticos(usuarioId?: number): Promise<Insumo[]> {
-		const whereClause: Prisma.InsumoWhereInput = { deletedAt: null };
+		const whereClause: Prisma.InsumoWhereInput = {
+			deletedAt: null,
+			// Comparación columna con columna en la BD: stock <= stock_minimo
+			stock: { lte: db().insumo.fields.stockMinimo },
+		};
 		if (usuarioId !== undefined) {
 			whereClause.usuarioId = usuarioId;
 		}
 
-		const records = await prisma.insumo.findMany({
+		const records = await db().insumo.findMany({
 			where: whereClause,
+			orderBy: { id: "asc" },
 		});
 
-		// Filtramos en memoria los insumos cuyo stock es inferior o igual a stockMinimo
-		const criticos = records.filter((r) => r.stock <= r.stockMinimo);
-
-		return criticos.map((record) =>
+		return records.map((record) =>
 			this.toDomain(record as unknown as PrismaInsumoRecord),
 		);
 	}
 
 	public async save(insumo: Insumo): Promise<Insumo> {
 		if (insumo.esNuevo()) {
-			const record = await prisma.insumo.create({
+			const record = await db().insumo.create({
 				data: {
 					nombre: insumo.getNombre(),
 					tipo: insumo.getTipo(),
@@ -122,12 +124,13 @@ export class PrismaInsumoRepository implements InsumoRepository {
 			return this.toDomain(record as unknown as PrismaInsumoRecord);
 		}
 
-		const record = await prisma.insumo.update({
+		// El stock no se escribe aquí: se modifica solo con descontarStock/adicionarStock
+		// (operaciones atómicas) para no pisar movimientos concurrentes con un valor viejo.
+		const record = await db().insumo.update({
 			where: { id: insumo.getId() },
 			data: {
 				nombre: insumo.getNombre(),
 				tipo: insumo.getTipo(),
-				stock: insumo.getStock(),
 				stockMinimo: insumo.getStockMinimo(),
 				unidadMedida: insumo.getUnidadMedida(),
 				lote: insumo.getLote(),
@@ -138,8 +141,35 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		return this.toDomain(record as unknown as PrismaInsumoRecord);
 	}
 
+	public async descontarStock(
+		id: number,
+		cantidad: number,
+	): Promise<Insumo | null> {
+		// Un único UPDATE condicionado: nunca deja el stock en negativo, ni siquiera con concurrencia
+		const { count } = await db().insumo.updateMany({
+			where: { id, deletedAt: null, stock: { gte: cantidad } },
+			data: { stock: { decrement: cantidad } },
+		});
+		if (count !== 1) return null;
+
+		return this.findById(id);
+	}
+
+	public async adicionarStock(
+		id: number,
+		cantidad: number,
+	): Promise<Insumo | null> {
+		const { count } = await db().insumo.updateMany({
+			where: { id, deletedAt: null },
+			data: { stock: { increment: cantidad } },
+		});
+		if (count !== 1) return null;
+
+		return this.findById(id);
+	}
+
 	public async delete(id: number): Promise<void> {
-		await prisma.insumo.update({
+		await db().insumo.update({
 			where: { id },
 			data: { deletedAt: new Date() },
 		});

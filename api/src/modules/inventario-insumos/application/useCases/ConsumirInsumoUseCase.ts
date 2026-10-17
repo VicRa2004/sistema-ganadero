@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
+import { InsumoStockInsuficienteError } from "../../domain/error/InsumoStockInsuficienteError";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
 import type {
@@ -32,8 +33,16 @@ export class ConsumirInsumoUseCase {
 			throw new BaseError("No tienes permiso para consumir este insumo", 403);
 		}
 
-		insumo.descontarStock(dto.cantidad);
-		const saved = await this.insumoRepository.save(insumo);
+		// Validación temprana con el stock leído (cantidad válida y stock suficiente)
+		insumo.validarDescuento(dto.cantidad);
+
+		// Descuento atómico: si otra petición consumió stock entretanto, no se aplica
+		const saved = await this.insumoRepository.descontarStock(id, dto.cantidad);
+		if (!saved) {
+			throw new InsumoStockInsuficienteError(
+				`Stock insuficiente para descontar ${dto.cantidad} ${insumo.getUnidadMedida()}`,
+			);
+		}
 
 		if (saved.esBajoStock()) {
 			console.warn(

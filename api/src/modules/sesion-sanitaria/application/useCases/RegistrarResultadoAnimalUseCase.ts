@@ -10,6 +10,7 @@ import type {
 	AplicacionSanitariaOutputDto,
 	RegistrarResultadoAnimalInputDto,
 } from "../dtos/SesionSanitariaDto";
+import type { TransactionRunner } from "@/core/shared/domain/services/TransactionRunner";
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
 import type { SesionAccessService } from "../services/SesionAccessService";
 
@@ -20,6 +21,8 @@ export class RegistrarResultadoAnimalUseCase {
 		private readonly sesionSanitariaRepository: SesionSanitariaRepository,
 		@inject("InsumoRepository")
 		private readonly insumoRepository: InsumoRepository,
+		@inject("TransactionRunner")
+		private readonly transactionRunner: TransactionRunner,
 		@inject("SesionAccessService")
 		private readonly accessService: SesionAccessService,
 		@inject("GanadoAccessService")
@@ -52,9 +55,6 @@ export class RegistrarResultadoAnimalUseCase {
 			);
 		}
 
-		insumo.descontarStock(dto.dosisAplicada);
-		await this.insumoRepository.save(insumo);
-
 		const aplicacion = AplicacionSanitaria.create(
 			dto.ganadoId,
 			dto.dosisAplicada,
@@ -63,10 +63,26 @@ export class RegistrarResultadoAnimalUseCase {
 			dto.sesionId,
 		);
 
-		const result = await this.sesionSanitariaRepository.addAplicacion(
-			dto.sesionId,
-			aplicacion,
-		);
+		// El descuento de stock y la aplicación se guardan juntos
+		const result = await this.transactionRunner.run(async () => {
+			const actualizado = await this.insumoRepository.descontarStock(
+				insumo.getId(),
+				dto.dosisAplicada,
+			);
+			if (!actualizado) {
+				const actual = await this.insumoRepository.findById(insumo.getId());
+				throw new InsuficienteStockInsumoError(
+					insumo.getId(),
+					actual?.getStock() ?? 0,
+					dto.dosisAplicada,
+				);
+			}
+
+			return this.sesionSanitariaRepository.addAplicacion(
+				dto.sesionId,
+				aplicacion,
+			);
+		});
 
 		return this.mapper.toAplicacionDto(result, animal.getIdentificador());
 	}

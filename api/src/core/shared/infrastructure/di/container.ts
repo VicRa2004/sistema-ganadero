@@ -1,6 +1,7 @@
 import { Lifecycle, container } from "tsyringe";
 
 // Import implementations
+import { PrismaTransactionRunner } from "@/core/shared/infrastructure/libs/PrismaTransactionRunner";
 import { LocalImageStorageService } from "@/core/shared/infrastructure/libs/LocalImageStorageService";
 import { PrismaUserRepository } from "@/core/user/infrastructure/repository/PrismaUserRepository";
 import { CreateUserUseCase } from "@/core/user/application/useCases/CreateUserUseCase";
@@ -608,6 +609,9 @@ container.register(
 
 container.register("ImageStorageService", {
 	useClass: LocalImageStorageService,
+});
+container.register("TransactionRunner", {
+	useClass: PrismaTransactionRunner,
 });
 
 function bootstrapSubscribers() {

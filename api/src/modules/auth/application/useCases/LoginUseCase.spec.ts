@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { User } from "@/core/user/domain/User";
+import { BcryptPasswordHasherService } from "@/core/user/infrastructure/service/BcryptPasswordHasherService";
 import { LoginUseCase } from "./LoginUseCase";
 
 const userRepository = { findByEmail: mock() };
@@ -60,5 +61,47 @@ describe("LoginUseCase", () => {
 		await expect(
 			useCase.run({ email: "nadie@test.com", password: "x" }),
 		).rejects.toMatchObject({ code: 401, message: "Credenciales inválidas" });
+	});
+
+	it("compara contra un hash ficticio cuando el usuario no existe, aunque la comparación 'acierte'", async () => {
+		userRepository.findByEmail.mockResolvedValue(null);
+		passwordHasher.compare.mockResolvedValue(true);
+
+		await expect(
+			useCase.run({ email: "nadie@test.com", password: "x" }),
+		).rejects.toMatchObject({ code: 401 });
+
+		expect(passwordHasher.compare).toHaveBeenCalledTimes(1);
+		const hashUsado = passwordHasher.compare.mock.calls[0]?.[1] as string;
+		expect(hashUsado).toStartWith("$2b$10$");
+		expect(refreshTokenRepo.create).not.toHaveBeenCalled();
+	});
+
+	it("con el hasher real, un usuario inexistente tarda lo mismo que uno con contraseña errónea", async () => {
+		const real = new LoginUseCase(
+			userRepository as any,
+			new BcryptPasswordHasherService(),
+			tokenService as any,
+			refreshTokenRepo as any,
+		);
+		const hashReal = await new BcryptPasswordHasherService().hash("otra");
+		const medir = async (user: User | null) => {
+			userRepository.findByEmail.mockResolvedValue(user);
+			const inicio = performance.now();
+			await expect(
+				real.run({ email: "x@test.com", password: "incorrecta" }),
+			).rejects.toMatchObject({ code: 401 });
+			return performance.now() - inicio;
+		};
+
+		const sinUsuario = await medir(null);
+		const conUsuario = await medir(
+			User.reconstitute("Ana", "x@test.com", hashReal, true, 1, "USER"),
+		);
+
+		// bcrypt con costo 10 tarda decenas de ms; sin hash ficticio sería casi instantáneo
+		expect(sinUsuario).toBeGreaterThan(20);
+		expect(sinUsuario / conUsuario).toBeGreaterThan(0.4);
+		expect(sinUsuario / conUsuario).toBeLessThan(2.5);
 	});
 });

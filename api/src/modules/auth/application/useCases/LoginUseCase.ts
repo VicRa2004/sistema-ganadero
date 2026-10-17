@@ -8,6 +8,14 @@ import type { RefreshTokenRepository } from "../../domain/repository/RefreshToke
 import type { UserDto } from "@/core/user/application/dtos/UserDto";
 import { UserMapper } from "@/core/user/application/mappers/UserMapper";
 
+/**
+ * Hash bcrypt de un valor aleatorio descartado. Se compara contra él cuando el usuario no
+ * existe para que el tiempo de respuesta no delate qué correos están registrados.
+ * Debe usar el mismo costo (10) que BcryptPasswordHasherService.
+ */
+const HASH_FICTICIO =
+	"$2b$10$yRjEBn7/qYHqcemXatF7q.TtkTAh57qxqL7.h09R8a/wkkQxI6cw6";
+
 /** Duración del refresh token: 7 días */
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
@@ -26,17 +34,14 @@ export class LoginUseCase {
 	): Promise<{ accessToken: string; refreshToken: string; user: UserDto }> {
 		const user = await this.userRepository.findByEmail(dto.email);
 
-		if (!user) {
-			throw new BaseError("Credenciales inválidas", 401);
-		}
-
+		// Siempre se ejecuta bcrypt, exista o no el usuario, para igualar los tiempos
 		const isPasswordValid = await this.passwordHasher.compare(
 			dto.password,
-			user.getPasswordHash(),
+			user ? user.getPasswordHash() : HASH_FICTICIO,
 		);
 
-		// Misma respuesta que con credenciales erróneas para no revelar el estado de la cuenta
-		if (!isPasswordValid || !user.getIsActive()) {
+		// Misma respuesta que con credenciales erróneas para no revelar si el correo existe ni el estado de la cuenta
+		if (!user || !isPasswordValid || !user.getIsActive()) {
 			throw new BaseError("Credenciales inválidas", 401);
 		}
 

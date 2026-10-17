@@ -6,17 +6,23 @@ Correcciones poco urgentes. Buenas para sesiones cortas o para limpiar antes de 
 
 ## m-1 · Dependencias residuales de Express
 
+> ✅ **Implementado.** Eliminados `cookie-parser`, `express-rate-limit`, `supertest`, `@types/supertest` y `@types/swagger-ui-express` (ninguno se importaba). Se conserva `@types/node` junto a `@types/bun`: `@types/bun` lo necesita para los módulos `node:*` que usa la API.
+
 - **Dónde:** `api/package.json`.
 - **Eliminar:** `cookie-parser`, `express-rate-limit` (tras implementar U-3), `supertest` y `@types/supertest` (si no se usan en e2e), `@types/swagger-ui-express`, y revisar `@types/node` frente a `@types/bun`.
 - Usar `pnpm --filter api remove <pkg>`.
 
 ## m-2 · Linter propio en `web`
 
+> ✅ **Implementado.** Quitados el script `lint`, la dependencia `oxlint`, `web/.oxlintrc.json`, su entrada en `.dockerignore` y la sección de Oxlint del README de `web`. Solo queda Biome en la raíz.
+
 - **Dónde:** `web/package.json` (`"lint": "oxlint"` y devDependency `oxlint`).
 - **Problema:** AGENTS.md prohíbe linters locales; solo debe existir Biome en la raíz.
 - **Acción:** quitar el script y la dependencia; confirmar que no hay `.oxlintrc*`.
 
 ## m-3 · `any` y casteos en la API
+
+> ✅ **Implementado.** `toStatusCode()` (en `http/context.ts`) convierte `BaseError.code` a `ContentfulStatusCode` sin `any`; `JwtService` tipa `expiresIn` con `SignOptions["expiresIn"]`; `c.get("user")` está tipado (`AuthUser`) mediante `ContextVariableMap`, y `DomainEvent.data` pasó a `unknown` con `EventBus.subscribe` genérico. Los `any` que quedan están en specs y en `src/generated`.
 
 - **Dónde:** `server.ts` (`(err as any).status`, `status as any`), `base.controller.ts` (`error.code as any`), `JwtService.ts` (`expiresIn as any`), `RequirePermissionMiddleware.ts`.
 - **Acción:** tipar con `ContentfulStatusCode` de Hono y `StringValue` de `ms`/`jsonwebtoken`; tipar `c.get("user")` con `Hono<{ Variables: { user: JwtPayload } }>`.

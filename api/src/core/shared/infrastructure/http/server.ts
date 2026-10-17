@@ -1,4 +1,5 @@
 import path from "node:path";
+import { toStatusCode } from "./context";
 import { existsSync } from "node:fs";
 import { Hono } from "hono";
 import type { Context } from "hono";
@@ -18,7 +19,6 @@ import {
 	internalErrorResponse,
 	mapPrismaError,
 } from "@/core/shared/infrastructure/http/errorResponses";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { container } from "@/core/shared/infrastructure/di/container";
 import { UserRouter } from "@/core/user/infrastructure/http/routes/UserRouter";
@@ -149,7 +149,7 @@ app.onError((err, c) => {
 	}
 
 	if (err instanceof BaseError) {
-		return c.json({ error: err.message }, err.code as ContentfulStatusCode);
+		return c.json({ error: err.message }, toStatusCode(err.code));
 	}
 
 	const prismaError = mapPrismaError(err);

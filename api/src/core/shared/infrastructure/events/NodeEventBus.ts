@@ -11,7 +11,10 @@ export class NodeEventBus implements EventBus {
 		this.emitter.emit(event.eventName, event);
 	}
 
-	subscribe(eventName: string, handler: (event: DomainEvent) => void): void {
+	subscribe<E extends DomainEvent>(
+		eventName: string,
+		handler: (event: E) => void,
+	): void {
 		this.emitter.on(eventName, handler);
 	}
 

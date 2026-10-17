@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import { toStatusCode } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
 import type { CheckUserPermissionUseCase } from "@/modules/authorization/application/useCases/CheckUserPermissionUseCase";
 import { ForbiddenError } from "@/modules/authorization/domain/error/ForbiddenError";
@@ -55,11 +56,9 @@ export class RequirePermissionMiddleware {
 				await next(); // Hono requiere el await en el next()
 			} catch (error) {
 				if (error instanceof ForbiddenError || error instanceof BaseError) {
-					// El 'as any' o 'as Context["var"]' suele ser necesario aquí si error.code es un number genérico,
-					// ya que Hono tipa de forma estricta los HTTP Status Codes (ej. 200 | 401 | 403 | 500).
 					return c.json(
 						{ success: false, error: error.message },
-						error.code as any,
+						toStatusCode(error.code),
 					);
 				}
 

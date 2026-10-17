@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { toStatusCode } from "./context";
 import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
 // Asumiendo que z.treeifyError es una utilidad custom que tienes en tu proyecto.
@@ -36,12 +37,7 @@ export abstract class BaseController {
 		}
 
 		if (error instanceof BaseError) {
-			return c.json(
-				{ error: error.message },
-				// Hono tipa estrictamente los HTTP status codes. Usamos 'as any'
-				// para evitar conflictos si error.code es de tipo 'number' genérico.
-				error.code as any,
-			);
+			return c.json({ error: error.message }, toStatusCode(error.code));
 		}
 
 		// Errores HTTP de Hono (p. ej. bodyLimit al leer un cuerpo sin Content-Length) traen su respuesta

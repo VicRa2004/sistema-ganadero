@@ -7,7 +7,6 @@ api/uploads/*
 !api/uploads/.gitkeep
 .agents
 .tanstack
-.oxlintrc.json
 *.log
 .env
 .env.local

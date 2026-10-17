@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import type { AuthUser } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
 import { env } from "@/core/config/env";
 import type { JwtService } from "../../service/JwtService";
@@ -60,7 +61,7 @@ export class AuthMiddleware {
 
 			// En lugar de mutar req (ej. req.user), en Hono guardamos datos en el contexto
 			// usando c.set() para que otros middlewares/controladores puedan leerlo con c.get()
-			c.set("user", decoded);
+			c.set("user", decoded as AuthUser);
 
 			await next(); // Siempre debe llevar await en Hono
 		} catch (error) {

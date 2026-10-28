@@ -1,3 +1,4 @@
+import { errorResponse } from "@/core/shared/infrastructure/http/errorResponses";
 import type { Context, Next } from "hono";
 import type { AuthUser } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
@@ -34,19 +35,17 @@ export class AuthMiddleware {
 		const authHeader = c.req.header("Authorization");
 
 		if (!authHeader?.startsWith("Bearer ")) {
-			return c.json(
-				{
-					success: false,
-					error: "No se proporcionó un token de autenticación",
-				},
+			return errorResponse(
+				c,
 				401,
+				"No se proporcionó un token de autenticación",
 			);
 		}
 
 		const token = authHeader.split(" ")[1];
 
 		if (!token) {
-			return c.json({ success: false, error: "Token inválido" }, 401);
+			return errorResponse(c, 401, "Token inválido");
 		}
 
 		try {
@@ -57,7 +56,7 @@ export class AuthMiddleware {
 				typeof decoded === "string" ||
 				typeof (decoded as { id?: unknown }).id !== "number"
 			) {
-				return c.json({ success: false, error: "Token inválido" }, 401);
+				return errorResponse(c, 401, "Token inválido");
 			}
 
 			// En lugar de mutar req (ej. req.user), en Hono guardamos datos en el contexto
@@ -73,10 +72,7 @@ export class AuthMiddleware {
 				);
 			}
 
-			return c.json(
-				{ success: false, error: "Token inválido o expirado" },
-				401,
-			);
+			return errorResponse(c, 401, "Token inválido o expirado");
 		}
 	};
 }

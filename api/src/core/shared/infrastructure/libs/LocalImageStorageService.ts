@@ -1,10 +1,8 @@
 import { injectable } from "tsyringe";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { env } from "@/core/config/env";
-import { BaseError } from "../../domain/error/BaseError";
 import type { ImageStorageService } from "../../domain/services/ImageStorageService";
-import { detectImageType } from "./detectImageType";
+import { validarImagen } from "./validarImagen";
 import { logger } from "@/core/config/logger";
 
 @injectable()
@@ -12,26 +10,7 @@ export class LocalImageStorageService implements ImageStorageService {
 	private readonly uploadDir = path.join(process.cwd(), "uploads");
 
 	public async upload(file: File, folder: string): Promise<string> {
-		if (file.size === 0) {
-			throw new BaseError("El archivo de imagen está vacío", 400);
-		}
-
-		if (file.size > env.UPLOAD_MAX_SIZE) {
-			throw new BaseError(
-				`La imagen excede el tamaño máximo de ${Math.floor(env.UPLOAD_MAX_SIZE / (1024 * 1024))} MB`,
-				413,
-			);
-		}
-
-		// El tipo se deduce del contenido real; el nombre y el MIME del cliente no son fiables
-		const arrayBuffer = await file.arrayBuffer();
-		const imageType = detectImageType(new Uint8Array(arrayBuffer));
-		if (!imageType) {
-			throw new BaseError(
-				"Formato de imagen no permitido. Usa JPEG, PNG o WebP",
-				400,
-			);
-		}
+		const { buffer: arrayBuffer, type: imageType } = await validarImagen(file);
 
 		// Crear el directorio de destino si no existe
 		const targetDir = path.join(this.uploadDir, folder);

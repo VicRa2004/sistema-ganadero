@@ -11,7 +11,10 @@ export function cn(...inputs: ClassValue[]) {
  */
 // biome-ignore lint/suspicious/noExplicitAny: error is explicitly cast to any to read custom server response
 export function formatApiError(error: any): string {
-	const data = error?.response?.data;
+	const body = error?.response?.data;
+	// Formato actual: { error: { code, message, details?, requestId } }
+	const data =
+		body?.error && typeof body.error === "object" ? body.error : body;
 	if (!data) return error?.message || "Ha ocurrido un error inesperado.";
 
 	// Si hay detalles de validación específicos (como los devueltos por z.treeifyError)
@@ -43,8 +46,8 @@ export function formatApiError(error: any): string {
 	}
 
 	// Si el API retorna un error plano
-	if (data.error) {
-		return data.error;
+	if (data.message || data.error) {
+		return data.message ?? data.error;
 	}
 
 	return "Ha ocurrido un error inesperado.";

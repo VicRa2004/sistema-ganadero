@@ -12,10 +12,14 @@ import { serveStatic } from "hono/bun";
 import { secureHeaders } from "hono/secure-headers";
 import { swaggerUI } from "@hono/swagger-ui";
 import { env } from "@/core/config/env";
+import { logger as appLogger } from "@/core/config/logger";
+import { prisma } from "@/core/config/prisma";
+import { S3ImageStorageService } from "@/core/shared/infrastructure/libs/S3ImageStorageService";
 import { swaggerSpec } from "@/core/config/swagger";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
 import {
 	BODY_TOO_LARGE_MESSAGE,
+	errorResponse,
 	internalErrorResponse,
 	mapPrismaError,
 } from "@/core/shared/infrastructure/http/errorResponses";
@@ -49,7 +53,7 @@ app.use("*", logger());
 
 // Límite de tamaño del body: pequeño para JSON y mayor solo para multipart (imágenes)
 const onBodyTooLarge = (c: Context) =>
-	c.json({ error: BODY_TOO_LARGE_MESSAGE }, 413);
+	errorResponse(c, 413, BODY_TOO_LARGE_MESSAGE);
 const limiteJson = bodyLimit({
 	maxSize: env.BODY_MAX_SIZE,
 	onError: onBodyTooLarge,
@@ -75,7 +79,16 @@ app.use("/uploads/*", async (c, next) => {
 		"default-src 'none'; img-src 'self'; sandbox",
 	);
 });
-app.use("/uploads/*", serveStatic({ root: "./" }));
+if (env.STORAGE_DRIVER === "s3") {
+	// Las imágenes viven en el bucket: se redirige a su URL pública o firmada
+	const s3Storage = container.resolve(S3ImageStorageService);
+	app.get("/uploads/*", (c) => {
+		const url = s3Storage.urlDe(decodeURIComponent(c.req.path));
+		return url ? c.redirect(url, 302) : c.text("Not Found", 404);
+	});
+} else {
+	app.use("/uploads/*", serveStatic({ root: "./" }));
+}
 
 // Nota: express.json() desaparece. Hono procesa el JSON automáticamente
 // cuando llamas a c.req.json() en tus controladores.
@@ -91,6 +104,17 @@ if (env.ENABLE_API_DOCS ?? !isProd) {
 
 // Liveness para HEALTHCHECK de Docker y balanceadores (no consulta la base de datos)
 app.get("/health", (c) => c.json({ status: "ok" }));
+
+// Readiness: además del proceso, comprueba que la base de datos responde
+app.get("/ready", async (c) => {
+	try {
+		await prisma.$queryRaw`SELECT 1`;
+		return c.json({ status: "ok" });
+	} catch (error) {
+		appLogger.error("Readiness: la base de datos no responde", error);
+		return c.json({ status: "unavailable" }, 503);
+	}
+});
 
 // 3. Resolución de dependencias (TSyringe sigue intacto)
 const userRouter = container.resolve(UserRouter);
@@ -152,12 +176,12 @@ app.onError((err, c) => {
 	}
 
 	if (err instanceof BaseError) {
-		return c.json({ error: err.message }, toStatusCode(err.code));
+		return errorResponse(c, toStatusCode(err.code), err.message);
 	}
 
 	const prismaError = mapPrismaError(err);
 	if (prismaError) {
-		return c.json({ error: prismaError.message }, prismaError.status);
+		return errorResponse(c, prismaError.status, prismaError.message);
 	}
 
 	return internalErrorResponse(c, err);

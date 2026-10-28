@@ -1,3 +1,4 @@
+import { errorResponse } from "@/core/shared/infrastructure/http/errorResponses";
 import type { Context, Next } from "hono";
 import { toStatusCode } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
@@ -43,12 +44,10 @@ export class RequirePermissionMiddleware {
 			const userId: number | undefined = user?.id;
 
 			if (!userId) {
-				return c.json(
-					{
-						success: false,
-						error: "Usuario no autenticado. Ejecuta authMiddleware antes.",
-					},
+				return errorResponse(
+					c,
 					401,
+					"Usuario no autenticado. Ejecuta authMiddleware antes.",
 				);
 			}
 
@@ -57,19 +56,10 @@ export class RequirePermissionMiddleware {
 				await next(); // Hono requiere el await en el next()
 			} catch (error) {
 				if (error instanceof ForbiddenError || error instanceof BaseError) {
-					return c.json(
-						{ success: false, error: error.message },
-						toStatusCode(error.code),
-					);
+					return errorResponse(c, toStatusCode(error.code), error.message);
 				}
 
-				return c.json(
-					{
-						success: false,
-						error: "Error interno al verificar permisos",
-					},
-					500,
-				);
+				return errorResponse(c, 500, "Error interno al verificar permisos");
 			}
 		};
 	};

@@ -53,6 +53,15 @@ export const EnvSchema = z
 			.enum(["true", "false"])
 			.default("false")
 			.transform((value) => value === "true"),
+		// Dónde se guardan las imágenes subidas: disco local o un bucket compatible con S3 (S3, R2, MinIO)
+		STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
+		S3_BUCKET: z.string().min(1).optional(),
+		S3_ENDPOINT: z.string().url().optional(),
+		S3_REGION: z.string().min(1).optional(),
+		S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+		S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+		// Base pública (CDN) para servir las imágenes; si falta, se usan URL firmadas
+		S3_PUBLIC_URL: z.string().url().optional(),
 		// Leer la IP real desde X-Forwarded-For (activar solo detrás de un proxy de confianza)
 		TRUST_PROXY: z
 			.enum(["true", "false"])
@@ -60,6 +69,22 @@ export const EnvSchema = z
 			.transform((value) => value === "true"),
 	})
 	.superRefine((value, ctx) => {
+		if (value.STORAGE_DRIVER === "s3") {
+			for (const campo of [
+				"S3_BUCKET",
+				"S3_ACCESS_KEY_ID",
+				"S3_SECRET_ACCESS_KEY",
+			] as const) {
+				if (!value[campo]) {
+					ctx.addIssue({
+						code: "custom",
+						path: [campo],
+						message: `${campo} es obligatorio con STORAGE_DRIVER=s3`,
+					});
+				}
+			}
+		}
+
 		// En tests se permiten secretos cortos para no ensuciar los fixtures
 		if (value.NODE_ENV === "test") return;
 
@@ -103,6 +128,13 @@ const envPrev = {
 	ENABLE_API_DOCS: process.env.ENABLE_API_DOCS,
 	ALLOW_PUBLIC_REGISTER: process.env.ALLOW_PUBLIC_REGISTER,
 	LOG_LEVEL: process.env.LOG_LEVEL,
+	STORAGE_DRIVER: process.env.STORAGE_DRIVER,
+	S3_BUCKET: process.env.S3_BUCKET,
+	S3_ENDPOINT: process.env.S3_ENDPOINT,
+	S3_REGION: process.env.S3_REGION,
+	S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+	S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+	S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
 };
 
 export const env = EnvSchema.parse(envPrev);

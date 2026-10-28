@@ -49,18 +49,23 @@ describe("BaseController.handleError", () => {
 
 	it("no expone el mensaje de errores inesperados y devuelve el requestId", async () => {
 		const res = await llamar("secreto");
-		const body = (await res.json()) as { error: string; requestId: string };
+		const body = (await res.json()) as {
+			error: { code: string; message: string; requestId: string };
+		};
 
 		expect(res.status).toBe(500);
-		expect(body.error).toBe("Error interno del servidor");
+		expect(body.error.code).toBe("INTERNAL_ERROR");
+		expect(body.error.message).toBe("Error interno del servidor");
 		expect(JSON.stringify(body)).not.toContain("usr_password");
-		expect(body.requestId).toBeTruthy();
-		expect(res.headers.get("X-Request-Id")).toBe(body.requestId);
+		expect(body.error.requestId).toBeTruthy();
+		expect(res.headers.get("X-Request-Id")).toBe(body.error.requestId);
 	});
 
 	it("registra el detalle real en el servidor junto al requestId", async () => {
 		const res = await llamar("secreto");
-		const { requestId: id } = (await res.json()) as { requestId: string };
+		const {
+			error: { requestId: id },
+		} = (await res.json()) as { error: { requestId: string } };
 
 		const [mensaje, error] = consoleError.mock.calls[0] as [string, Error];
 		expect(mensaje).toContain(id);
@@ -76,28 +81,29 @@ describe("BaseController.handleError", () => {
 		for (const [caso, status, mensaje] of casos) {
 			const res = await llamar(caso);
 			expect(res.status).toBe(status);
-			expect(await res.json()).toEqual({ error: mensaje });
+			const { error } = (await res.json()) as { error: { message: string } };
+			expect(error.message).toBe(mensaje);
 		}
 	});
 
 	it("un error de Prisma sin mapeo se trata como interno", async () => {
 		const res = await llamar("p2000");
-		const body = (await res.json()) as { error: string };
+		const body = (await res.json()) as { error: { message: string } };
 		expect(res.status).toBe(500);
-		expect(body.error).toBe("Error interno del servidor");
+		expect(body.error.message).toBe("Error interno del servidor");
 	});
 
 	it("conserva el mensaje y el código de los BaseError", async () => {
 		const res = await llamar("base");
 		expect(res.status).toBe(422);
-		expect(await res.json()).toEqual({ error: "Mensaje de negocio" });
+		const { error } = (await res.json()) as { error: { message: string } };
+		expect(error.message).toBe("Mensaje de negocio");
 	});
 
 	it("responde 400 ante un JSON malformado", async () => {
 		const res = await llamar("json", "{no es json");
 		expect(res.status).toBe(400);
-		expect(await res.json()).toEqual({
-			error: "El cuerpo de la petición no es un JSON válido",
-		});
+		const { error } = (await res.json()) as { error: { message: string } };
+		expect(error.message).toBe("El cuerpo de la petición no es un JSON válido");
 	});
 });

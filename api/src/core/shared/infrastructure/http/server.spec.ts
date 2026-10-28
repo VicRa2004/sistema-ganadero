@@ -17,9 +17,10 @@ describe("límites de tamaño del body", () => {
 		const res = await post("/api/auth/login", grande, "application/json");
 
 		expect(res.status).toBe(413);
-		expect(await res.json()).toEqual({
-			error: "El cuerpo de la petición excede el tamaño máximo",
-		});
+		const { error } = (await res.json()) as { error: { message: string } };
+		expect(error.message).toBe(
+			"El cuerpo de la petición excede el tamaño máximo",
+		);
 	});
 
 	it("acepta JSON dentro del límite", async () => {

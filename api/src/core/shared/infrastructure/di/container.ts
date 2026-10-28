@@ -2,6 +2,8 @@ import { Lifecycle, container } from "tsyringe";
 
 // Import implementations
 import { PrismaTransactionRunner } from "@/core/shared/infrastructure/libs/PrismaTransactionRunner";
+import { S3ImageStorageService } from "@/core/shared/infrastructure/libs/S3ImageStorageService";
+import { env } from "@/core/config/env";
 import { LocalImageStorageService } from "@/core/shared/infrastructure/libs/LocalImageStorageService";
 import { PrismaUserRepository } from "@/core/user/infrastructure/repository/PrismaUserRepository";
 import { CreateUserUseCase } from "@/core/user/application/useCases/CreateUserUseCase";
@@ -616,9 +618,15 @@ container.register(
 	{ lifecycle: Lifecycle.Singleton },
 );
 
-container.register("ImageStorageService", {
-	useClass: LocalImageStorageService,
-});
+if (env.STORAGE_DRIVER === "s3") {
+	container.register("ImageStorageService", {
+		useClass: S3ImageStorageService,
+	});
+} else {
+	container.register("ImageStorageService", {
+		useClass: LocalImageStorageService,
+	});
+}
 container.register("TransactionRunner", {
 	useClass: PrismaTransactionRunner,
 });

@@ -9,6 +9,7 @@ import type { Actor } from "../../domain/Actor";
 import { BaseError } from "../../domain/error/BaseError";
 import {
 	BODY_TOO_LARGE_MESSAGE,
+	errorResponse,
 	internalErrorResponse,
 	isBodyLimitError,
 	mapPrismaError,
@@ -27,17 +28,11 @@ export abstract class BaseController {
 	 */
 	protected handleError(error: unknown, c: Context): Response {
 		if (error instanceof ZodError) {
-			return c.json(
-				{
-					error: "Validation error",
-					details: z.treeifyError(error),
-				},
-				400,
-			);
+			return errorResponse(c, 400, "Validation error", z.treeifyError(error));
 		}
 
 		if (error instanceof BaseError) {
-			return c.json({ error: error.message }, toStatusCode(error.code));
+			return errorResponse(c, toStatusCode(error.code), error.message);
 		}
 
 		// Errores HTTP de Hono (p. ej. bodyLimit al leer un cuerpo sin Content-Length) traen su respuesta
@@ -46,20 +41,21 @@ export abstract class BaseController {
 		}
 
 		if (isBodyLimitError(error)) {
-			return c.json({ error: BODY_TOO_LARGE_MESSAGE }, 413);
+			return errorResponse(c, 413, BODY_TOO_LARGE_MESSAGE);
 		}
 
 		// JSON malformado en el cuerpo de la petición
 		if (error instanceof SyntaxError) {
-			return c.json(
-				{ error: "El cuerpo de la petición no es un JSON válido" },
+			return errorResponse(
+				c,
 				400,
+				"El cuerpo de la petición no es un JSON válido",
 			);
 		}
 
 		const prismaError = mapPrismaError(error);
 		if (prismaError) {
-			return c.json({ error: prismaError.message }, prismaError.status);
+			return errorResponse(c, prismaError.status, prismaError.message);
 		}
 
 		// Cualquier otro error es inesperado: se registra y no se expone su mensaje

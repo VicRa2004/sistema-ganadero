@@ -1,3 +1,4 @@
+import { errorResponse } from "./errorResponses";
 import type { Context, MiddlewareHandler } from "hono";
 import { getConnInfo } from "hono/bun";
 import { env } from "@/core/config/env";
@@ -74,7 +75,7 @@ export function rateLimit(options: RateLimitOptions): MiddlewareHandler {
 		if (bucket.count >= max) {
 			const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
 			c.header("Retry-After", String(retryAfter));
-			return c.json({ error: message }, 429);
+			return errorResponse(c, 429, message);
 		}
 
 		bucket.count++;

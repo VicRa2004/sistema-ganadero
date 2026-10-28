@@ -1,3 +1,4 @@
+import { errorResponse } from "@/core/shared/infrastructure/http/errorResponses";
 import { inject, injectable } from "tsyringe";
 import type { Context } from "hono";
 import type { GetUserPermissionsUseCase } from "../../../application/useCases/GetUserPermissionsUseCase";
@@ -25,13 +26,7 @@ export class GetUserPermissionsController extends BaseController {
 
 			const currentUser = c.get("user");
 			if (!currentUser) {
-				return c.json(
-					{
-						success: false,
-						error: "Usuario no autenticado.",
-					},
-					401,
-				);
+				return errorResponse(c, 401, "Usuario no autenticado.");
 			}
 
 			// Si el usuario no está consultando sus propios permisos, validar el permiso administrativo 'permissions:read'

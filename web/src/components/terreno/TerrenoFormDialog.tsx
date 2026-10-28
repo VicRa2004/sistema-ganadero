@@ -162,6 +162,16 @@ export function TerrenoFormDialog({
 									<Warehouse className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="text"
 										placeholder="Ej: Terreno Las Pampas"
@@ -174,7 +184,10 @@ export function TerrenoFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}
@@ -202,6 +215,16 @@ export function TerrenoFormDialog({
 									<MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="text"
 										placeholder="Ej: Km 15 Carretera Central, Sonora"
@@ -214,7 +237,10 @@ export function TerrenoFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}
@@ -254,6 +280,16 @@ export function TerrenoFormDialog({
 									<Maximize2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="number"
 										step="any"
@@ -268,7 +304,10 @@ export function TerrenoFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}
@@ -310,6 +349,16 @@ export function TerrenoFormDialog({
 									<Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="number"
 										step="1"
@@ -324,7 +373,10 @@ export function TerrenoFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}

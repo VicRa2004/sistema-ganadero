@@ -152,6 +152,16 @@ export function PropietarioFormDialog({
 									<User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="text"
 										placeholder="Ej: Juan Pérez García"
@@ -164,7 +174,10 @@ export function PropietarioFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}
@@ -191,6 +204,16 @@ export function PropietarioFormDialog({
 									<Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="tel"
 										placeholder="Ej: +52 555 123 4567"
@@ -203,7 +226,10 @@ export function PropietarioFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}
@@ -230,6 +256,16 @@ export function PropietarioFormDialog({
 									<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="email"
 										placeholder="Ej: juan@ejemplo.com"
@@ -242,7 +278,10 @@ export function PropietarioFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}

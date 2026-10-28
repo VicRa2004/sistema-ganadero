@@ -98,6 +98,16 @@ function LoginComponent() {
 											<Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
 											<Input
 												id={field.name}
+												aria-invalid={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+												}
+												aria-describedby={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+														? `${field.name}-error`
+														: undefined
+												}
 												name={field.name}
 												type="email"
 												placeholder="correo@ejemplo.com"
@@ -110,7 +120,10 @@ function LoginComponent() {
 										</div>
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in"
+												>
 													{field.state.meta.errors.join(", ")}
 												</p>
 											)}
@@ -137,6 +150,16 @@ function LoginComponent() {
 											<Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
 											<Input
 												id={field.name}
+												aria-invalid={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+												}
+												aria-describedby={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+														? `${field.name}-error`
+														: undefined
+												}
 												name={field.name}
 												type={showPassword ? "text" : "password"}
 												placeholder="••••••••"
@@ -161,7 +184,10 @@ function LoginComponent() {
 										</div>
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in"
+												>
 													{field.state.meta.errors.join(", ")}
 												</p>
 											)}

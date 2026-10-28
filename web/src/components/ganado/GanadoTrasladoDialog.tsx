@@ -123,6 +123,16 @@ export function GanadoTrasladoDialog({
 								</Label>
 								<select
 									id={field.name}
+									aria-invalid={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+									}
+									aria-describedby={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+											? `${field.name}-error`
+											: undefined
+									}
 									name={field.name}
 									value={field.state.value}
 									onBlur={field.handleBlur}
@@ -143,7 +153,10 @@ export function GanadoTrasladoDialog({
 								</select>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}

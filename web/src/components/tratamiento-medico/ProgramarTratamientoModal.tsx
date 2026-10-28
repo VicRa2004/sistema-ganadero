@@ -182,6 +182,16 @@ export function ProgramarTratamientoModal({
 									) : (
 										<Button
 											id="selector-ganado-btn"
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? "ganadoId-error"
+													: undefined
+											}
 											type="button"
 											variant="outline"
 											onClick={() => setSelectorGanadoOpen(true)}
@@ -199,7 +209,10 @@ export function ProgramarTratamientoModal({
 
 									{field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0 && (
-											<p className="text-xs text-red-600 dark:text-red-400">
+											<p
+												id="ganadoId-error"
+												className="text-xs text-red-600 dark:text-red-400"
+											>
 												{field.state.meta.errors[0]}
 											</p>
 										)}
@@ -223,13 +236,26 @@ export function ProgramarTratamientoModal({
 									</Label>
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										placeholder="Ej. Mastitis aguda en cuarto posterior derecho"
 										value={field.state.value}
 										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0 && (
-											<p className="text-xs text-red-600 dark:text-red-400">
+											<p
+												id={`${field.name}-error`}
+												className="text-xs text-red-600 dark:text-red-400"
+											>
 												{field.state.meta.errors[0]}
 											</p>
 										)}
@@ -260,6 +286,16 @@ export function ProgramarTratamientoModal({
 										) : (
 											<select
 												id={field.name}
+												aria-invalid={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+												}
+												aria-describedby={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+														? `${field.name}-error`
+														: undefined
+												}
 												value={field.state.value}
 												onChange={(e) => field.handleChange(e.target.value)}
 												className={SELECT_CLASS}
@@ -274,7 +310,10 @@ export function ProgramarTratamientoModal({
 										)}
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400"
+												>
 													{field.state.meta.errors[0]}
 												</p>
 											)}
@@ -301,6 +340,16 @@ export function ProgramarTratamientoModal({
 										</Label>
 										<Input
 											id={field.name}
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? `${field.name}-error`
+													: undefined
+											}
 											type="number"
 											allowDecimals={true}
 											placeholder="Ej. 10.5"
@@ -309,7 +358,10 @@ export function ProgramarTratamientoModal({
 										/>
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400"
+												>
 													{field.state.meta.errors[0]}
 												</p>
 											)}
@@ -337,13 +389,26 @@ export function ProgramarTratamientoModal({
 										</Label>
 										<Input
 											id={field.name}
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? `${field.name}-error`
+													: undefined
+											}
 											type="date"
 											value={field.state.value}
 											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400"
+												>
 													{field.state.meta.errors[0]}
 												</p>
 											)}
@@ -368,13 +433,26 @@ export function ProgramarTratamientoModal({
 										</Label>
 										<Input
 											id={field.name}
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? `${field.name}-error`
+													: undefined
+											}
 											type="date"
 											value={field.state.value}
 											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400"
+												>
 													{field.state.meta.errors[0]}
 												</p>
 											)}

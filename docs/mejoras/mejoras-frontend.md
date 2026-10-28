@@ -27,7 +27,8 @@ Leyenda: ✅ implementado · ⏳ pendiente.
 - ✅ Búsqueda por arete en la barra superior (`/dashboard/ganado?identificador=`), visible con `ganado:read`.
 - ✅ Subida de imagen: vista previa y compresión en cliente a JPEG de hasta 1600 px (`lib/comprimirImagen.ts`).
 - ✅ Accesibilidad: enlace «Saltar al contenido», `lang="es"`, botones de icono con nombre accesible y cierre de diálogos en español. Los diálogos usan Base UI, que ya atrapa el foco y cierra con Esc.
-- ⏳ Revisar con lector de pantalla y teclado los formularios antiguos (etiquetas de error sin `aria-describedby`).
+- ✅ Formularios antiguos: cada campo con error enlaza su mensaje con `aria-invalid` y `aria-describedby`.
+- ⏳ Probar los formularios con un lector de pantalla real.
 
 ## Rendimiento
 

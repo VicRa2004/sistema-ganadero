@@ -126,6 +126,16 @@ export function GanadoPesajeDialog({
 									<Scale className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="number"
 										step="any"
@@ -140,7 +150,10 @@ export function GanadoPesajeDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}

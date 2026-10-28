@@ -151,6 +151,16 @@ export function InsumoFormDialog({
 									<Package className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="text"
 										placeholder="Ej: Ivermectina 1%, Vacuna Triple Bovina"
@@ -163,7 +173,10 @@ export function InsumoFormDialog({
 								</div>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400 font-medium"
+										>
 											{field.state.meta.errors.join(", ")}
 										</p>
 									)}
@@ -219,6 +232,16 @@ export function InsumoFormDialog({
 										<Layers className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 										<Input
 											id={field.name}
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? `${field.name}-error`
+													: undefined
+											}
 											name={field.name}
 											type="text"
 											placeholder="Ej: ml, dosis, kg"
@@ -231,7 +254,10 @@ export function InsumoFormDialog({
 									</div>
 									{field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0 && (
-											<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+											<p
+												id={`${field.name}-error`}
+												className="text-xs text-red-600 dark:text-red-400 font-medium"
+											>
 												{field.state.meta.errors.join(", ")}
 											</p>
 										)}
@@ -273,6 +299,16 @@ export function InsumoFormDialog({
 											<Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 											<Input
 												id={field.name}
+												aria-invalid={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+												}
+												aria-describedby={
+													field.state.meta.isTouched &&
+													field.state.meta.errors.length > 0
+														? `${field.name}-error`
+														: undefined
+												}
 												name={field.name}
 												type="number"
 												step="any"
@@ -287,7 +323,10 @@ export function InsumoFormDialog({
 										</div>
 										{field.state.meta.isTouched &&
 											field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-red-600 dark:text-red-400 font-medium"
+												>
 													{field.state.meta.errors.join(", ")}
 												</p>
 											)}
@@ -328,6 +367,16 @@ export function InsumoFormDialog({
 										<Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 										<Input
 											id={field.name}
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? `${field.name}-error`
+													: undefined
+											}
 											name={field.name}
 											type="number"
 											step="any"
@@ -342,7 +391,10 @@ export function InsumoFormDialog({
 									</div>
 									{field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0 && (
-											<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+											<p
+												id={`${field.name}-error`}
+												className="text-xs text-red-600 dark:text-red-400 font-medium"
+											>
 												{field.state.meta.errors.join(", ")}
 											</p>
 										)}
@@ -371,6 +423,16 @@ export function InsumoFormDialog({
 									</Label>
 									<Input
 										id={field.name}
+										aria-invalid={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+										}
+										aria-describedby={
+											field.state.meta.isTouched &&
+											field.state.meta.errors.length > 0
+												? `${field.name}-error`
+												: undefined
+										}
 										name={field.name}
 										type="text"
 										placeholder="Ej: LOT-2026-001"
@@ -381,7 +443,10 @@ export function InsumoFormDialog({
 									/>
 									{field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0 && (
-											<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+											<p
+												id={`${field.name}-error`}
+												className="text-xs text-red-600 dark:text-red-400 font-medium"
+											>
 												{field.state.meta.errors.join(", ")}
 											</p>
 										)}
@@ -408,6 +473,16 @@ export function InsumoFormDialog({
 										<Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 										<Input
 											id={field.name}
+											aria-invalid={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+											}
+											aria-describedby={
+												field.state.meta.isTouched &&
+												field.state.meta.errors.length > 0
+													? `${field.name}-error`
+													: undefined
+											}
 											name={field.name}
 											type="date"
 											value={field.state.value}
@@ -419,7 +494,10 @@ export function InsumoFormDialog({
 									</div>
 									{field.state.meta.isTouched &&
 										field.state.meta.errors.length > 0 && (
-											<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+											<p
+												id={`${field.name}-error`}
+												className="text-xs text-red-600 dark:text-red-400 font-medium"
+											>
 												{field.state.meta.errors.join(", ")}
 											</p>
 										)}

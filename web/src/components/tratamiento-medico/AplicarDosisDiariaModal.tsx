@@ -136,6 +136,16 @@ export function AplicarDosisDiariaModal({
 								</Label>
 								<Input
 									id={field.name}
+									aria-invalid={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+									}
+									aria-describedby={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+											? `${field.name}-error`
+											: undefined
+									}
 									type="number"
 									allowDecimals={true}
 									value={field.state.value}
@@ -143,7 +153,10 @@ export function AplicarDosisDiariaModal({
 								/>
 								{field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0 && (
-										<p className="text-xs text-red-600 dark:text-red-400">
+										<p
+											id={`${field.name}-error`}
+											className="text-xs text-red-600 dark:text-red-400"
+										>
 											{field.state.meta.errors[0]}
 										</p>
 									)}

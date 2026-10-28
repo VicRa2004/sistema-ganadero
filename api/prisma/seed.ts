@@ -1,5 +1,6 @@
 import { prisma } from "../src/core/config/prisma";
 import bcrypt from "bcrypt";
+import { RECURSOS } from "../src/modules/authorization/domain/Recursos";
 
 async function main() {
 	console.log("🌱 Iniciando el proceso de seed...");
@@ -29,18 +30,7 @@ async function main() {
 	console.log("✅ Roles inicializados");
 
 	// ─── 2. Recursos y Permisos atómicos ─────────────────────────────────────────
-	const resources = [
-		"users",
-		"permissions",
-		"ganado",
-		"terreno",
-		"inventario-insumos",
-		"propietario",
-		"razas",
-		"sesiones-sanitarias",
-		"tratamientos-medicos",
-		"veterinarios",
-	];
+	const resources = RECURSOS;
 	const actions = ["create", "read", "update", "delete"];
 
 	const permissionsList: { resource: string; action: string }[] = [];

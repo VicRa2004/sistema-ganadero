@@ -36,45 +36,42 @@ export class TerrenoRouter {
 	}
 
 	private initRoutes() {
+		// Todas las rutas requieren token JWT válido
+		this.router.use(this.authMiddleware.handle);
+
 		// Endpoints protegidos con autenticación y permisos de terreno
 		this.router.get(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("terreno", "read"),
 			this.listarController.run.bind(this.listarController),
 		);
 
 		this.router.get(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("terreno", "read"),
 			this.obtenerDetalleController.run.bind(this.obtenerDetalleController),
 		);
 
 		this.router.get(
 			"/:id/capacidad",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("terreno", "read"),
 			this.obtenerCapacidadController.run.bind(this.obtenerCapacidadController),
 		);
 
 		this.router.post(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("terreno", "create"),
 			this.registrarController.run.bind(this.registrarController),
 		);
 
 		this.router.put(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("terreno", "update"),
 			this.actualizarController.run.bind(this.actualizarController),
 		);
 
 		this.router.delete(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("terreno", "delete"),
 			this.eliminarController.run.bind(this.eliminarController),
 		);

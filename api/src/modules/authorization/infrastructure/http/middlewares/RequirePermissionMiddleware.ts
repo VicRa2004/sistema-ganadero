@@ -3,6 +3,7 @@ import { toStatusCode } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
 import type { CheckUserPermissionUseCase } from "@/modules/authorization/application/useCases/CheckUserPermissionUseCase";
 import { ForbiddenError } from "@/modules/authorization/domain/error/ForbiddenError";
+import type { Recurso } from "@/modules/authorization/domain/Recursos";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
 
 /**
@@ -11,9 +12,9 @@ import { BaseError } from "@/core/shared/domain/error/BaseError";
  *
  * Uso en rutas:
  * ```ts
- * app.post("/turnos",
+ * app.post("/ganado",
  * authMiddleware.handle,
- * requirePermissionMiddleware.handle("turnos", "create"),
+ * requirePermissionMiddleware.handle("ganado", "create"),
  * controller.run.bind(controller)
  * );
  * ```
@@ -31,10 +32,10 @@ export class RequirePermissionMiddleware {
 	/**
 	 * Retorna un middleware configurado para validar un recurso y acción específicos.
 	 *
-	 * @param resource - Nombre del recurso (ej: "turnos")
+	 * @param resource - Nombre del recurso (ver `RECURSOS`)
 	 * @param action   - Acción requerida (ej: "create", "read", "update", "delete")
 	 */
-	handle = (resource: string, action: string) => {
+	handle = (resource: Recurso, action: string) => {
 		return async (c: Context, next: Next): Promise<Response | void> => {
 			// En Hono, la convención para pasar variables entre middlewares es usar c.get()
 			// Asumiendo que tu authMiddleware hace algo como: c.set('user', user)

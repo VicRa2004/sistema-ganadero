@@ -48,17 +48,18 @@ export class GanadoRouter {
 	}
 
 	private initRoutes() {
+		// Todas las rutas requieren token JWT válido
+		this.router.use(this.authMiddleware.handle);
+
 		// Endpoints protegidos con autenticación y permisos de ganado
 		this.router.get(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "read"),
 			this.listarController.run.bind(this.listarController),
 		);
 
 		this.router.get(
 			"/motivos-baja",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "read"),
 			this.listarMotivosBajaController.run.bind(
 				this.listarMotivosBajaController,
@@ -67,56 +68,48 @@ export class GanadoRouter {
 
 		this.router.get(
 			"/:idOrIdentificador",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "read"),
 			this.obtenerFichaController.run.bind(this.obtenerFichaController),
 		);
 
 		this.router.post(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "create"),
 			this.registrarController.run.bind(this.registrarController),
 		);
 
 		this.router.get(
 			"/:id/pesajes",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "read"),
 			this.listarPesajesController.run.bind(this.listarPesajesController),
 		);
 
 		this.router.post(
 			"/:id/pesajes",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.pesajeController.run.bind(this.pesajeController),
 		);
 
 		this.router.post(
 			"/:id/traslados",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.trasladoController.run.bind(this.trasladoController),
 		);
 
 		this.router.put(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.actualizarController.run.bind(this.actualizarController),
 		);
 
 		this.router.delete(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "delete"),
 			this.eliminarController.run.bind(this.eliminarController),
 		);
 
 		this.router.post(
 			"/:id/baja",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.darDeBajaController.run.bind(this.darDeBajaController),
 		);

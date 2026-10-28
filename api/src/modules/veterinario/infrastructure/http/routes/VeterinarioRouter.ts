@@ -33,38 +33,36 @@ export class VeterinarioRouter {
 	}
 
 	private initRoutes() {
+		// Todas las rutas requieren token JWT válido
+		this.router.use(this.authMiddleware.handle);
+
 		// Endpoints protegidos con autenticación y permisos de veterinarios
 		this.router.get(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("veterinarios", "read"),
 			this.listarController.run.bind(this.listarController),
 		);
 
 		this.router.get(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("veterinarios", "read"),
 			this.obtenerDetalleController.run.bind(this.obtenerDetalleController),
 		);
 
 		this.router.post(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("veterinarios", "create"),
 			this.registrarController.run.bind(this.registrarController),
 		);
 
 		this.router.put(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("veterinarios", "update"),
 			this.actualizarController.run.bind(this.actualizarController),
 		);
 
 		this.router.delete(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("veterinarios", "delete"),
 			this.eliminarController.run.bind(this.eliminarController),
 		);

@@ -36,23 +36,23 @@ export class SesionSanitariaRouter {
 	}
 
 	private initRoutes() {
+		// Todas las rutas requieren token JWT válido
+		this.router.use(this.authMiddleware.handle);
+
 		this.router.get(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("sesiones-sanitarias", "read"),
 			this.listarController.run.bind(this.listarController),
 		);
 
 		this.router.get(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("sesiones-sanitarias", "read"),
 			this.obtenerDetalleController.run.bind(this.obtenerDetalleController),
 		);
 
 		this.router.get(
 			"/ganado/:ganadoId/historial",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("sesiones-sanitarias", "read"),
 			this.obtenerHistorialGanadoController.run.bind(
 				this.obtenerHistorialGanadoController,
@@ -61,14 +61,12 @@ export class SesionSanitariaRouter {
 
 		this.router.post(
 			"/",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("sesiones-sanitarias", "create"),
 			this.registrarController.run.bind(this.registrarController),
 		);
 
 		this.router.post(
 			"/aplicacion",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("sesiones-sanitarias", "update"),
 			this.registrarResultadoController.run.bind(
 				this.registrarResultadoController,
@@ -77,7 +75,6 @@ export class SesionSanitariaRouter {
 
 		this.router.delete(
 			"/:id",
-			this.authMiddleware.handle,
 			this.requirePermissionMiddleware.handle("sesiones-sanitarias", "delete"),
 			this.eliminarController.run.bind(this.eliminarController),
 		);

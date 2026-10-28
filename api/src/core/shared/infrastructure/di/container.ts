@@ -26,7 +26,6 @@ import { UpdateRazaController } from "@/modules/raza/infrastructure/http/control
 import { DeleteRazaController } from "@/modules/raza/infrastructure/http/controllers/DeleteRazaController";
 import { BcryptPasswordHasherService } from "@/core/user/infrastructure/service/BcryptPasswordHasherService";
 import { NodeEventBus } from "../events/NodeEventBus";
-import { SendWelcomeEmail } from "@/core/user/application/subscribers/SendWelcomeEmail";
 import { JwtService } from "@/modules/auth/infrastructure/service/JwtService";
 import { PrismaAuthorizationRepository } from "@/modules/authorization/infrastructure/repository/PrismaAuthorizationRepository";
 import { CreatePermissionUseCase } from "@/modules/authorization/application/useCases/CreatePermissionUseCase";
@@ -621,14 +620,5 @@ container.register("ImageStorageService", {
 container.register("TransactionRunner", {
 	useClass: PrismaTransactionRunner,
 });
-
-function bootstrapSubscribers() {
-	const welcomeEmailSubscriber = container.resolve(SendWelcomeEmail);
-	welcomeEmailSubscriber.setupSubscription();
-
-	console.log("✅ Suscriptores de eventos inicializados");
-}
-
-bootstrapSubscribers();
 
 export { container };

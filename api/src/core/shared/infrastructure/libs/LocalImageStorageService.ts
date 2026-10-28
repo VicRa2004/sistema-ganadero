@@ -5,6 +5,7 @@ import { env } from "@/core/config/env";
 import { BaseError } from "../../domain/error/BaseError";
 import type { ImageStorageService } from "../../domain/services/ImageStorageService";
 import { detectImageType } from "./detectImageType";
+import { logger } from "@/core/config/logger";
 
 @injectable()
 export class LocalImageStorageService implements ImageStorageService {
@@ -56,7 +57,7 @@ export class LocalImageStorageService implements ImageStorageService {
 
 		// Evitar path traversal: el archivo debe quedar dentro del directorio de subidas
 		if (!fullPath.startsWith(this.uploadDir + path.sep)) {
-			console.warn(
+			logger.warn(
 				`Ruta de imagen fuera del directorio de subidas: ${filePath}`,
 			);
 			return;
@@ -69,10 +70,10 @@ export class LocalImageStorageService implements ImageStorageService {
 		} catch (error) {
 			const err = error as { code?: string };
 			if (err.code === "ENOENT") {
-				console.warn(`El archivo ya no existía en disco: ${fullPath}`);
+				logger.warn(`El archivo ya no existía en disco: ${fullPath}`);
 			} else {
-				console.error(
-					`Error al intentar borrar el archivo físico ${fullPath}:`,
+				logger.error(
+					`Error al intentar borrar el archivo físico ${fullPath}`,
 					error,
 				);
 			}

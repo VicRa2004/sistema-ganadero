@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { Prisma } from "@/generated/prisma/client";
+import { logger } from "@/core/config/logger";
 
 interface MappedError {
 	status: 404 | 409;
@@ -35,8 +36,8 @@ export function mapPrismaError(error: unknown): MappedError | null {
  */
 export function internalErrorResponse(c: Context, error: unknown): Response {
 	const requestId = c.get("requestId") as string | undefined;
-	console.error(
-		`[error] ${c.req.method} ${c.req.path} requestId=${requestId ?? "-"}`,
+	logger.error(
+		`${c.req.method} ${c.req.path} requestId=${requestId ?? "-"}`,
 		error,
 	);
 

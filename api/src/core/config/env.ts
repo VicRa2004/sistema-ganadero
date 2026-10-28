@@ -8,6 +8,8 @@ const JWT_SECRET_PLACEHOLDER = /supersecret|cambiar|change[_-]?me|dev_local/i;
 export const EnvSchema = z
 	.object({
 		PORT: z.coerce.number("El puerto debe ser un numero").default(3000),
+		// Interfaz donde escucha el servidor. 0.0.0.0 para contenedores; 127.0.0.1 para solo local.
+		HOST: z.string().min(1).default("0.0.0.0"),
 		// "production" es un alias de "prod": se normaliza para tener un único valor
 		NODE_ENV: z
 			.enum(["dev", "prod", "production", "test"])
@@ -83,6 +85,7 @@ export const EnvSchema = z
 
 const envPrev = {
 	PORT: process.env.PORT,
+	HOST: process.env.HOST,
 	NODE_ENV: process.env.NODE_ENV,
 	DATABASE_URL: process.env.DATABASE_URL,
 	JWT_SECRET: process.env.JWT_SECRET,

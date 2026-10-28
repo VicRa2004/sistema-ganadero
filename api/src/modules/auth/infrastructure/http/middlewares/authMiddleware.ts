@@ -3,6 +3,7 @@ import type { AuthUser } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
 import { env } from "@/core/config/env";
 import type { JwtService } from "../../service/JwtService";
+import { logger } from "@/core/config/logger";
 
 /**
  * Middleware de autenticación mediante JWT.
@@ -67,8 +68,8 @@ export class AuthMiddleware {
 		} catch (error) {
 			// Un token inválido o expirado es un caso normal; solo se anota en desarrollo
 			if (env.NODE_ENV === "dev") {
-				console.debug(
-					`[auth] token rechazado: ${error instanceof Error ? error.message : "desconocido"}`,
+				logger.debug(
+					`Token rechazado: ${error instanceof Error ? error.message : "desconocido"}`,
 				);
 			}
 

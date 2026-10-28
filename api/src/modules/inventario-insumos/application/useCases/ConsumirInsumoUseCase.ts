@@ -8,6 +8,7 @@ import type {
 	InsumoOutputDto,
 } from "../dtos/InsumoDto";
 import type { InsumoMapper } from "../mappers/InsumoMapper";
+import { logger } from "@/core/config/logger";
 
 @injectable()
 export class ConsumirInsumoUseCase {
@@ -45,8 +46,8 @@ export class ConsumirInsumoUseCase {
 		}
 
 		if (saved.esBajoStock()) {
-			console.warn(
-				`⚠️ [ALERTA INVENTARIO] El insumo "${saved.getNombre()}" (ID: ${saved.getId()}) ha caído por debajo de su stock mínimo de seguridad. Stock actual: ${saved.getStock()} ${saved.getUnidadMedida()} (Mínimo: ${saved.getStockMinimo()}).`,
+			logger.warn(
+				`Alerta de inventario: el insumo "${saved.getNombre()}" (ID: ${saved.getId()}) ha caído por debajo de su stock mínimo de seguridad. Stock actual: ${saved.getStock()} ${saved.getUnidadMedida()} (Mínimo: ${saved.getStockMinimo()}).`,
 			);
 		}
 

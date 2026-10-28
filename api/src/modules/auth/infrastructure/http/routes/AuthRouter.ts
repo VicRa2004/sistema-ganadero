@@ -10,6 +10,8 @@ import type { LoginController } from "../controllers/LoginController";
 import type { RegisterController } from "../controllers/RegisterController";
 import type { RefreshTokenController } from "../controllers/RefreshTokenController";
 import type { LogoutController } from "../controllers/LogoutController";
+import type { ChangePasswordController } from "../controllers/ChangePasswordController";
+import type { AuthMiddleware } from "../middlewares/authMiddleware";
 
 @injectable()
 export class AuthRouter {
@@ -24,6 +26,10 @@ export class AuthRouter {
 		private readonly refreshTokenController: RefreshTokenController,
 		@inject("LogoutController")
 		private readonly logoutController: LogoutController,
+		@inject("ChangePasswordController")
+		private readonly changePasswordController: ChangePasswordController,
+		@inject("AuthMiddleware")
+		private readonly authMiddleware: AuthMiddleware,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -62,6 +68,8 @@ export class AuthRouter {
 		});
 		// Refresh: 30 por IP cada 15 minutos
 		const refreshPorIp = rateLimit({ windowMs: QUINCE_MINUTOS, max: 30 });
+		// Cambio de contraseña: 5 por IP cada 15 minutos
+		const cambioPasswordPorIp = rateLimit({ windowMs: QUINCE_MINUTOS, max: 5 });
 
 		/**
 		 * @openapi
@@ -165,5 +173,37 @@ export class AuthRouter {
 		 *         description: Refresh token inválido o expirado en la cookie
 		 */
 		this.router.post("/logout", this.logoutController.run);
+
+		/**
+		 * @openapi
+		 * /api/auth/change-password:
+		 *   post:
+		 *     tags: [Auth]
+		 *     summary: Cambiar la contraseña propia
+		 *     description: >
+		 *       Verifica la contraseña actual, guarda la nueva y revoca todas las sesiones.
+		 *     requestBody:
+		 *       required: true
+		 *       content:
+		 *         application/json:
+		 *           schema:
+		 *             type: object
+		 *             properties:
+		 *               currentPassword:
+		 *                 type: string
+		 *               newPassword:
+		 *                 type: string
+		 *     responses:
+		 *       200:
+		 *         description: Contraseña actualizada
+		 *       400:
+		 *         description: Contraseña actual incorrecta o nueva inválida
+		 */
+		this.router.post(
+			"/change-password",
+			this.authMiddleware.handle,
+			cambioPasswordPorIp,
+			this.changePasswordController.run,
+		);
 	}
 }

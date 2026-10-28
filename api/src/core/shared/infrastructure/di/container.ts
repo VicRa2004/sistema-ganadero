@@ -44,10 +44,12 @@ import { GetUserPermissionsController } from "@/modules/authorization/infrastruc
 import { UpdatePermissionController } from "@/modules/authorization/infrastructure/http/controllers/UpdatePermissionController";
 import { IssueSessionService } from "@/modules/auth/application/services/IssueSessionService";
 import { LoginUseCase } from "@/modules/auth/application/useCases/LoginUseCase";
+import { ChangePasswordUseCase } from "@/modules/auth/application/useCases/ChangePasswordUseCase";
 import { LogoutUseCase } from "@/modules/auth/application/useCases/LogoutUseCase";
 import { RefreshTokenUseCase } from "@/modules/auth/application/useCases/RefreshTokenUseCase";
 import { RegisterUseCase } from "@/modules/auth/application/useCases/RegisterUseCase";
 import { LoginController } from "@/modules/auth/infrastructure/http/controllers/LoginController";
+import { ChangePasswordController } from "@/modules/auth/infrastructure/http/controllers/ChangePasswordController";
 import { LogoutController } from "@/modules/auth/infrastructure/http/controllers/LogoutController";
 import { RefreshTokenController } from "@/modules/auth/infrastructure/http/controllers/RefreshTokenController";
 import { RegisterController } from "@/modules/auth/infrastructure/http/controllers/RegisterController";
@@ -263,12 +265,18 @@ container.register("UpdatePermissionController", {
 container.register("IssueSessionService", { useClass: IssueSessionService });
 container.register("LoginUseCase", { useClass: LoginUseCase });
 container.register("LogoutUseCase", { useClass: LogoutUseCase });
+container.register("ChangePasswordUseCase", {
+	useClass: ChangePasswordUseCase,
+});
 container.register("RefreshTokenUseCase", { useClass: RefreshTokenUseCase });
 container.register("RegisterUseCase", { useClass: RegisterUseCase });
 
 // Módulo Auth - Controladores
 container.register("LoginController", { useClass: LoginController });
 container.register("LogoutController", { useClass: LogoutController });
+container.register("ChangePasswordController", {
+	useClass: ChangePasswordController,
+});
 container.register("RefreshTokenController", {
 	useClass: RefreshTokenController,
 });

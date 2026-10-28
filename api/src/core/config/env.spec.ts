@@ -85,3 +85,24 @@ describe("EnvSchema · NODE_ENV", () => {
 		}
 	});
 });
+
+describe("EnvSchema · LOG_LEVEL", () => {
+	const parse = (extra: Record<string, string>) =>
+		EnvSchema.parse({ ...base, JWT_SECRET: SECRETO_VALIDO, ...extra });
+
+	it("usa debug en dev e info en producción por defecto", () => {
+		expect(parse({ NODE_ENV: "dev" }).LOG_LEVEL).toBe("debug");
+		expect(parse({ NODE_ENV: "prod" }).LOG_LEVEL).toBe("info");
+	});
+
+	it("respeta el valor explícito y rechaza niveles desconocidos", () => {
+		expect(parse({ LOG_LEVEL: "warn" }).LOG_LEVEL).toBe("warn");
+		expect(
+			EnvSchema.safeParse({
+				...base,
+				JWT_SECRET: SECRETO_VALIDO,
+				LOG_LEVEL: "x",
+			}).success,
+		).toBe(false);
+	});
+});

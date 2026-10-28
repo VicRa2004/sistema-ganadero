@@ -1,2 +1,5 @@
 [test]
 preload = ["reflect-metadata"]
+# Umbral mínimo global (sube el valor cuando crezca la cobertura). Solo aplica con --coverage
+coverageThreshold = { line = 0.6, function = 0.55 }
+coverageReporter = ["text", "lcov"]

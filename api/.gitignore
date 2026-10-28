@@ -4,3 +4,4 @@ build
 /src/generated/prisma
 /dist
 /uploads
+coverage

@@ -39,6 +39,8 @@ export const EnvSchema = z
 			.int()
 			.positive()
 			.default(100 * 1024),
+		// Nivel mínimo de logs. Por defecto "debug" fuera de producción y "info" en producción.
+		LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
 		// Exponer Swagger (/api-docs). Por defecto solo fuera de producción.
 		ENABLE_API_DOCS: z
 			.enum(["true", "false"])
@@ -81,7 +83,12 @@ export const EnvSchema = z
 			});
 		}
 	})
-	.transform((value) => ({ ...value, isProd: value.NODE_ENV === "prod" }));
+	.transform((value) => ({
+		...value,
+		isProd: value.NODE_ENV === "prod",
+		LOG_LEVEL:
+			value.LOG_LEVEL ?? (value.NODE_ENV === "prod" ? "info" : "debug"),
+	}));
 
 const envPrev = {
 	PORT: process.env.PORT,
@@ -95,6 +102,7 @@ const envPrev = {
 	BODY_MAX_SIZE: process.env.BODY_MAX_SIZE,
 	ENABLE_API_DOCS: process.env.ENABLE_API_DOCS,
 	ALLOW_PUBLIC_REGISTER: process.env.ALLOW_PUBLIC_REGISTER,
+	LOG_LEVEL: process.env.LOG_LEVEL,
 };
 
 export const env = EnvSchema.parse(envPrev);

@@ -20,6 +20,15 @@
 7. **Pre-commit** (lefthook/husky) con `biome` sobre archivos staged.
 8. **Dependabot/Renovate** respetando versiones exactas (`-E`).
 
+## Estado de implementación
+
+- ✅ Implementado — **Tests unitarios ejecutables:** `bunfig.toml` (con `preload = ["reflect-metadata"]`) se movió a `api/`, donde `bun test` lo lee; antes fallaban 20 specs.
+- ✅ Implementado — **`pnpm lint` en verde:** Biome ignora `**/.agents` (skills de terceros) y `NodeEventBus` usa `for...of`.
+- ✅ Implementado — **Tests de `auth` y `ganado`** (propuesta 1, parcial): se añadieron `RegisterUseCase`, `LogoutUseCase` y `Registrar/Trasladar/DarDeBaja` de ganado; `Login` y `RefreshToken` ya existían. Pendiente: `terreno`, `sesion-sanitaria`, `tratamiento-medico` y el traslado respetando capacidad (el caso de uso hoy no la valida).
+- ✅ Implementado — **Workflow de CI** (propuesta 3, parcial): `.github/workflows/ci.yml` corre `format:check`, `lint`, `typecheck:api`, `typecheck:web` y `test:api`. Falta el build de Docker.
+- ✅ Implementado — **Scripts de raíz** (propuesta 4): `typecheck:web`, `typecheck`, `test:api`, `format:check`.
+- ⏳ Pendiente: E2E con Postgres en CI (los 45 tests `*.e2e.spec.ts` se saltan sin `E2E_URL`), cobertura mínima, ampliar `env`, pre-commit, Dependabot.
+
 ## Criterio de aceptación
 
 CI verde obligatorio en PRs; cobertura reportada; ningún merge sin typecheck de ambos paquetes.

@@ -708,6 +708,7 @@ export function GanadoFormDialog({
 																type="button"
 																variant="ghost"
 																size="icon"
+																aria-label="Quitar padre"
 																className="size-7 text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
 																onClick={() => {
 																	setPadreSeleccionado(null);
@@ -780,6 +781,7 @@ export function GanadoFormDialog({
 																type="button"
 																variant="ghost"
 																size="icon"
+																aria-label="Quitar madre"
 																className="size-7 text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
 																onClick={() => {
 																	setMadreSeleccionada(null);

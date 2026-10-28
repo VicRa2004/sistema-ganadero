@@ -381,6 +381,7 @@ export function TratamientoMedicoTable() {
 						<Button
 							variant="outline"
 							size="icon"
+							aria-label="Página anterior"
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 							disabled={page <= 1}
 							className="size-7 cursor-pointer"
@@ -390,6 +391,7 @@ export function TratamientoMedicoTable() {
 						<Button
 							variant="outline"
 							size="icon"
+							aria-label="Página siguiente"
 							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
 							disabled={page >= totalPages}
 							className="size-7 cursor-pointer"

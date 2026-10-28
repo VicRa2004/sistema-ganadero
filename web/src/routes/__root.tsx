@@ -20,11 +20,22 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
 	return (
 		<div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+			<a
+				href="#contenido"
+				className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring"
+			>
+				Saltar al contenido
+			</a>
+
 			{/* Navbar Principal */}
 			<Navbar />
 
 			{/* Main Content Area */}
-			<main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<main
+				id="contenido"
+				tabIndex={-1}
+				className="flex-1 outline-none max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8"
+			>
 				<Outlet />
 			</main>
 

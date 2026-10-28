@@ -22,10 +22,12 @@ Leyenda: ✅ implementado · ⏳ pendiente.
 ## UX para uso en campo
 
 - ✅ Tablas en móvil: `Table` ya envuelve en `overflow-x-auto`, así que hacen scroll horizontal controlado.
-- ⏳ Tamaños táctiles y contraste en exteriores.
+- ✅ Tamaños táctiles: con puntero táctil (`pointer: coarse`) botones, selects e inputs miden al menos 44 px y los checkbox 22 px.
+- ✅ Contraste: texto secundario y bordes más oscuros en modo claro, y un nivel extra con `prefers-contrast: more`.
 - ✅ Búsqueda por arete en la barra superior (`/dashboard/ganado?identificador=`), visible con `ganado:read`.
 - ✅ Subida de imagen: vista previa y compresión en cliente a JPEG de hasta 1600 px (`lib/comprimirImagen.ts`).
-- ⏳ Accesibilidad: foco, etiquetas y teclado en los diálogos antiguos (los componentes nuevos usan `aria-invalid`/`aria-describedby`).
+- ✅ Accesibilidad: enlace «Saltar al contenido», `lang="es"`, botones de icono con nombre accesible y cierre de diálogos en español. Los diálogos usan Base UI, que ya atrapa el foco y cierra con Esc.
+- ⏳ Revisar con lector de pantalla y teclado los formularios antiguos (etiquetas de error sin `aria-describedby`).
 
 ## Rendimiento
 

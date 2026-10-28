@@ -6,6 +6,7 @@ export function useActualizarTratamiento() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Tratamiento actualizado" },
 		mutationFn: ({
 			id,
 			input,

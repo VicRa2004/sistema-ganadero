@@ -5,14 +5,9 @@ import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { TerrenosTable } from "@/components/terreno/TerrenosTable";
 import { TerrenoFormDialog } from "@/components/terreno/TerrenoFormDialog";
 import { EliminarTerrenoDialog } from "@/components/terreno/EliminarTerrenoDialog";
+import { ListaEstado } from "@/components/ListaEstado";
 import { Button } from "@/components/ui/button";
-import {
-	Plus,
-	Warehouse,
-	ChevronLeft,
-	ChevronRight,
-	Loader2,
-} from "lucide-react";
+import { Plus, Warehouse, ChevronLeft, ChevronRight } from "lucide-react";
 import type { TerrenoDto } from "@/modules/terreno/types";
 
 export const Route = createFileRoute("/dashboard/terrenos/")({
@@ -96,19 +91,7 @@ function TerrenosComponent() {
 
 			{/* Contenido principal */}
 			<section>
-				{isLoading && (
-					<div className="flex items-center justify-center py-16 gap-3 text-muted-foreground">
-						<Loader2 className="size-5 animate-spin" />
-						<span className="text-sm">Cargando terrenos...</span>
-					</div>
-				)}
-
-				{isError && (
-					<div className="p-4 text-sm text-red-700 bg-red-500/10 border border-red-500/30 rounded-xl dark:text-red-400 dark:bg-red-500/15">
-						No se pudieron cargar los terrenos. Verifica tu conexión e intenta
-						de nuevo.
-					</div>
-				)}
+				<ListaEstado isLoading={isLoading} isError={isError} />
 
 				{!isLoading && !isError && terrenos && (
 					<TerrenosTable

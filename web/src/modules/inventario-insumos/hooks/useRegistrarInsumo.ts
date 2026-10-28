@@ -6,6 +6,7 @@ export function useRegistrarInsumo() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Insumo registrado" },
 		mutationFn: (input: RegistrarInsumoInput) => insumoService.registrar(input),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["insumos"] });

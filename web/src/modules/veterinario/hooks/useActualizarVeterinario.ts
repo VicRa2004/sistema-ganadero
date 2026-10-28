@@ -6,6 +6,7 @@ export function useActualizarVeterinario(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Veterinario actualizado" },
 		mutationFn: (input: ActualizarVeterinarioInput) =>
 			veterinarioService.actualizar(id, input),
 		onSuccess: () => {

@@ -5,6 +5,7 @@ export function useEliminarTerreno() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Terreno eliminado" },
 		mutationFn: (id: number) => terrenoService.eliminar(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["terrenos"] });

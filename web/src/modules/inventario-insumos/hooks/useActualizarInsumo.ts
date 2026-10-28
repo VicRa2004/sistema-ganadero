@@ -6,6 +6,7 @@ export function useActualizarInsumo(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Insumo actualizado" },
 		mutationFn: (input: ActualizarInsumoInput) =>
 			insumoService.actualizar(id, input),
 		onSuccess: () => {

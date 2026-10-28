@@ -6,6 +6,7 @@ export function useRegistrarPesaje(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Pesaje registrado" },
 		mutationFn: (input: RegistrarPesajeInput) =>
 			ganadoService.registrarPesaje(id, input),
 		onSuccess: (data) => {

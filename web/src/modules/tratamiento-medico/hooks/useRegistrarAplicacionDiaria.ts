@@ -6,6 +6,7 @@ export function useRegistrarAplicacionDiaria() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Aplicación registrada" },
 		mutationFn: (input: RegistrarAplicacionDiariaInput) =>
 			tratamientoMedicoService.registrarAplicacion(input),
 		onSuccess: () => {

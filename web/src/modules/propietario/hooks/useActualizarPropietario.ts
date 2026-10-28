@@ -6,6 +6,7 @@ export function useActualizarPropietario(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Propietario actualizado" },
 		mutationFn: (input: ActualizarPropietarioInput) =>
 			propietarioService.actualizar(id, input),
 		onSuccess: () => {

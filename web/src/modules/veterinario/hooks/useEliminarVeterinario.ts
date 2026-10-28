@@ -5,6 +5,7 @@ export function useEliminarVeterinario() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Veterinario eliminado" },
 		mutationFn: (id: number) => veterinarioService.eliminar(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["veterinarios"] });

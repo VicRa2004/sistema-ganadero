@@ -6,6 +6,7 @@ export function useRegistrarPropietario() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Propietario registrado" },
 		mutationFn: (input: RegistrarPropietarioInput) =>
 			propietarioService.registrar(input),
 		onSuccess: () => {

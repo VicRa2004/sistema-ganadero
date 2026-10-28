@@ -5,6 +5,7 @@ export function useEliminarGanado() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Ganado eliminado" },
 		mutationFn: (id: number) => ganadoService.eliminar(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["ganado"] });

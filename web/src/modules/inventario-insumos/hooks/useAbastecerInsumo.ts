@@ -6,6 +6,7 @@ export function useAbastecerInsumo(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Insumo abastecido" },
 		mutationFn: (input: AbastecerInsumoInput) =>
 			insumoService.abastecer(id, input),
 		onSuccess: () => {

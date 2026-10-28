@@ -6,6 +6,7 @@ export function useActualizarGanado(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Ganado actualizado" },
 		mutationFn: (input: ActualizarGanadoInput) =>
 			ganadoService.actualizar(id, input),
 		onSuccess: (data) => {

@@ -6,6 +6,7 @@ export function useRegistrarSesionSanitaria() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Sesión sanitaria registrada" },
 		mutationFn: (input: RegistrarSesionSanitariaInput) =>
 			sesionSanitariaService.registrar(input),
 		onSuccess: () => {

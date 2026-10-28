@@ -6,6 +6,7 @@ export function useRegistrarResultadoAnimal() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Resultado registrado" },
 		mutationFn: (input: RegistrarResultadoAnimalInput) =>
 			sesionSanitariaService.registrarResultadoAnimal(input),
 		onSuccess: (_, variables) => {

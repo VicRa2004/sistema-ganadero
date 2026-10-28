@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { insumoService } from "../services/insumoService";
 
 export interface ListarInsumosParams {
@@ -25,6 +25,7 @@ export function useListarInsumos(
 			: { page: paramsOrPage, limit, nombre, tipo };
 
 	return useQuery({
+		placeholderData: keepPreviousData,
 		queryKey: [
 			"insumos",
 			params.page,

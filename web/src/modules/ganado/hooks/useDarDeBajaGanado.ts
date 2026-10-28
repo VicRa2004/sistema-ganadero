@@ -6,6 +6,7 @@ export function useDarDeBajaGanado(ganadoId: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Ganado dado de baja" },
 		mutationFn: (input: DarDeBajaGanadoInput) =>
 			ganadoService.darDeBaja(ganadoId, input),
 		onSuccess: () => {

@@ -6,6 +6,7 @@ export function useRegistrarTerreno() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Terreno registrado" },
 		mutationFn: (input: RegistrarTerrenoInput) =>
 			terrenoService.registrar(input),
 		onSuccess: () => {

@@ -5,6 +5,7 @@ export function useEliminarPropietario() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Propietario eliminado" },
 		mutationFn: (id: number) => propietarioService.eliminar(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["propietarios"] });

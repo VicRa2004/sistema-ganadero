@@ -6,6 +6,7 @@ export function useRegistrarGanado() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Ganado registrado" },
 		mutationFn: (input: RegistrarGanadoInput) => ganadoService.registrar(input),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["ganado"] });

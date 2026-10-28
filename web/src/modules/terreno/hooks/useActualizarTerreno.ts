@@ -6,6 +6,7 @@ export function useActualizarTerreno(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Terreno actualizado" },
 		mutationFn: (input: ActualizarTerrenoInput) =>
 			terrenoService.actualizar(id, input),
 		onSuccess: (_data) => {

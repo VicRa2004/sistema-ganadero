@@ -6,6 +6,7 @@ export function useConsumirInsumo(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Consumo registrado" },
 		mutationFn: (input: ConsumirInsumoInput) =>
 			insumoService.consumir(id, input),
 		onSuccess: () => {

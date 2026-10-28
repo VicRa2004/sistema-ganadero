@@ -5,6 +5,7 @@ export function useEliminarSesionSanitaria() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Sesión sanitaria eliminada" },
 		mutationFn: (id: number) => sesionSanitariaService.eliminar(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["sesiones-sanitarias"] });

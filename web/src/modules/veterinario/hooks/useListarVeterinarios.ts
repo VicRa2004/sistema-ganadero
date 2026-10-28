@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { veterinarioService } from "../services/veterinarioService";
 
 export function useListarVeterinarios(
@@ -8,6 +8,7 @@ export function useListarVeterinarios(
 	especialidad?: string,
 ) {
 	return useQuery({
+		placeholderData: keepPreviousData,
 		queryKey: ["veterinarios", page, limit, nombre, especialidad],
 		queryFn: () => veterinarioService.listar(page, limit, nombre, especialidad),
 	});

@@ -2,7 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 import { queryClient } from "@/config/query";
+import { NotFound, RouteError } from "@/components/RouteError";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { restoreSession } from "@/modules/auth/services/restoreSession";
 import "./index.css";
@@ -12,6 +14,8 @@ import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
 	routeTree,
+	defaultErrorComponent: RouteError,
+	defaultNotFoundComponent: NotFound,
 	context: {
 		queryClient,
 		auth: {
@@ -68,6 +72,7 @@ if (rootElement && !rootElement.innerHTML) {
 			<StrictMode>
 				<QueryClientProvider client={queryClient}>
 					<App />
+					<Toaster richColors closeButton />
 				</QueryClientProvider>
 			</StrictMode>,
 		);

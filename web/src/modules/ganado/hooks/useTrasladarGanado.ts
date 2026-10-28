@@ -6,6 +6,7 @@ export function useTrasladarGanado(id: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Ganado trasladado" },
 		mutationFn: (input: TrasladarGanadoInput) =>
 			ganadoService.trasladar(id, input),
 		onSuccess: (data) => {

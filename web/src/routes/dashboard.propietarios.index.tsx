@@ -5,8 +5,9 @@ import { useListarPropietarios } from "@/modules/propietario/hooks/useListarProp
 import { PropietariosTable } from "@/components/propietario/PropietariosTable";
 import { PropietarioFormDialog } from "@/components/propietario/PropietarioFormDialog";
 import { EliminarPropietarioDialog } from "@/components/propietario/EliminarPropietarioDialog";
+import { ListaEstado } from "@/components/ListaEstado";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Plus, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import type { PropietarioDto } from "@/modules/propietario/types";
 
 export const Route = createFileRoute("/dashboard/propietarios/")({
@@ -90,19 +91,7 @@ function PropietariosComponent() {
 
 			{/* Contenido principal */}
 			<section>
-				{isLoading && (
-					<div className="flex items-center justify-center py-16 gap-3 text-muted-foreground">
-						<Loader2 className="size-5 animate-spin" />
-						<span className="text-sm">Cargando propietarios...</span>
-					</div>
-				)}
-
-				{isError && (
-					<div className="p-4 text-sm text-red-700 bg-red-500/10 border border-red-500/30 rounded-xl dark:text-red-400 dark:bg-red-500/15">
-						No se pudieron cargar los propietarios. Verifica tu conexión e
-						intenta de nuevo.
-					</div>
-				)}
+				<ListaEstado isLoading={isLoading} isError={isError} />
 
 				{!isLoading && !isError && propietarios && (
 					<PropietariosTable

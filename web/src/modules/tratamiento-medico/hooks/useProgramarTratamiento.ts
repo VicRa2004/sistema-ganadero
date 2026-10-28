@@ -6,6 +6,7 @@ export function useProgramarTratamiento() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Tratamiento programado" },
 		mutationFn: (input: ProgramarTratamientoInput) =>
 			tratamientoMedicoService.programar(input),
 		onSuccess: () => {

@@ -11,6 +11,7 @@ import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
+import { ListaEstado } from "@/components/ListaEstado";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +20,6 @@ import {
 	Sprout,
 	ChevronLeft,
 	ChevronRight,
-	Loader2,
 	Search,
 	RotateCcw,
 	Filter,
@@ -279,19 +279,7 @@ function GanadosComponent() {
 
 			{/* Contenido principal */}
 			<section>
-				{isLoading && (
-					<div className="flex items-center justify-center py-16 gap-3 text-muted-foreground animate-pulse">
-						<Loader2 className="size-5 animate-spin text-primary" />
-						<span className="text-sm">Cargando ganado registrado...</span>
-					</div>
-				)}
-
-				{isError && (
-					<div className="p-4 text-sm text-red-700 bg-red-500/10 border border-red-500/30 rounded-xl dark:text-red-400 dark:bg-red-500/15">
-						No se pudieron cargar los datos de ganado. Verifica tu conexión e
-						intenta de nuevo.
-					</div>
-				)}
+				<ListaEstado isLoading={isLoading} isError={isError} />
 
 				{!isLoading && !isError && paginado && (
 					<GanadoTable

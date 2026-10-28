@@ -5,6 +5,7 @@ export function useEliminarTratamiento() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
+		meta: { successMessage: "Tratamiento eliminado" },
 		mutationFn: (id: number) => tratamientoMedicoService.eliminar(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["tratamientos-medicos"] });

@@ -235,11 +235,18 @@ async function main() {
 	];
 
 	for (const raza of razasData) {
-		await prisma.raza.upsert({
+		// El nombre es único solo entre activos (índice parcial): no sirve como `where` de upsert
+		const existente = await prisma.raza.findFirst({
 			where: { nombre: raza.nombre },
-			update: { descripcion: raza.descripcion },
-			create: raza,
 		});
+		if (existente) {
+			await prisma.raza.update({
+				where: { id: existente.id },
+				data: { descripcion: raza.descripcion },
+			});
+		} else {
+			await prisma.raza.create({ data: raza });
+		}
 	}
 	console.log("✅ Razas de ganado inicializadas");
 
@@ -269,16 +276,22 @@ async function main() {
 	];
 
 	for (const vet of veterinariosData) {
-		await prisma.veterinario.upsert({
+		const existente = await prisma.veterinario.findFirst({
 			where: { cedulaProfesional: vet.cedulaProfesional },
-			update: {
-				nombre: vet.nombre,
-				telefono: vet.telefono,
-				especialidad: vet.especialidad,
-				usuarioId: vet.usuarioId,
-			},
-			create: vet,
 		});
+		if (existente) {
+			await prisma.veterinario.update({
+				where: { id: existente.id },
+				data: {
+					nombre: vet.nombre,
+					telefono: vet.telefono,
+					especialidad: vet.especialidad,
+					usuarioId: vet.usuarioId,
+				},
+			});
+		} else {
+			await prisma.veterinario.create({ data: vet });
+		}
 	}
 	console.log("✅ Veterinarios inicializados");
 

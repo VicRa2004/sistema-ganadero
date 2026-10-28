@@ -31,7 +31,7 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 
 	public async findById(id: number): Promise<Veterinario | null> {
 		const record = await prisma.veterinario.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 		});
 		if (!record) return null;
 		return this.toDomain(record);
@@ -41,7 +41,6 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 		const record = await prisma.veterinario.findFirst({
 			where: {
 				cedulaProfesional: { equals: cedula, mode: "insensitive" },
-				deletedAt: null,
 			},
 		});
 		if (!record) return null;
@@ -52,7 +51,7 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 		filters: VeterinarioFilters,
 	): Promise<Pagination<Veterinario>> {
 		const skip = (filters.page - 1) * filters.limit;
-		const whereClause: Prisma.VeterinarioWhereInput = { deletedAt: null };
+		const whereClause: Prisma.VeterinarioWhereInput = {};
 
 		if (filters.nombre && filters.nombre.trim() !== "") {
 			whereClause.nombre = {

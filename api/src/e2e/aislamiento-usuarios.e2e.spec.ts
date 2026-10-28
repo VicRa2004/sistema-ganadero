@@ -399,7 +399,7 @@ describe.skipIf(!E2E_URL)("Aislamiento de datos por usuario (e2e)", () => {
 			});
 			expect(res.status).toBe(404);
 			const insumo = await prisma.insumo.findUnique({ where: { id: insumoA } });
-			expect(insumo?.stock).toBe(98);
+			expect(insumo?.stock.toNumber()).toBe(98);
 		});
 
 		it("el dueño sí las ve", async () => {

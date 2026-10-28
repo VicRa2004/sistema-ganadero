@@ -33,7 +33,7 @@ export class PrismaTerrenoRepository implements TerrenoRepository {
 
 	public async findById(id: number): Promise<Terreno | null> {
 		const record = await prisma.terreno.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 		});
 		if (!record) return null;
 		return this.toDomain(record);
@@ -41,7 +41,7 @@ export class PrismaTerrenoRepository implements TerrenoRepository {
 
 	public async findAll(filters: TerrenoFilters): Promise<Pagination<Terreno>> {
 		const skip = (filters.page - 1) * filters.limit;
-		const whereClause: Prisma.TerrenoWhereInput = { deletedAt: null };
+		const whereClause: Prisma.TerrenoWhereInput = {};
 
 		if (filters.nombre && filters.nombre.trim() !== "") {
 			whereClause.nombre = {
@@ -116,7 +116,6 @@ export class PrismaTerrenoRepository implements TerrenoRepository {
 		return prisma.ganado.count({
 			where: {
 				terrenoId,
-				deletedAt: null,
 			},
 		});
 	}

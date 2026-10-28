@@ -11,8 +11,8 @@ interface PrismaInsumoRecord {
 	id: number;
 	nombre: string;
 	tipo: TipoInsumo;
-	stock: number;
-	stockMinimo: number;
+	stock: Prisma.Decimal;
+	stockMinimo: Prisma.Decimal;
 	unidadMedida: string;
 	lote: string;
 	fechaCaducidad: Date;
@@ -27,8 +27,8 @@ export class PrismaInsumoRepository implements InsumoRepository {
 			record.id,
 			record.nombre,
 			record.tipo,
-			record.stock,
-			record.stockMinimo,
+			record.stock.toNumber(),
+			record.stockMinimo.toNumber(),
 			record.unidadMedida,
 			record.lote,
 			record.fechaCaducidad,
@@ -38,7 +38,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 
 	public async findById(id: number): Promise<Insumo | null> {
 		const record = await db().insumo.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 		});
 		if (!record) return null;
 		return this.toDomain(record as unknown as PrismaInsumoRecord);
@@ -46,7 +46,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 
 	public async findAll(filters: InsumoFilters): Promise<Pagination<Insumo>> {
 		const skip = (filters.page - 1) * filters.limit;
-		const whereClause: Prisma.InsumoWhereInput = { deletedAt: null };
+		const whereClause: Prisma.InsumoWhereInput = {};
 
 		if (filters.usuarioId !== undefined) {
 			whereClause.usuarioId = filters.usuarioId;
@@ -89,7 +89,6 @@ export class PrismaInsumoRepository implements InsumoRepository {
 
 	public async findCriticos(usuarioId?: number): Promise<Insumo[]> {
 		const whereClause: Prisma.InsumoWhereInput = {
-			deletedAt: null,
 			// Comparación columna con columna en la BD: stock <= stock_minimo
 			stock: { lte: db().insumo.fields.stockMinimo },
 		};
@@ -147,7 +146,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 	): Promise<Insumo | null> {
 		// Un único UPDATE condicionado: nunca deja el stock en negativo, ni siquiera con concurrencia
 		const { count } = await db().insumo.updateMany({
-			where: { id, deletedAt: null, stock: { gte: cantidad } },
+			where: { id, stock: { gte: cantidad } },
 			data: { stock: { decrement: cantidad } },
 		});
 		if (count !== 1) return null;
@@ -160,7 +159,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		cantidad: number,
 	): Promise<Insumo | null> {
 		const { count } = await db().insumo.updateMany({
-			where: { id, deletedAt: null },
+			where: { id },
 			data: { stock: { increment: cantidad } },
 		});
 		if (count !== 1) return null;

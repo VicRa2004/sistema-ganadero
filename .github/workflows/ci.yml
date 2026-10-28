@@ -61,6 +61,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter api exec bun run prisma migrate deploy
+      # El schema debe coincidir con lo que dejan las migraciones sobre una BD vacía (sale 2 si hay diferencias)
+      - run: pnpm --filter api exec bun run prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
       - run: pnpm --filter api exec bun prisma/seed.ts
       - run: pnpm test:api
 

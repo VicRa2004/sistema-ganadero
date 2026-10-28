@@ -1,5 +1,7 @@
 # Mejora técnica · Base de datos (Prisma / PostgreSQL)
 
+> ✅ **Implementado** (migración `20261028120000_indices_unicos_parciales_decimal_check`): índices de las tablas listadas (+ `refresh_token.expires_at`), únicos parciales `WHERE deleted_at IS NULL` en `ganado.identificador`, `veterinario.cedula` y `raza.nombre` (sin `@unique` en el schema; el seed ya no usa `upsert` sobre ellos), `CHECK` de fechas y dosis (`NOT VALID`: aplican a filas nuevas), `stock`, `stockMinimo` y dosis en `Decimal(12,3)` (los repositorios convierten con `toNumber()`), extensión de Prisma que añade `deletedAt: null` a lecturas y `updateMany`/`deleteMany` de los modelos con borrado lógico (los filtros anidados en `include` y relaciones siguen siendo manuales), paso de CI con `prisma migrate diff --exit-code` y [backups-postgres.md](../backups-postgres.md). **Pendiente:** índices parciales de rendimiento, validar sexo/ciclos en `padreId`/`madreId`, revisar `onDelete: Cascade`, tablas nuevas (kardex, auditoría) y `VALIDATE CONSTRAINT` de los `CHECK` tras revisar datos históricos.
+
 ## Índices faltantes
 
 Columnas filtradas con frecuencia sin índice explícito:

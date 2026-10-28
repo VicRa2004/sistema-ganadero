@@ -48,7 +48,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 
 	public async findById(id: number): Promise<Ganado | null> {
 		const record = (await prisma.ganado.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 		})) as PrismaGanadoRecord | null;
 
 		if (!record) return null;
@@ -59,7 +59,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 		identificador: string,
 	): Promise<Ganado | null> {
 		const record = (await prisma.ganado.findFirst({
-			where: { identificador, deletedAt: null },
+			where: { identificador },
 		})) as PrismaGanadoRecord | null;
 
 		if (!record) return null;
@@ -68,7 +68,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 
 	public async findAll(filters: GanadoFilters): Promise<Pagination<Ganado>> {
 		const skip = (filters.page - 1) * filters.limit;
-		const whereClause: Prisma.GanadoWhereInput = { deletedAt: null };
+		const whereClause: Prisma.GanadoWhereInput = {};
 
 		// Por defecto excluir dados de baja (soloActivos = true si no se especifica)
 		const soloActivos = filters.soloActivos !== false;

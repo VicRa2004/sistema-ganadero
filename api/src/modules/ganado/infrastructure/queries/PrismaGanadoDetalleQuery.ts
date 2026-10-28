@@ -70,7 +70,6 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 		const record = await prisma.ganado.findFirst({
 			where: {
 				id,
-				deletedAt: null,
 				...(usuarioId !== undefined && { terreno: { usuarioId } }),
 			},
 			include: this.includeRelaciones,
@@ -87,7 +86,6 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 		const record = await prisma.ganado.findFirst({
 			where: {
 				identificador,
-				deletedAt: null,
 				...(usuarioId !== undefined && { terreno: { usuarioId } }),
 			},
 			include: this.includeRelaciones,

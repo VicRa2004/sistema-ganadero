@@ -1,15 +1,16 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "./prisma";
 
-const transactionStorage = new AsyncLocalStorage<Prisma.TransactionClient>();
+// El cliente extendido ya no es `Prisma.TransactionClient`: se deriva el tipo de la transacción interactiva.
+type DbClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+const transactionStorage = new AsyncLocalStorage<DbClient>();
 
 /**
  * Cliente de BD a usar en los repositorios: el de la transacción activa si la hay
  * (ver `runInTransaction`) o el cliente global en caso contrario.
  */
-export const db = (): Prisma.TransactionClient =>
-	transactionStorage.getStore() ?? prisma;
+export const db = (): DbClient => transactionStorage.getStore() ?? prisma;
 
 /**
  * Ejecuta `work` dentro de una transacción de BD. Los repositorios que usen `db()`

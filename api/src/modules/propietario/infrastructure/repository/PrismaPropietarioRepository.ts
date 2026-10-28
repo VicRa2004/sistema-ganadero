@@ -31,7 +31,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 
 	public async findById(id: number): Promise<Propietario | null> {
 		const record = await prisma.propietario.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 		});
 		if (!record) return null;
 		return this.toDomain(record);
@@ -45,7 +45,6 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 			where: {
 				correo: { equals: correo, mode: "insensitive" },
 				usuarioId,
-				deletedAt: null,
 			},
 		});
 		if (!record) return null;
@@ -56,7 +55,7 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 		filters: PropietarioFilters,
 	): Promise<Pagination<Propietario>> {
 		const skip = (filters.page - 1) * filters.limit;
-		const whereClause: Prisma.PropietarioWhereInput = { deletedAt: null };
+		const whereClause: Prisma.PropietarioWhereInput = {};
 
 		if (filters.nombre && filters.nombre.trim() !== "") {
 			whereClause.nombre = {

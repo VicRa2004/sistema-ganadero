@@ -123,6 +123,7 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt])
   @@map("refresh_token")
 }
 
@@ -147,7 +148,7 @@ enum SexoGanado {
 
 model Raza {
   id          Int       @id @default(autoincrement()) @map("raz_id")
-  nombre      String    @unique @map("raz_nombre") @db.VarChar(100)
+  nombre      String    @map("raz_nombre") @db.VarChar(100) // único entre activos: índice parcial en SQL
   descripcion String?   @map("raz_descripcion") @db.Text
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime? @updatedAt @map("updated_at")
@@ -191,6 +192,7 @@ model Terreno {
   usuario            User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   ganados            Ganado[]
 
+  @@index([usuarioId])
   @@map("terreno")
 }
 
@@ -208,7 +210,7 @@ model MotivoBaja {
 
 model Ganado {
   id              Int        @id @default(autoincrement()) @map("gan_id")
-  identificador   String     @unique @map("gan_identificador") @db.VarChar(50)
+  identificador   String     @map("gan_identificador") @db.VarChar(50) // único entre activos: índice parcial en SQL
   peso            Float      @map("gan_peso")
   fechaNacimiento DateTime   @map("gan_fecha_nacimiento") @db.Date
   sexo            SexoGanado @map("gan_sexo")
@@ -236,6 +238,11 @@ model Ganado {
   tratamientosMedicos    TratamientoMedico[]
   pesajes                Pesaje[]
 
+  @@index([terrenoId])
+  @@index([razaId])
+  @@index([propietarioId])
+  @@index([fechaBaja])
+  @@index([deletedAt])
   @@map("ganado")
 }
 
@@ -257,8 +264,8 @@ model Insumo {
   id             Int        @id @default(autoincrement()) @map("ins_id")
   nombre         String     @map("ins_nombre") @db.VarChar(150)
   tipo           TipoInsumo @map("ins_tipo")
-  stock          Float      @map("ins_stock")
-  stockMinimo    Float      @map("ins_stock_minimo")
+  stock          Decimal    @map("ins_stock") @db.Decimal(12, 3)
+  stockMinimo    Decimal    @map("ins_stock_minimo") @db.Decimal(12, 3)
   unidadMedida   String     @map("ins_unidad") @db.VarChar(20)
   lote           String     @map("ins_lote") @db.VarChar(50)
   fechaCaducidad DateTime   @map("ins_fecha_caducidad")
@@ -271,6 +278,9 @@ model Insumo {
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
 
+  @@index([usuarioId])
+  @@index([tipo])
+  @@index([deletedAt])
   @@map("insumo")
 }
 
@@ -288,6 +298,9 @@ model SesionSanitaria {
   veterinario  Veterinario           @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
   aplicaciones AplicacionSanitaria[]
 
+  @@index([fecha])
+  @@index([veterinarioId])
+  @@index([insumoId])
   @@map("sesion_sanitaria")
 }
 
@@ -295,7 +308,7 @@ model AplicacionSanitaria {
   id            Int       @id @default(autoincrement()) @map("aps_id")
   sesionId      Int       @map("aps_fksesion")
   ganadoId      Int       @map("aps_fkganado")
-  dosisAplicada Float     @map("aps_dosis")
+  dosisAplicada Decimal   @map("aps_dosis") @db.Decimal(12, 3)
   observaciones String?   @map("aps_observaciones") @db.Text
   createdAt     DateTime  @default(now()) @map("created_at")
   deletedAt     DateTime? @map("deleted_at")
@@ -315,7 +328,7 @@ model TratamientoMedico {
   fechaFin      DateTime  @map("trt_fecha_fin")
   activo        Boolean   @default(true) @map("trt_activo")
   insumoId      Int       @map("trt_fkinsumo")
-  dosisDiaria   Float     @map("trt_dosis_diaria")
+  dosisDiaria   Decimal   @map("trt_dosis_diaria") @db.Decimal(12, 3)
   veterinarioId Int?      @map("trt_fkveterinario")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime? @updatedAt @map("updated_at")
@@ -325,6 +338,9 @@ model TratamientoMedico {
   insumo      Insumo       @relation(fields: [insumoId], references: [id], onDelete: Restrict)
   veterinario Veterinario? @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
 
+  @@index([ganadoId])
+  @@index([activo])
+  @@index([fechaFin])
   @@map("tratamiento_medico")
 }
 
@@ -332,7 +348,7 @@ model Veterinario {
   id                Int       @id @default(autoincrement()) @map("vet_id")
   nombre            String    @map("vet_nombre") @db.VarChar(255)
   telefono          String    @map("vet_telefono") @db.VarChar(20)
-  cedulaProfesional String    @unique @map("vet_cedula") @db.VarChar(50)
+  cedulaProfesional String    @map("vet_cedula") @db.VarChar(50) // único entre activos: índice parcial en SQL
   especialidad      String?   @map("vet_especialidad") @db.VarChar(100)
   usuarioId         Int       @map("vet_fkusuario")
   createdAt         DateTime  @default(now()) @map("created_at")
@@ -343,5 +359,6 @@ model Veterinario {
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
 
+  @@index([usuarioId])
   @@map("veterinario")
 }

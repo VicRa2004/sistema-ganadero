@@ -18,7 +18,7 @@ export class PrismaRazaRepository implements RazaRepository {
 
 	public async findById(id: number): Promise<Raza | null> {
 		const record = await prisma.raza.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 		});
 		if (!record) return null;
 		return this.toDomain(record);
@@ -28,7 +28,6 @@ export class PrismaRazaRepository implements RazaRepository {
 		const record = await prisma.raza.findFirst({
 			where: {
 				nombre: { equals: nombre, mode: "insensitive" },
-				deletedAt: null,
 			},
 		});
 		if (!record) return null;
@@ -37,7 +36,6 @@ export class PrismaRazaRepository implements RazaRepository {
 
 	public async findAll(): Promise<Raza[]> {
 		const records = await prisma.raza.findMany({
-			where: { deletedAt: null },
 			orderBy: { id: "asc" },
 		});
 		return records.map((record) => this.toDomain(record));

@@ -16,12 +16,12 @@ export class PrismaSesionSanitariaRepository
 		id: number;
 		sesionId: number;
 		ganadoId: number;
-		dosisAplicada: number;
+		dosisAplicada: Prisma.Decimal;
 		observaciones: string | null;
 	}): AplicacionSanitaria {
 		return AplicacionSanitaria.create(
 			record.ganadoId,
-			record.dosisAplicada,
+			record.dosisAplicada.toNumber(),
 			record.observaciones,
 			record.id,
 			record.sesionId,
@@ -38,7 +38,7 @@ export class PrismaSesionSanitariaRepository
 			id: number;
 			sesionId: number;
 			ganadoId: number;
-			dosisAplicada: number;
+			dosisAplicada: Prisma.Decimal;
 			observaciones: string | null;
 		}>;
 	}): SesionSanitaria {
@@ -58,7 +58,7 @@ export class PrismaSesionSanitariaRepository
 
 	public async findById(id: number): Promise<SesionSanitaria | null> {
 		const record = await prisma.sesionSanitaria.findFirst({
-			where: { id, deletedAt: null },
+			where: { id },
 			include: {
 				aplicaciones: {
 					where: { deletedAt: null },
@@ -74,9 +74,7 @@ export class PrismaSesionSanitariaRepository
 		filters: SesionSanitariaFilters,
 	): Promise<Pagination<SesionSanitaria>> {
 		const skip = (filters.page - 1) * filters.limit;
-		const whereClause: Prisma.SesionSanitariaWhereInput = {
-			deletedAt: null,
-		};
+		const whereClause: Prisma.SesionSanitariaWhereInput = {};
 
 		if (filters.veterinarioId) {
 			whereClause.veterinarioId = filters.veterinarioId;
@@ -186,7 +184,7 @@ export class PrismaSesionSanitariaRepository
 	public async delete(id: number): Promise<void> {
 		await prisma.$transaction([
 			prisma.aplicacionSanitaria.updateMany({
-				where: { sesionId: id, deletedAt: null },
+				where: { sesionId: id },
 				data: { deletedAt: new Date() },
 			}),
 			prisma.sesionSanitaria.update({
@@ -202,7 +200,6 @@ export class PrismaSesionSanitariaRepository
 		const records = await prisma.aplicacionSanitaria.findMany({
 			where: {
 				ganadoId,
-				deletedAt: null,
 				sesion: {
 					deletedAt: null,
 				},

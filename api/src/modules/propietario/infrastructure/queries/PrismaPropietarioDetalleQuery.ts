@@ -12,7 +12,6 @@ export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 		const record = await prisma.propietario.findFirst({
 			where: {
 				id,
-				deletedAt: null,
 				...(usuarioId !== undefined && { usuarioId }),
 			},
 			include: {

@@ -78,7 +78,9 @@ describe.skipIf(!E2E_URL)(
 		};
 
 		const stockDe = async (id: number) =>
-			(await prisma.insumo.findUniqueOrThrow({ where: { id } })).stock;
+			(
+				await prisma.insumo.findUniqueOrThrow({ where: { id } })
+			).stock.toNumber();
 
 		let veterinarioA: number;
 		let ganadoA: number;

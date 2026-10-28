@@ -5,6 +5,7 @@ import type {
 	GanadoDetalleDto,
 	GanadoDto,
 	GanadoFilters,
+	HistorialPesajesDto,
 	MotivoBajaDto,
 	PaginatedResponse,
 	RegistrarGanadoInput,
@@ -81,6 +82,13 @@ export const ganadoService = {
 		input: RegistrarPesajeInput,
 	): Promise<GanadoDto> {
 		const { data } = await api.post<GanadoDto>(`/ganado/${id}/pesajes`, input);
+		return data;
+	},
+
+	async listarPesajes(id: number): Promise<HistorialPesajesDto> {
+		const { data } = await api.get<HistorialPesajesDto>(
+			`/ganado/${id}/pesajes`,
+		);
 		return data;
 	},
 

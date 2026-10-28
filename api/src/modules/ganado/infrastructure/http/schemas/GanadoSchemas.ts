@@ -4,12 +4,6 @@ import {
 	pageQuerySchema,
 } from "@/core/shared/infrastructure/libs/paginationSchemas";
 
-/**
- * Tope de página del listado de ganado. Es mayor al general (100) porque el web carga
- * hasta 1000 animales para los selectores de padre/madre; reducirlo requiere paginar esos selectores.
- */
-const MAX_PAGE_SIZE_GANADO = 1000;
-
 export const registrarGanadoSchema = z.object({
 	identificador: z
 		.string()
@@ -101,7 +95,7 @@ export const ganadoIdOrIdentificadorSchema = z.object({
 
 export const listarGanadoQuerySchema = z.object({
 	page: pageQuerySchema,
-	limit: limitQuerySchema(MAX_PAGE_SIZE_GANADO),
+	limit: limitQuerySchema(),
 	identificador: z.string().optional(),
 	sexo: z.enum(["MACHO", "HEMBRA"]).optional(),
 	terrenoId: z

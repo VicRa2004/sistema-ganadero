@@ -43,6 +43,7 @@ describe("limitQuerySchema", () => {
 describe("schemas de listados", () => {
 	const listados: [string, z.ZodType<{ limit: number; page: number }>][] = [
 		["usuarios", getAllUsersSchema as never],
+		["ganado", listarGanadoQuerySchema as never],
 		["insumos", listarInsumosQuerySchema as never],
 		["propietarios", listarPropietariosQuerySchema as never],
 		["terrenos", listarTerrenosQuerySchema as never],
@@ -56,9 +57,4 @@ describe("schemas de listados", () => {
 			expect(schema.parse({ page: "2" }).page).toBe(2);
 		});
 	}
-
-	it("ganado: conserva hasta 1000 para los selectores del web y acota por encima", () => {
-		expect(listarGanadoQuerySchema.parse({ limit: "1000" }).limit).toBe(1000);
-		expect(listarGanadoQuerySchema.parse({ limit: "5000" }).limit).toBe(1000);
-	});
 });

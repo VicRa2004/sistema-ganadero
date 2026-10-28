@@ -44,6 +44,11 @@ export const EnvSchema = z
 			.transform((value) =>
 				value === undefined ? undefined : value === "true",
 			),
+		// Registro público (POST /api/auth/register). Por defecto cerrado: los usuarios los crea un admin.
+		ALLOW_PUBLIC_REGISTER: z
+			.enum(["true", "false"])
+			.default("false")
+			.transform((value) => value === "true"),
 		// Leer la IP real desde X-Forwarded-For (activar solo detrás de un proxy de confianza)
 		TRUST_PROXY: z
 			.enum(["true", "false"])
@@ -86,6 +91,7 @@ const envPrev = {
 	TRUST_PROXY: process.env.TRUST_PROXY,
 	BODY_MAX_SIZE: process.env.BODY_MAX_SIZE,
 	ENABLE_API_DOCS: process.env.ENABLE_API_DOCS,
+	ALLOW_PUBLIC_REGISTER: process.env.ALLOW_PUBLIC_REGISTER,
 };
 
 export const env = EnvSchema.parse(envPrev);

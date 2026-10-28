@@ -10,11 +10,11 @@ import { useObtenerFichaGanado } from "@/modules/ganado/hooks/useObtenerFichaGan
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { useListarPropietarios } from "@/modules/propietario/hooks/useListarPropietarios";
-import { useListarGanado } from "@/modules/ganado/hooks/useListarGanado";
 import { GanadoFormDialog } from "@/components/ganado/GanadoFormDialog";
 import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
+import { HistorialPesajesCard } from "@/components/ganado/HistorialPesajesCard";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -88,16 +88,10 @@ function DetalleGanadoComponent() {
 	const { data: razasData = [] } = useListarRazas();
 	const { data: terrenosData } = useListarTerrenos(1, 100);
 	const { data: propietariosData } = useListarPropietarios(1, 100);
-	const { data: todosGanados } = useListarGanado({
-		page: 1,
-		limit: 1000,
-		soloActivos: true,
-	});
 
 	const razas = razasData;
 	const terrenos = terrenosData?.data ?? [];
 	const propietarios = propietariosData?.data ?? [];
-	const ganadosList = todosGanados?.data ?? [];
 
 	if (isLoading) {
 		return (
@@ -332,6 +326,8 @@ function DetalleGanadoComponent() {
 				</CardContent>
 			</Card>
 
+			<HistorialPesajesCard ganadoId={ganado.id} />
+
 			{/* Linaje */}
 			{(ganado.padre || ganado.madre) && (
 				<Card className="border border-border bg-card/60 shadow-sm">
@@ -394,7 +390,6 @@ function DetalleGanadoComponent() {
 				razas={razas}
 				terrenos={terrenos}
 				propietarios={propietarios}
-				ganadosList={ganadosList}
 			/>
 
 			{isPesajeOpen && (

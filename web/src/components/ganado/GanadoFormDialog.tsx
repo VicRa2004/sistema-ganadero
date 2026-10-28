@@ -29,6 +29,7 @@ import { formatApiError } from "@/lib/utils";
 import { useRegistrarGanado } from "@/modules/ganado/hooks/useRegistrarGanado";
 import { useActualizarGanado } from "@/modules/ganado/hooks/useActualizarGanado";
 import { useListarMotivosBaja } from "@/modules/ganado/hooks/useListarMotivosBaja";
+import { useObtenerFichaGanado } from "@/modules/ganado/hooks/useObtenerFichaGanado";
 import { GanadoSelectorModal } from "./GanadoSelectorModal";
 import type { GanadoDto } from "@/modules/ganado/types";
 import type { RazaDto } from "@/modules/raza/types";
@@ -47,7 +48,6 @@ interface GanadoFormDialogProps {
 	terrenos: TerrenoDto[];
 	propietarios: PropietarioDto[];
 	/** Lista opcional de ganados previa */
-	ganadosList?: GanadoDto[];
 }
 
 const baseApiUrl =
@@ -73,7 +73,6 @@ export function GanadoFormDialog({
 	razas,
 	terrenos,
 	propietarios,
-	ganadosList = [],
 }: GanadoFormDialogProps) {
 	const isEditing = !!ganado;
 	const isDadoDeBaja = isEditing && ganado?.fechaBaja !== null;
@@ -188,55 +187,47 @@ export function GanadoFormDialog({
 			form.setFieldValue("fechaBaja", ganado?.fechaBaja ?? "");
 			form.setFieldValue("motivoBajaId", ganado?.motivoBajaId ?? "");
 			setImagenPreview(ganado?.imagenGanado ?? null);
-
-			// Buscar si están en ganadosList previa
-			if (ganado?.padreId) {
-				const padreObj = ganadosList.find((g) => g.id === ganado.padreId);
-				setPadreSeleccionado(
-					padreObj ?? {
-						id: ganado.padreId,
-						identificador: `ID: ${ganado.padreId}`,
-						peso: 0,
-						fechaNacimiento: "",
-						sexo: "MACHO",
-						imagenGanado: null,
-						razaId: 0,
-						terrenoId: 0,
-						propietarioId: 0,
-						padreId: null,
-						madreId: null,
-						fechaBaja: null,
-						motivoBajaId: null,
-					},
-				);
-			} else {
-				setPadreSeleccionado(null);
-			}
-
-			if (ganado?.madreId) {
-				const madreObj = ganadosList.find((g) => g.id === ganado.madreId);
-				setMadreSeleccionada(
-					madreObj ?? {
-						id: ganado.madreId,
-						identificador: `ID: ${ganado.madreId}`,
-						peso: 0,
-						fechaNacimiento: "",
-						sexo: "HEMBRA",
-						imagenGanado: null,
-						razaId: 0,
-						terrenoId: 0,
-						propietarioId: 0,
-						padreId: null,
-						madreId: null,
-						fechaBaja: null,
-						motivoBajaId: null,
-					},
-				);
-			} else {
-				setMadreSeleccionada(null);
-			}
 		}
-	}, [open, ganado, ganadosList, form]);
+	}, [open, ganado, form]);
+
+	// Resuelve el nombre del padre/madre actuales por id, sin cargar todo el ganado
+	const { data: padreActual } = useObtenerFichaGanado(
+		open ? (ganado?.padreId ?? 0) : 0,
+	);
+	const { data: madreActual } = useObtenerFichaGanado(
+		open ? (ganado?.madreId ?? 0) : 0,
+	);
+	useEffect(() => {
+		if (!open) return;
+		const referencia = (
+			id: number | null | undefined,
+			sexo: "MACHO" | "HEMBRA",
+			identificador?: string,
+		): GanadoDto | null =>
+			id
+				? {
+						id,
+						identificador: identificador ?? `ID: ${id}`,
+						peso: 0,
+						fechaNacimiento: "",
+						sexo,
+						imagenGanado: null,
+						razaId: 0,
+						terrenoId: 0,
+						propietarioId: 0,
+						padreId: null,
+						madreId: null,
+						fechaBaja: null,
+						motivoBajaId: null,
+					}
+				: null;
+		setPadreSeleccionado(
+			referencia(ganado?.padreId, "MACHO", padreActual?.identificador),
+		);
+		setMadreSeleccionada(
+			referencia(ganado?.madreId, "HEMBRA", madreActual?.identificador),
+		);
+	}, [open, ganado, padreActual, madreActual]);
 
 	return (
 		<>

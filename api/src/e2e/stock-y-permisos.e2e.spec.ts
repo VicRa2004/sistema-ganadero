@@ -276,9 +276,9 @@ describe.skipIf(!E2E_URL)(
 
 			it("un permiso directo concedido añade uno que el rol no tiene", async () => {
 				const permiso = await prisma.permission.upsert({
-					where: { resource_action: { resource: "raza", action: "delete" } },
+					where: { resource_action: { resource: "razas", action: "delete" } },
 					update: {},
-					create: { resource: "raza", action: "delete" },
+					create: { resource: "razas", action: "delete" },
 				});
 				const antes = await call("a", "DELETE", "/api/razas/999999");
 				expect(antes.status).toBe(403);

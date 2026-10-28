@@ -96,6 +96,21 @@ export interface RegistrarPesajeInput {
 	peso: number;
 }
 
+export interface PesajeDto {
+	id: number;
+	peso: number;
+	fecha: string;
+	observaciones: string | null;
+	/** GDP (kg/día) respecto al pesaje anterior; null en el primero. */
+	gananciaDiaria: number | null;
+}
+
+export interface HistorialPesajesDto {
+	pesajes: PesajeDto[];
+	gananciaDiariaAcumulada: number | null;
+	perdidaDePeso: boolean;
+}
+
 export interface TrasladarGanadoInput {
 	terrenoId: number;
 }

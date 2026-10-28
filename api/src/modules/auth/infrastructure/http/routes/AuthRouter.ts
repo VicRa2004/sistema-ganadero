@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { inject, injectable } from "tsyringe";
+import { env } from "@/core/config/env";
 import {
 	getClientIp,
 	rateLimit,
@@ -114,8 +115,23 @@ export class AuthRouter {
 		 *     responses:
 		 *       201:
 		 *         description: Usuario registrado exitosamente, devuelve accessToken y guarda refreshToken en una cookie HttpOnly.
+		 *       403:
+		 *         description: Registro público deshabilitado (ALLOW_PUBLIC_REGISTER=false)
 		 */
-		this.router.post("/register", registroPorIp, this.registerController.run);
+		this.router.post(
+			"/register",
+			async (c, next) => {
+				if (!env.ALLOW_PUBLIC_REGISTER) {
+					return c.json(
+						{ error: "El registro público está deshabilitado" },
+						403,
+					);
+				}
+				await next();
+			},
+			registroPorIp,
+			this.registerController.run,
+		);
 
 		/**
 		 * @openapi

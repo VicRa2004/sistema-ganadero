@@ -96,14 +96,6 @@ function GanadosComponent() {
 		soloActivos,
 	});
 
-	// Lista completa de ganados para el selector padre/madre (sin paginación)
-	const { data: todosGanados } = useListarGanado({
-		page: 1,
-		limit: 1000,
-		soloActivos: true,
-	});
-	const ganadosList = todosGanados?.data ?? [];
-
 	const canCreate = hasPermission("ganado", "create");
 	const canUpdate = hasPermission("ganado", "update");
 	const canDelete = hasPermission("ganado", "delete");
@@ -361,7 +353,6 @@ function GanadosComponent() {
 				razas={razas}
 				terrenos={terrenos}
 				propietarios={propietarios}
-				ganadosList={ganadosList}
 			/>
 
 			{/* Registrar Pesaje Dialog */}

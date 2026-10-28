@@ -75,6 +75,8 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 
 ## U-6 · Registro público con rol `USER` de amplios permisos
 
+> ✅ **Implementado (opción A).** `ALLOW_PUBLIC_REGISTER` (por defecto `false`): `POST /api/auth/register` responde 403 y los usuarios los crea un admin. El web oculta los enlaces salvo `VITE_ALLOW_PUBLIC_REGISTER=true`. La verificación de correo queda para `mejoras/feature-plataforma.md`.
+
 - **Dónde:** `AuthRouter` (`POST /api/auth/register`), `api/prisma/seed.ts` (permisos de `USER`).
 - **Problema:** cualquiera puede crear cuenta y obtener CRUD sobre casi todo el negocio. Combinado con U-4 expone datos de todos.
 - **Propuesta (decidir con el dueño del producto):**

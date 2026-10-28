@@ -29,7 +29,7 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-4 · Enumeración de usuarios en registro y login
 
-> 🟡 **Parcial.** Login: ahora siempre se ejecuta bcrypt (contra un hash ficticio si el correo no existe), así que el tiempo de respuesta ya no delata los correos registrados; probado con bcrypt real. **Pendiente:** el registro sigue respondiendo «el usuario ya existe». Ocultarlo exige verificación de correo (enviar un mail «ya tienes cuenta») y decidir la política de registro (U-6); ver `mejoras/feature-plataforma.md`.
+> ✅ **Resuelto con U-6:** con el registro cerrado ya no se enumeran correos. Si se reabre, queda pendiente ocultarlo (requiere verificación de correo). Login: ahora siempre se ejecuta bcrypt (contra un hash ficticio si el correo no existe), así que el tiempo de respuesta ya no delata los correos registrados; probado con bcrypt real. **Pendiente:** el registro sigue respondiendo «el usuario ya existe». Ocultarlo exige verificación de correo (enviar un mail «ya tienes cuenta») y decidir la política de registro (U-6); ver `mejoras/feature-plataforma.md`.
 
 - **Dónde:** `RegisterUseCase.ts`, `LoginUseCase.ts`.
 - **Problema:** "el usuario ya existe" revela correos registrados; en login bcrypt solo se ejecuta si el usuario existe, lo que filtra por tiempo de respuesta.
@@ -37,7 +37,7 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-5 · Sin límites de tamaño de body ni tope de paginación
 
-> ✅ **Implementado.** JSON limitado a `BODY_MAX_SIZE` (100 KB) y multipart a `UPLOAD_MAX_SIZE` + 1 MB, con 413 también cuando no hay `Content-Length`; `limit` acotado a 100 en todos los listados mediante `paginationSchemas.ts` (valores inválidos usan el defecto, mayores se reducen al tope). **Excepción:** el listado de ganado admite hasta 1000 porque el web lo pide así para los selectores de padre/madre; hay que paginar esos selectores para bajar el tope a 100.
+> ✅ **Implementado.** JSON limitado a `BODY_MAX_SIZE` (100 KB) y multipart a `UPLOAD_MAX_SIZE` + 1 MB, con 413 también cuando no hay `Content-Length`; `limit` acotado a 100 en todos los listados mediante `paginationSchemas.ts` (valores inválidos usan el defecto, mayores se reducen al tope). El listado de ganado también quedó con tope 100: el form de ganado ya no carga 1000 animales, solo resuelve el padre/madre actuales por id y el selector ya paginaba.
 
 - **Dónde:** `server.ts`, schemas de filtros (`*Schemas.ts`).
 - **Propuesta:** `bodyLimit` global de Hono (JSON pequeño, multipart mayor solo en rutas con imagen); `limit` máximo (p. ej. 100) en todos los schemas de filtros.
@@ -51,7 +51,7 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-7 · Dos consultas por request para resolver permisos
 
-> ✅ **Implementado.** `getEffectivePermissions` hace una sola consulta anidada (roles → permisos y permisos directos). **Sin caché por decisión:** un TTL retrasaría la revocación al desactivar un usuario (U-5). Nota: el router de razas exige el recurso `raza` pero el seed crea `razas`, así que ningún rol lo tiene (pendiente de revisar).
+> ✅ **Implementado.** `getEffectivePermissions` hace una sola consulta anidada (roles → permisos y permisos directos). **Sin caché por decisión:** un TTL retrasaría la revocación al desactivar un usuario (U-5). Corregido además el recurso del router de razas (`raza` → `razas`, como el seed).
 
 - **Dónde:** `PrismaAuthorizationRepository.getEffectivePermissions`.
 - **Problema:** hace dos `findUnique` sobre `user` en cada endpoint protegido.
@@ -74,7 +74,7 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-10 · El peso del ganado se sobrescribe sin historial
 
-> ✅ **Implementado (API).** Tabla `pesaje` (migración `20261017190000_add_pesaje`, con backfill de un pesaje por animal activo). `POST /ganado/:id/pesajes` inserta (acepta `fecha` y `observaciones`) y deja `Ganado.peso` igual al pesaje más reciente en la misma transacción; un pesaje con fecha anterior al último no cambia el peso actual. `GET /ganado/:id/pesajes` devuelve el historial con ganancia diaria (GDP) entre pesajes, GDP acumulada y alerta de pérdida de peso. El peso inicial al registrar un animal es su primer pesaje, y cambiar `peso` por `PUT` también genera uno (`save` ya no escribe el peso al actualizar). **Pendiente:** gráfica y tabla en la ficha del web, y comparación con el promedio de raza/edad (ver `mejoras/feature-pesajes-y-reproduccion.md`).
+> ✅ **Implementado.** Tabla `pesaje` (migración `20261017190000_add_pesaje`, con backfill de un pesaje por animal activo). `POST /ganado/:id/pesajes` inserta (acepta `fecha` y `observaciones`) y deja `Ganado.peso` igual al pesaje más reciente en la misma transacción; un pesaje con fecha anterior al último no cambia el peso actual. `GET /ganado/:id/pesajes` devuelve el historial con ganancia diaria (GDP) entre pesajes, GDP acumulada y alerta de pérdida de peso. El peso inicial al registrar un animal es su primer pesaje, y cambiar `peso` por `PUT` también genera uno (`save` ya no escribe el peso al actualizar). Ficha del web con gráfica y tabla (`HistorialPesajesCard`). **Pendiente:** comparación con el promedio de raza/edad (ver `mejoras/feature-pesajes-y-reproduccion.md`).
 
 - **Dónde:** `RegistrarPesajeUseCase`, `Ganado.peso`.
 - **Propuesta:** crear tabla `Pesaje` (ver `mejoras/feature-pesajes-y-reproduccion.md`) y mantener `Ganado.peso` como último valor.

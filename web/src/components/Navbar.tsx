@@ -5,6 +5,7 @@ import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
 import { Sun, Moon, LogOut, Loader2, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ALLOW_PUBLIC_REGISTER } from "@/config/features";
 
 export function Navbar() {
 	const user = useAuthStore((state) => state.user);
@@ -134,14 +135,16 @@ export function Navbar() {
 									Iniciar Sesión
 								</Button>
 							</Link>
-							<Link to="/register">
-								<Button
-									size="sm"
-									className="cursor-pointer text-xs h-9 shadow-sm"
-								>
-									Registrarse
-								</Button>
-							</Link>
+							{ALLOW_PUBLIC_REGISTER && (
+								<Link to="/register">
+									<Button
+										size="sm"
+										className="cursor-pointer text-xs h-9 shadow-sm"
+									>
+										Registrarse
+									</Button>
+								</Link>
+							)}
 						</div>
 					)}
 				</div>

@@ -40,21 +40,21 @@ export class RazaRouter {
 		this.router.post(
 			"/",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("raza", "create"),
+			this.requirePermissionMiddleware.handle("razas", "create"),
 			this.registerController.run.bind(this.registerController),
 		);
 
 		this.router.put(
 			"/:id",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("raza", "update"),
+			this.requirePermissionMiddleware.handle("razas", "update"),
 			this.updateController.run.bind(this.updateController),
 		);
 
 		this.router.delete(
 			"/:id",
 			this.authMiddleware.handle,
-			this.requirePermissionMiddleware.handle("raza", "delete"),
+			this.requirePermissionMiddleware.handle("razas", "delete"),
 			this.deleteController.run.bind(this.deleteController),
 		);
 	}

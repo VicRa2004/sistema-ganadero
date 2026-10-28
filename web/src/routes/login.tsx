@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { useLogin } from "@/modules/auth/hooks/useLogin";
 import { formatApiError } from "@/lib/utils";
+import { ALLOW_PUBLIC_REGISTER } from "@/config/features";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
@@ -193,15 +194,19 @@ function LoginComponent() {
 							</form.Subscribe>
 						</form>
 
-						<div className="mt-6 text-center text-sm">
-							<span className="text-muted-foreground">¿No tienes cuenta? </span>
-							<Link
-								to="/register"
-								className="font-medium text-primary hover:underline transition-all"
-							>
-								Regístrate aquí
-							</Link>
-						</div>
+						{ALLOW_PUBLIC_REGISTER && (
+							<div className="mt-6 text-center text-sm">
+								<span className="text-muted-foreground">
+									¿No tienes cuenta?{" "}
+								</span>
+								<Link
+									to="/register"
+									className="font-medium text-primary hover:underline transition-all"
+								>
+									Regístrate aquí
+								</Link>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 			</div>

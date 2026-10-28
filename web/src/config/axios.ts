@@ -95,9 +95,8 @@ api.interceptors.response.use(
 				return api(originalRequest);
 			} catch (refreshError) {
 				processQueue(refreshError, null);
-				// Si la renovación falla, cerrar sesión en el frontend y redirigir
+				// Si la renovación falla, cerrar sesión; main.tsx redirige a /login al detectar el cambio
 				useAuthStore.getState().logout();
-				window.location.href = "/login";
 				return Promise.reject(refreshError);
 			} finally {
 				isRefreshing = false;

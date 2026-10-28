@@ -28,6 +28,13 @@ const router = createRouter({
 	},
 });
 
+// Al perder el access token (refresh fallido, logout) se va a /login sin recargar la página
+useAuthStore.subscribe((state, prev) => {
+	if (prev.accessToken && !state.accessToken) {
+		router.navigate({ to: "/login" });
+	}
+});
+
 declare module "@tanstack/react-router" {
 	interface Register {
 		router: typeof router;

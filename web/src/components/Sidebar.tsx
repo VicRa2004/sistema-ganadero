@@ -117,14 +117,24 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 		title: "Administración",
 		hideIfNoAccess: true,
 		items: [
-			{ label: "Usuarios", resource: "users", href: "#", icon: Shield },
+			{
+				label: "Usuarios",
+				resource: "users",
+				href: "/dashboard/usuarios",
+				icon: Shield,
+			},
 			{
 				label: "Permisos",
 				resource: "permissions",
-				href: "#",
+				href: "/dashboard/permisos",
 				icon: KeyRound,
 			},
-			{ label: "Razas", resource: "razas", href: "#", icon: Dna },
+			{
+				label: "Razas",
+				resource: "razas",
+				href: "/dashboard/razas",
+				icon: Dna,
+			},
 		],
 	},
 ];

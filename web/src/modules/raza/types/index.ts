@@ -3,3 +3,8 @@ export interface RazaDto {
 	nombre: string;
 	descripcion: string | null;
 }
+
+export interface RazaInput {
+	nombre: string;
+	descripcion?: string | null;
+}

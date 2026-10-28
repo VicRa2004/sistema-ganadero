@@ -16,6 +16,13 @@ export const authService = {
 		await api.post("/auth/logout");
 	},
 
+	async changePassword(input: {
+		currentPassword: string;
+		newPassword: string;
+	}): Promise<void> {
+		await api.post("/auth/change-password", input);
+	},
+
 	async getPermissions(userId: number): Promise<PermissionDto[]> {
 		const { data } = await api.get<PermissionDto[]>(
 			`/permissions/users/${userId}`,

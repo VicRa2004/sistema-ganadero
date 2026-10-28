@@ -78,7 +78,11 @@ export function Navbar() {
 							</Link>
 
 							{/* Perfil del usuario */}
-							<div className="flex items-center gap-2.5">
+							<Link
+								to="/dashboard/perfil"
+								aria-label="Mi perfil"
+								className="flex items-center gap-2.5"
+							>
 								<div className="hidden sm:flex flex-col items-end text-right leading-none gap-0.5">
 									<span className="text-xs font-bold text-foreground">
 										{user?.name || "Usuario"}
@@ -105,7 +109,7 @@ export function Navbar() {
 								>
 									{userInitial}
 								</div>
-							</div>
+							</Link>
 
 							{/* Cerrar Sesión */}
 							<Button

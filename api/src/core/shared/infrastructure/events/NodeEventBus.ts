@@ -19,6 +19,6 @@ export class NodeEventBus implements EventBus {
 	}
 
 	publishAll(events: DomainEvent[]): void {
-		events.forEach((event) => this.publish(event));
+		for (const event of events) this.publish(event);
 	}
 }

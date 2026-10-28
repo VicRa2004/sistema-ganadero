@@ -27,6 +27,7 @@
 		"hono": "4.12.14",
 		"jsonwebtoken": "9.0.3",
 		"pg": "8.20.0",
+		"prisma": "7.6.0",
 		"reflect-metadata": "0.2.2",
 		"swagger-jsdoc": "6.2.8",
 		"tsyringe": "4.10.0",
@@ -39,7 +40,6 @@
 		"@types/node": "25.5.2",
 		"@types/pg": "8.20.0",
 		"@types/swagger-jsdoc": "6.0.4",
-		"prisma": "7.6.0",
 		"tsc-alias": "1.8.16",
 		"typescript": "6.0.2"
 	}

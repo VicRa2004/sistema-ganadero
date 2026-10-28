@@ -89,6 +89,9 @@ if (env.ENABLE_API_DOCS ?? !isProd) {
 	app.get("/api-docs", swaggerUI({ url: "/api-docs.json" }));
 }
 
+// Liveness para HEALTHCHECK de Docker y balanceadores (no consulta la base de datos)
+app.get("/health", (c) => c.json({ status: "ok" }));
+
 // 3. Resolución de dependencias (TSyringe sigue intacto)
 const userRouter = container.resolve(UserRouter);
 const authRouter = container.resolve(AuthRouter);

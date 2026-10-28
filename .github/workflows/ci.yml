@@ -27,4 +27,45 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck:api
       - run: pnpm typecheck:web
+      # Con umbral mínimo de cobertura (api/bunfig.toml)
+      - run: pnpm test:coverage
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
+      E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
+      JWT_SECRET: e2e-secret
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: oven-sh/setup-bun@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api exec bun run prisma migrate deploy
+      - run: pnpm --filter api exec bun prisma/seed.ts
       - run: pnpm test:api
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t sistema-ganadero:ci .

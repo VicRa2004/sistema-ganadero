@@ -3,7 +3,7 @@
 ## Estado actual
 
 - ~20 archivos de test para 10 módulos. Cubren sobre todo `user`, `inventario-insumos` y un caso de `authorization`.
-- Sin tests de `auth`, `ganado`, `terreno`, `sesion-sanitaria`, `tratamiento-medico`, `propietario`, `veterinario`, `raza`.
+- Sin tests de `propietario`, `veterinario` y `raza` (histórico: ya se cubrieron `auth`, `ganado`, `terreno` y `sesion-sanitaria`; ver estado de implementación).
 - Existe el script `test:e2e` (`**/*.e2e.spec.ts`) pero no hay ningún archivo e2e.
 - No hay CI (`.github/` inexistente).
 - No hay `typecheck` del web en el monorepo.
@@ -22,12 +22,17 @@
 
 ## Estado de implementación
 
-- ✅ Implementado — **Tests unitarios ejecutables:** `bunfig.toml` (con `preload = ["reflect-metadata"]`) se movió a `api/`, donde `bun test` lo lee; antes fallaban 20 specs.
-- ✅ Implementado — **`pnpm lint` en verde:** Biome ignora `**/.agents` (skills de terceros) y `NodeEventBus` usa `for...of`.
-- ✅ Implementado — **Tests de `auth` y `ganado`** (propuesta 1, parcial): se añadieron `RegisterUseCase`, `LogoutUseCase` y `Registrar/Trasladar/DarDeBaja` de ganado; `Login` y `RefreshToken` ya existían. Pendiente: `terreno`, `sesion-sanitaria`, `tratamiento-medico` y el traslado respetando capacidad (el caso de uso hoy no la valida).
-- ✅ Implementado — **Workflow de CI** (propuesta 3, parcial): `.github/workflows/ci.yml` corre `format:check`, `lint`, `typecheck:api`, `typecheck:web` y `test:api`. Falta el build de Docker.
-- ✅ Implementado — **Scripts de raíz** (propuesta 4): `typecheck:web`, `typecheck`, `test:api`, `format:check`.
-- ⏳ Pendiente: E2E con Postgres en CI (los 45 tests `*.e2e.spec.ts` se saltan sin `E2E_URL`), cobertura mínima, ampliar `env`, pre-commit, Dependabot.
+- ✅ Implementado — **Tests unitarios ejecutables:** `bunfig.toml` (con `preload = ["reflect-metadata"]`) vive en `api/`, donde `bun test` lo lee.
+- ✅ Implementado — **`pnpm lint` en verde:** Biome ignora `**/.agents` (skills de terceros).
+- ✅ Implementado — **Tests prioritarios** (propuesta 1): `auth` (Login, Register, Refresh, Logout), `ganado` (registrar, trasladar, baja), `terreno` (capacidad, eliminar, registrar) y `sesion-sanitaria` (descuento de stock atómico y carrera). `tratamiento-medico` no existe como módulo en el código, así que no aplica.
+- ✅ Implementado — **Traslado respetando capacidad:** `TrasladarGanadoUseCase` rechaza (400) el traslado a un terreno lleno.
+- ✅ Implementado — **E2E con BD real** (propuesta 2): el job `e2e` del CI levanta Postgres 16, aplica migraciones y seed, y corre los `*.e2e.spec.ts` con `E2E_DATABASE_URL` (verificado en local con Postgres en docker: 175 tests pasan).
+- ✅ Implementado — **Workflow de GitHub Actions** (propuesta 3): `.github/workflows/ci.yml` con jobs `checks` (format, lint, typecheck api y web, tests con cobertura), `e2e` y `docker` (build de la imagen).
+- ✅ Implementado — **Scripts de raíz** (propuesta 4): `typecheck:web`, `typecheck`, `test:api`, `test:coverage`, `format:check`.
+- ✅ Implementado — **Cobertura mínima** (propuesta 5): `bun test --coverage` con umbral en `api/bunfig.toml` (líneas 60 %, funciones 55 %; la cobertura actual es ~65 % / ~59 %). Bun no admite umbrales por carpeta, así que el 70 % en `application/` y `domain/` queda como meta: subir el umbral al crecer la cobertura.
+- ✅ Implementado — **Validación de `env`** (propuesta 6): `CORS_ORIGINS`, `UPLOAD_MAX_SIZE`, `HOST` y `ALLOW_PUBLIC_REGISTER` ya estaban; se añadió `LOG_LEVEL` (usado por el logger).
+- ✅ Implementado — **Pre-commit** (propuesta 7): lefthook (`lefthook.yml`) ejecuta `biome check` sobre los archivos staged; se instala con `prepare`.
+- ✅ Implementado — **Dependabot** (propuesta 8): `.github/dependabot.yml` para npm y GitHub Actions, agrupando minor/patch.
 
 ## Criterio de aceptación
 

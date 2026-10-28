@@ -25,6 +25,7 @@ import {
 	X,
 	Search,
 } from "lucide-react";
+import { comprimirImagen } from "@/lib/comprimirImagen";
 import { formatApiError } from "@/lib/utils";
 import { useRegistrarGanado } from "@/modules/ganado/hooks/useRegistrarGanado";
 import { useActualizarGanado } from "@/modules/ganado/hooks/useActualizarGanado";
@@ -121,7 +122,8 @@ export function GanadoFormDialog({
 		onSubmit: async ({ value }) => {
 			setApiError(null);
 
-			const imagenFile = fileInputRef.current?.files?.[0] ?? undefined;
+			const archivo = fileInputRef.current?.files?.[0];
+			const imagenFile = archivo ? await comprimirImagen(archivo) : undefined;
 
 			// Base Payload
 			const payload: any = {

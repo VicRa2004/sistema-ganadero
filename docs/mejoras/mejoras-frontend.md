@@ -21,9 +21,10 @@ Leyenda: ✅ implementado · ⏳ pendiente.
 
 ## UX para uso en campo
 
-- ⏳ Revisar tablas en móvil (cards o scroll controlado), tamaños táctiles y contraste en exteriores.
-- ⏳ Búsqueda por arete rápida desde la barra superior.
-- ⏳ Subida de imagen con compresión en cliente y vista previa.
+- ✅ Tablas en móvil: `Table` ya envuelve en `overflow-x-auto`, así que hacen scroll horizontal controlado.
+- ⏳ Tamaños táctiles y contraste en exteriores.
+- ✅ Búsqueda por arete en la barra superior (`/dashboard/ganado?identificador=`), visible con `ganado:read`.
+- ✅ Subida de imagen: vista previa y compresión en cliente a JPEG de hasta 1600 px (`lib/comprimirImagen.ts`).
 - ⏳ Accesibilidad: foco, etiquetas y teclado en los diálogos antiguos (los componentes nuevos usan `aria-invalid`/`aria-describedby`).
 
 ## Rendimiento

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useListarGanado } from "@/modules/ganado/hooks/useListarGanado";
@@ -36,6 +36,14 @@ export const Route = createFileRoute("/dashboard/ganado/")({
 			throw redirect({ to: "/dashboard" });
 		}
 	},
+	validateSearch: (
+		search: Record<string, unknown>,
+	): { identificador?: string } => ({
+		identificador:
+			typeof search.identificador === "string"
+				? search.identificador
+				: undefined,
+	}),
 	component: GanadosComponent,
 });
 
@@ -52,7 +60,17 @@ function GanadosComponent() {
 	const [page, setPage] = useState(1);
 
 	// Filtros
-	const [filterIdentificador, setFilterIdentificador] = useState("");
+	const { identificador: busqueda } = Route.useSearch();
+	const [filterIdentificador, setFilterIdentificador] = useState(
+		busqueda ?? "",
+	);
+	// La búsqueda de la barra superior llega por la URL, incluso estando ya en esta página
+	useEffect(() => {
+		if (busqueda !== undefined) {
+			setFilterIdentificador(busqueda);
+			setPage(1);
+		}
+	}, [busqueda]);
 	const [filterRazaId, setFilterRazaId] = useState<number | undefined>(
 		undefined,
 	);

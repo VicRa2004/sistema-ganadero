@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
-import { Sun, Moon, LogOut, Loader2, LayoutDashboard } from "lucide-react";
+import {
+	Sun,
+	Moon,
+	LogOut,
+	Loader2,
+	LayoutDashboard,
+	Search,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALLOW_PUBLIC_REGISTER } from "@/config/features";
 
@@ -12,6 +20,8 @@ export function Navbar() {
 	const accessToken = useAuthStore((state) => state.accessToken);
 	const isAuthenticated = !!accessToken;
 
+	const navigate = useNavigate();
+	const permissions = useAuthStore((state) => state.permissions) ?? [];
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
 	const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -65,6 +75,32 @@ export function Navbar() {
 
 					{isAuthenticated ? (
 						<div className="flex items-center gap-4">
+							{permissions.includes("ganado:read") && (
+								<search>
+									<form
+										className="relative"
+										onSubmit={(e) => {
+											e.preventDefault();
+											const campo = e.currentTarget.elements.namedItem(
+												"arete",
+											) as HTMLInputElement;
+											navigate({
+												to: "/dashboard/ganado",
+												search: { identificador: campo.value.trim() },
+											});
+										}}
+									>
+										<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+										<Input
+											name="arete"
+											type="search"
+											aria-label="Buscar ganado por arete"
+											placeholder="Arete..."
+											className="h-9 w-28 sm:w-44 pl-8"
+										/>
+									</form>
+								</search>
+							)}
 							<Link to="/dashboard">
 								<Button
 									type="button"

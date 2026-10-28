@@ -18,7 +18,7 @@ El código dentro de `src/` se divide estrictamente en:
 - `modules/` — Módulos de negocio (ej. `auth`, `ganado`, `rancho`). Cada uno debe contener:
   - `services/` — Clientes HTTP específicos con Axios.
   - `hooks/` — Custom hooks de TanStack Query para desacoplar llamadas API de la UI.
-  - `store/` — Stores de Zustand correspondientes para el estado del módulo.
+  - `store/` — Stores de Zustand, solo si el módulo tiene estado de cliente propio (hoy solo `auth`); los datos del servidor viven en TanStack Query.
   - `types/` — Definición de interfaces y tipos del módulo (evitar duplicados).
 
 ## UI & Design (Shadcn/ui)
@@ -34,6 +34,8 @@ El código dentro de `src/` se divide estrictamente en:
 
 - **Tipado estricto:** Prohibido el uso de `any`. Reutilizar tipos comunes de dominio y compartidos.
 - **Separación de responsabilidades:** La interfaz de usuario debe ser puramente visual. Ningún componente debe realizar peticiones fetch/axios ni definir lógica compleja de Query/Mutation directa; debe delegar a los hooks del módulo.
+- **Notificaciones:** los toasts de las mutaciones son globales (`config/query.ts`): define `meta: { successMessage }` en el hook; el error del backend se muestra solo.
+- **Tests:** Vitest + Testing Library (`pnpm test:web`), archivos `*.test.ts(x)` junto al código.
 - **Consistencia:** Mantener este archivo conciso. Seguir las convenciones de formato Biome configuradas a nivel raíz.
 
 ---

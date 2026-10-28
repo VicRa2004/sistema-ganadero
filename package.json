@@ -12,6 +12,7 @@
 		"typecheck:web": "pnpm --filter web exec tsc -b",
 		"typecheck": "pnpm typecheck:api && pnpm typecheck:web",
 		"test:api": "pnpm --filter api test",
+		"test:web": "pnpm --filter web test",
 		"test:coverage": "pnpm --filter api test:coverage",
 		"lint": "biome lint .",
 		"format:check": "biome format .",

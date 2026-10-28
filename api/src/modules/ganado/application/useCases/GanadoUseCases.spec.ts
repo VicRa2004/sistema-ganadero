@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import type { Actor } from "@/core/shared/domain/Actor";
+import { Terreno } from "@/modules/terreno/domain/Terreno";
 import { Ganado } from "../../domain/Ganado";
 import { GanadoMapper } from "../mappers/GanadoMapper";
 import { DarDeBajaGanadoUseCase } from "./DarDeBajaGanadoUseCase";
@@ -16,11 +17,15 @@ const ganadoRepository = {
 const motivoBajaRepository = { findById: mock() };
 const razaRepository = { findById: mock() };
 const imageStorage = { upload: mock() };
+const terrenoRepository = { countGanadoByRanchoId: mock(async () => 0) };
 const accessService = {
 	obtenerGanado: mock(),
 	obtenerTerreno: mock(),
 	obtenerPropietario: mock(),
 };
+
+const terreno = (capacidad: number) =>
+	Terreno.reconstitute(5, "Potrero", "Norte", 10, capacidad, null, 1);
 
 const vaca = (fechaBaja: Date | null = null) =>
 	Ganado.reconstitute(
@@ -105,17 +110,30 @@ describe("RegistrarGanadoUseCase", () => {
 describe("TrasladarGanadoUseCase", () => {
 	const useCase = new TrasladarGanadoUseCase(
 		ganadoRepository as any,
+		terrenoRepository as any,
 		accessService as any,
 		mapper,
 	);
 
 	it("mueve el ganado al terreno destino", async () => {
+		accessService.obtenerTerreno.mockResolvedValue(terreno(10));
 		accessService.obtenerGanado.mockResolvedValue(vaca());
 
 		const result = await useCase.run(10, 5, actor);
 
 		expect(accessService.obtenerTerreno).toHaveBeenCalledWith(5, actor);
 		expect(result.terrenoId).toBe(5);
+	});
+
+	it("rechaza el traslado si el terreno destino está lleno", async () => {
+		accessService.obtenerGanado.mockResolvedValue(vaca());
+		accessService.obtenerTerreno.mockResolvedValue(terreno(3));
+		terrenoRepository.countGanadoByRanchoId.mockResolvedValueOnce(3);
+
+		await expect(useCase.run(10, 5, actor)).rejects.toMatchObject({
+			code: 400,
+		});
+		expect(ganadoRepository.save).not.toHaveBeenCalled();
 	});
 
 	it("no guarda si el terreno destino no es accesible", async () => {

@@ -1,3 +1,4 @@
+import { IssueSessionService } from "../services/IssueSessionService";
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { User } from "@/core/user/domain/User";
 import { RefreshTokenUseCase } from "./RefreshTokenUseCase";
@@ -36,6 +37,7 @@ describe("RefreshTokenUseCase", () => {
 			tokenService as any,
 			refreshTokenRepo as any,
 			userRepository as any,
+			new IssueSessionService(tokenService as any, refreshTokenRepo as any),
 		);
 	});
 

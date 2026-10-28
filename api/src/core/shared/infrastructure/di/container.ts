@@ -40,6 +40,7 @@ import { GetAllPermissionsController } from "@/modules/authorization/infrastruct
 import { GetPermissionController } from "@/modules/authorization/infrastructure/http/controllers/GetPermissionController";
 import { GetUserPermissionsController } from "@/modules/authorization/infrastructure/http/controllers/GetUserPermissionsController";
 import { UpdatePermissionController } from "@/modules/authorization/infrastructure/http/controllers/UpdatePermissionController";
+import { IssueSessionService } from "@/modules/auth/application/services/IssueSessionService";
 import { LoginUseCase } from "@/modules/auth/application/useCases/LoginUseCase";
 import { LogoutUseCase } from "@/modules/auth/application/useCases/LogoutUseCase";
 import { RefreshTokenUseCase } from "@/modules/auth/application/useCases/RefreshTokenUseCase";
@@ -257,6 +258,7 @@ container.register("UpdatePermissionController", {
 });
 
 // Módulo Auth - Use Cases
+container.register("IssueSessionService", { useClass: IssueSessionService });
 container.register("LoginUseCase", { useClass: LoginUseCase });
 container.register("LogoutUseCase", { useClass: LogoutUseCase });
 container.register("RefreshTokenUseCase", { useClass: RefreshTokenUseCase });

@@ -3,9 +3,7 @@ import { BaseError } from "@/core/shared/domain/error/BaseError";
 import type { UserRepository } from "@/core/user/domain/repository/UserRepository";
 import type { TokenService } from "../../domain/service/TokenService";
 import type { RefreshTokenRepository } from "../../domain/repository/RefreshTokenRepository";
-
-/** Duración del nuevo refresh token: 7 días */
-const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+import type { IssueSessionService } from "../services/IssueSessionService";
 
 const TOKEN_INVALIDO = "Refresh token inválido o expirado";
 
@@ -16,6 +14,8 @@ export class RefreshTokenUseCase {
 		@inject("RefreshTokenRepository")
 		private readonly refreshTokenRepo: RefreshTokenRepository,
 		@inject("UserRepository") private readonly userRepository: UserRepository,
+		@inject("IssueSessionService")
+		private readonly issueSession: IssueSessionService,
 	) {}
 
 	/**
@@ -56,34 +56,14 @@ export class RefreshTokenUseCase {
 			throw new BaseError(TOKEN_INVALIDO, 401);
 		}
 
-		// Generar nuevo par de tokens
-		const newAccessToken = this.tokenService.generateToken({
-			id: user.getId(),
-			email: user.getEmail(),
-			role: user.getRole(),
-		});
-
-		const newRawRefreshToken = this.tokenService.generateRefreshToken();
-		const newTokenHash = this.tokenService.hashRefreshToken(newRawRefreshToken);
-
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
-
 		// Rotación atómica: si otra petición ya consumió este token, se trata como reuso
-		const rotated = await this.refreshTokenRepo.rotate(storedToken.id, {
-			tokenHash: newTokenHash,
-			userId: user.getId(),
-			expiresAt,
-		});
+		const session = await this.issueSession.rotar(user, storedToken.id);
 
-		if (!rotated) {
+		if (!session) {
 			await this.refreshTokenRepo.revokeAllByUserId(storedToken.userId);
 			throw new BaseError(TOKEN_INVALIDO, 401);
 		}
 
-		return {
-			accessToken: newAccessToken,
-			refreshToken: newRawRefreshToken,
-		};
+		return session;
 	}
 }

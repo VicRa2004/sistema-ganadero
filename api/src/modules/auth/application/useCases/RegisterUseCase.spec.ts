@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { User } from "@/core/user/domain/User";
+import { IssueSessionService } from "../services/IssueSessionService";
 import { RegisterUseCase } from "./RegisterUseCase";
 
 const userRepository = { findByEmail: mock(), create: mock() };
@@ -10,6 +11,10 @@ const tokenService = {
 	hashRefreshToken: mock(() => "tokenHash"),
 };
 const refreshTokenRepo = { create: mock(async () => {}) };
+const issueSession = new IssueSessionService(
+	tokenService as any,
+	refreshTokenRepo as any,
+);
 
 const dto = { name: "Ana", email: "ana@test.com", password: "secreto123" };
 
@@ -23,8 +28,7 @@ describe("RegisterUseCase", () => {
 		useCase = new RegisterUseCase(
 			userRepository as any,
 			passwordHasher as any,
-			tokenService as any,
-			refreshTokenRepo as any,
+			issueSession,
 		);
 	});
 

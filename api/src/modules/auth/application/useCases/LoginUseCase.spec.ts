@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { User } from "@/core/user/domain/User";
 import { BcryptPasswordHasherService } from "@/core/user/infrastructure/service/BcryptPasswordHasherService";
+import { IssueSessionService } from "../services/IssueSessionService";
 import { LoginUseCase } from "./LoginUseCase";
 
 const userRepository = { findByEmail: mock() };
@@ -11,6 +12,10 @@ const tokenService = {
 	hashRefreshToken: mock(() => "hash"),
 };
 const refreshTokenRepo = { create: mock(async () => {}) };
+const issueSession = new IssueSessionService(
+	tokenService as any,
+	refreshTokenRepo as any,
+);
 
 const usuario = (isActive: boolean) =>
 	User.reconstitute("Ana", "ana@test.com", "hash", isActive, 1, "USER");
@@ -25,8 +30,7 @@ describe("LoginUseCase", () => {
 		useCase = new LoginUseCase(
 			userRepository as any,
 			passwordHasher as any,
-			tokenService as any,
-			refreshTokenRepo as any,
+			issueSession,
 		);
 	});
 
@@ -81,8 +85,7 @@ describe("LoginUseCase", () => {
 		const real = new LoginUseCase(
 			userRepository as any,
 			new BcryptPasswordHasherService(),
-			tokenService as any,
-			refreshTokenRepo as any,
+			issueSession,
 		);
 		const hashReal = await new BcryptPasswordHasherService().hash("otra");
 		const medir = async (user: User | null) => {

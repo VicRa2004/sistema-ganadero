@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { BaseError } from "@/core/shared/domain/error/BaseError";
+import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
 import { InsumoStockInsuficienteError } from "../../domain/error/InsumoStockInsuficienteError";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
@@ -30,9 +30,11 @@ export class ConsumirInsumoUseCase {
 			throw new InsumoNotFoundError(id);
 		}
 
-		if (rol !== "ADMIN" && insumo.getUsuarioId() !== usuarioId) {
-			throw new BaseError("No tienes permiso para consumir este insumo", 403);
-		}
+		assertPuedeAcceder(
+			{ id: usuarioId, role: rol },
+			insumo.getUsuarioId(),
+			"No tienes permiso para consumir este insumo",
+		);
 
 		// Validación temprana con el stock leído (cantidad válida y stock suficiente)
 		insumo.validarDescuento(dto.cantidad);

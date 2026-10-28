@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
+import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
 import { TerrenoNotFoundError } from "../../domain/error/TerrenoNotFoundError";
-import { BaseError } from "@/core/shared/domain/error/BaseError";
 import type { TerrenoRepository } from "../../domain/repository/TerrenoRepository";
 
 @injectable()
@@ -16,9 +16,11 @@ export class EliminarTerrenoUseCase {
 			throw new TerrenoNotFoundError(id);
 		}
 
-		if (rol !== "ADMIN" && terreno.getUsuarioId() !== usuarioId) {
-			throw new BaseError("No tienes permiso para acceder a este terreno", 403);
-		}
+		assertPuedeAcceder(
+			{ id: usuarioId, role: rol },
+			terreno.getUsuarioId(),
+			"No tienes permiso para acceder a este terreno",
+		);
 
 		await this.terrenoRepository.delete(id);
 	}

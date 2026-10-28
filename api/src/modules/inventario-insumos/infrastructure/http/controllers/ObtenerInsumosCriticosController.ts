@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import { inject, injectable } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import type { ObtenerInsumosCriticosUseCase } from "../../../application/useCases/ObtenerInsumosCriticosUseCase";
@@ -14,8 +15,7 @@ export class ObtenerInsumosCriticosController extends BaseController {
 
 	public run = async (c: Context): Promise<Response> => {
 		return this.executeSafely(c, async () => {
-			const user = c.get("user");
-			const usuarioId = user.role !== "ADMIN" ? user.id : undefined;
+			const usuarioId = usuarioIdDeFiltro(this.getActor(c));
 
 			const result = await this.obtenerCriticosUseCase.run(usuarioId);
 			return this.ok(c, result);

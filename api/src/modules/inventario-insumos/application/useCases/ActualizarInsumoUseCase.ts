@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
+import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
-import { BaseError } from "@/core/shared/domain/error/BaseError";
 import type { TipoInsumo } from "../../domain/TipoInsumo";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
 import type {
@@ -29,9 +29,11 @@ export class ActualizarInsumoUseCase {
 			throw new InsumoNotFoundError(id);
 		}
 
-		if (rol !== "ADMIN" && insumo.getUsuarioId() !== usuarioId) {
-			throw new BaseError("No tienes permiso para modificar este insumo", 403);
-		}
+		assertPuedeAcceder(
+			{ id: usuarioId, role: rol },
+			insumo.getUsuarioId(),
+			"No tienes permiso para modificar este insumo",
+		);
 
 		insumo.actualizarDatos(
 			dto.nombre ?? insumo.getNombre(),

@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import { inject, injectable } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import { validate } from "@/core/shared/infrastructure/libs/validate";
@@ -18,10 +19,9 @@ export class ListarInsumosController extends BaseController {
 		return this.executeSafely(c, async () => {
 			const queryParams = c.req.query();
 			const dto = validate(listarInsumosQuerySchema, queryParams);
-			const user = c.get("user");
 			const filters = {
 				...dto,
-				usuarioId: user.role !== "ADMIN" ? user.id : undefined,
+				usuarioId: usuarioIdDeFiltro(this.getActor(c)),
 			};
 
 			const result = await this.listarInsumosUseCase.run(filters);

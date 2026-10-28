@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { BaseError } from "@/core/shared/domain/error/BaseError";
+import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
 import type { InsumoOutputDto } from "../dtos/InsumoDto";
@@ -24,9 +24,11 @@ export class ObtenerDetalleInsumoUseCase {
 			throw new InsumoNotFoundError(id);
 		}
 
-		if (rol !== "ADMIN" && insumo.getUsuarioId() !== usuarioId) {
-			throw new BaseError("No tienes permiso para acceder a este insumo", 403);
-		}
+		assertPuedeAcceder(
+			{ id: usuarioId, role: rol },
+			insumo.getUsuarioId(),
+			"No tienes permiso para acceder a este insumo",
+		);
 		return this.mapper.toDto(insumo);
 	}
 }

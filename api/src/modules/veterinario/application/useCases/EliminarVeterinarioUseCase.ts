@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { BaseError } from "@/core/shared/domain/error/BaseError";
+import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
 import { VeterinarioNotFoundError } from "../../domain/error/VeterinarioNotFoundError";
 import type { VeterinarioRepository } from "../../domain/repository/VeterinarioRepository";
 
@@ -16,12 +16,11 @@ export class EliminarVeterinarioUseCase {
 			throw new VeterinarioNotFoundError(id);
 		}
 
-		if (rol !== "ADMIN" && veterinario.getUsuarioId() !== usuarioId) {
-			throw new BaseError(
-				"No tienes permiso para eliminar este veterinario",
-				403,
-			);
-		}
+		assertPuedeAcceder(
+			{ id: usuarioId, role: rol },
+			veterinario.getUsuarioId(),
+			"No tienes permiso para eliminar este veterinario",
+		);
 
 		await this.repository.delete(id);
 	}

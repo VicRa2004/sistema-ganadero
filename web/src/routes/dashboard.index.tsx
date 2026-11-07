@@ -120,14 +120,14 @@ function DashboardIndexComponent() {
 	};
 
 	return (
-		<div className="space-y-10 animate-fade-in text-foreground">
+		<div className="space-y-6 sm:space-y-10 animate-fade-in text-foreground">
 			{/* Bienvenida */}
-			<section className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+			<section className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 pb-4 sm:pb-6 border-b border-border">
 				<div className="space-y-1 text-left">
-					<h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+					<h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight md:text-4xl">
 						¡Hola, {user?.name}!
 					</h1>
-					<p className="text-muted-foreground text-sm md:text-base">
+					<p className="text-muted-foreground text-xs sm:text-sm md:text-base">
 						Bienvenido de vuelta. Aquí tienes el estado actual del rancho
 						ganadero.
 					</p>

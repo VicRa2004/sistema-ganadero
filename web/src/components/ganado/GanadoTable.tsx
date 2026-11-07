@@ -94,7 +94,7 @@ export function GanadoTable({
 
 	return (
 		<div className="rounded-xl border border-border overflow-hidden shadow-sm animate-fade-in">
-			<Table>
+			<Table className="min-w-[850px]">
 				<TableHeader>
 					<TableRow className="bg-muted/40 hover:bg-muted/40">
 						<TableHead className="font-semibold text-foreground w-20" />

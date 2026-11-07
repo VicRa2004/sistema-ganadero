@@ -65,25 +65,25 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 	return (
 		<>
 			<div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
-				<table className="w-full text-sm text-left">
-					<thead className="bg-muted/50 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
+				<table className="w-full text-sm text-left min-w-[760px]">
+					<thead className="bg-muted/50 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border whitespace-nowrap">
 						<tr>
-							<th scope="col" className="px-6 py-4">
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Insumo / Lote
 							</th>
-							<th scope="col" className="px-6 py-4">
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Categoría
 							</th>
-							<th scope="col" className="px-6 py-4">
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Stock Actual
 							</th>
-							<th scope="col" className="px-6 py-4">
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Stock Mínimo
 							</th>
-							<th scope="col" className="px-6 py-4">
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Fecha Caducidad
 							</th>
-							<th scope="col" className="px-6 py-4 text-right">
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4 text-right">
 								Acciones
 							</th>
 						</tr>
@@ -97,7 +97,7 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 								}`}
 							>
 								{/* Nombre y Lote */}
-								<td className="px-6 py-4">
+								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
 									<div className="font-medium text-foreground">
 										{insumo.nombre}
 									</div>
@@ -107,7 +107,7 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 								</td>
 
 								{/* Categoría / Tipo */}
-								<td className="px-6 py-4">
+								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
 									<span
 										className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTipoBadgeClass(
 											insumo.tipo,
@@ -118,7 +118,7 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 								</td>
 
 								{/* Stock Actual */}
-								<td className="px-6 py-4">
+								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
 									<div className="flex items-center gap-2">
 										<span
 											className={`font-semibold ${
@@ -139,12 +139,12 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 								</td>
 
 								{/* Stock Mínimo */}
-								<td className="px-6 py-4 text-muted-foreground">
+								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-muted-foreground">
 									{insumo.stockMinimo} {insumo.unidadMedida}
 								</td>
 
 								{/* Fecha Caducidad */}
-								<td className="px-6 py-4">
+								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
 									<div className="flex items-center gap-1.5 text-muted-foreground text-xs">
 										<Calendar className="h-3.5 w-3.5" />
 										<span>
@@ -161,7 +161,7 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 								</td>
 
 								{/* Acciones */}
-								<td className="px-6 py-4 text-right">
+								<td className="px-4 py-3 sm:px-6 sm:py-4 text-right whitespace-nowrap">
 									<div className="flex items-center justify-end gap-1">
 										{canUpdate && (
 											<>

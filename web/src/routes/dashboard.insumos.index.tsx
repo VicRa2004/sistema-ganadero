@@ -76,7 +76,7 @@ function InsumosPage() {
 				{canCreate && (
 					<Button
 						onClick={() => setIsRegisterOpen(true)}
-						className="cursor-pointer shadow-xs gap-2 shrink-0"
+						className="cursor-pointer shadow-xs gap-2 shrink-0 w-full sm:w-auto"
 					>
 						<Plus className="h-4 w-4" />
 						Registrar Insumo
@@ -234,8 +234,8 @@ function InsumosPage() {
 
 					{/* Control de Paginación */}
 					{totalPages > 1 && (
-						<div className="flex items-center justify-between pt-2">
-							<p className="text-xs text-muted-foreground">
+						<div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+							<p className="text-xs text-muted-foreground text-center sm:text-left">
 								Mostrando página <span className="font-semibold">{page}</span>{" "}
 								de <span className="font-semibold">{totalPages}</span> (
 								{totalItems} insumos en total)

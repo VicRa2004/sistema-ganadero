@@ -89,7 +89,7 @@ export function HistorialPesajesCard({ ganadoId }: { ganadoId: number }) {
 							</p>
 						)}
 						<Grafica pesajes={pesajes} />
-						<Table>
+						<Table className="min-w-[420px]">
 							<TableHeader>
 								<TableRow>
 									<TableHead>Fecha</TableHead>

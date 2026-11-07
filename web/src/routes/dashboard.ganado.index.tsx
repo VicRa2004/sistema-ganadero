@@ -166,7 +166,7 @@ function GanadosComponent() {
 				{canCreate && (
 					<Button
 						onClick={() => setIsFormOpen(true)}
-						className="gap-2 shrink-0 shadow-sm shadow-primary/20 cursor-pointer"
+						className="gap-2 shrink-0 shadow-sm shadow-primary/20 cursor-pointer w-full sm:w-auto"
 					>
 						<Plus className="size-4" />
 						Registrar Ganado
@@ -318,8 +318,8 @@ function GanadosComponent() {
 
 			{/* Paginación */}
 			{!isLoading && paginado && paginado.data.length > 0 && (
-				<div className="flex items-center justify-between pt-2">
-					<p className="text-sm text-muted-foreground">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+					<p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
 						Página <span className="font-semibold text-foreground">{page}</span>{" "}
 						de{" "}
 						<span className="font-semibold text-foreground">

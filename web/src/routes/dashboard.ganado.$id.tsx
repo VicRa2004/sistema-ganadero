@@ -163,7 +163,8 @@ function DetalleGanadoComponent() {
 							<Button
 								onClick={() => setIsPesajeOpen(true)}
 								variant="outline"
-								className="gap-2 cursor-pointer border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-500"
+								size="sm"
+								className="gap-2 cursor-pointer border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-500 text-xs sm:text-sm"
 							>
 								<Scale className="size-4" />
 								Registrar Peso
@@ -171,7 +172,8 @@ function DetalleGanadoComponent() {
 							<Button
 								onClick={() => setIsTrasladoOpen(true)}
 								variant="outline"
-								className="gap-2 cursor-pointer border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-500"
+								size="sm"
+								className="gap-2 cursor-pointer border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-500 text-xs sm:text-sm"
 							>
 								<TrendingUp className="size-4" />
 								Trasladar Terreno
@@ -179,7 +181,8 @@ function DetalleGanadoComponent() {
 							<Button
 								onClick={() => setIsBajaOpen(true)}
 								variant="outline"
-								className="gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600"
+								size="sm"
+								className="gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600 text-xs sm:text-sm"
 							>
 								<AlertTriangle className="size-4" />
 								Dar de Baja
@@ -190,7 +193,8 @@ function DetalleGanadoComponent() {
 						<Button
 							onClick={() => setIsEditOpen(true)}
 							variant="outline"
-							className="gap-2 cursor-pointer"
+							size="sm"
+							className="gap-2 cursor-pointer text-xs sm:text-sm"
 						>
 							<Pencil className="size-4" />
 							Editar Ficha
@@ -200,7 +204,8 @@ function DetalleGanadoComponent() {
 						<Button
 							onClick={() => setIsEliminarOpen(true)}
 							variant="destructive"
-							className="gap-2 cursor-pointer"
+							size="sm"
+							className="gap-2 cursor-pointer text-xs sm:text-sm"
 						>
 							<Trash2 className="size-4" />
 							Eliminar
@@ -233,13 +238,13 @@ function DetalleGanadoComponent() {
 			{/* Ficha Principal */}
 			<Card className="border border-border bg-card/60 shadow-sm relative overflow-hidden">
 				<div className="absolute top-0 left-0 w-full h-[3px] bg-primary/60" />
-				<CardHeader className="flex flex-row items-start gap-4 pb-4">
+				<CardHeader className="flex flex-col sm:flex-row items-start gap-4 pb-4">
 					{/* Imagen o icono */}
 					{ganado.imagenGanado ? (
 						<img
 							src={`${baseApiUrl}${ganado.imagenGanado}`}
 							alt={`Ganado ${ganado.identificador}`}
-							className="size-24 rounded-xl object-cover border border-border shrink-0"
+							className="size-20 sm:size-24 rounded-xl object-cover border border-border shrink-0"
 						/>
 					) : (
 						<div className="size-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">

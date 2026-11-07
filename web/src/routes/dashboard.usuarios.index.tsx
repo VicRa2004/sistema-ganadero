@@ -232,14 +232,17 @@ function UsuariosComponent() {
 					</div>
 				</div>
 				{canCreate && (
-					<Button onClick={() => setFormOpen(true)} className="gap-2 shrink-0">
+					<Button
+						onClick={() => setFormOpen(true)}
+						className="gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
+					>
 						<Plus className="size-4" />
 						Crear usuario
 					</Button>
 				)}
 			</section>
 
-			<div className="space-y-1.5 text-left max-w-sm">
+			<div className="space-y-1.5 text-left w-full sm:max-w-sm">
 				<Label htmlFor="buscar-email">Buscar por correo</Label>
 				<div className="relative">
 					<Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -260,7 +263,7 @@ function UsuariosComponent() {
 
 			{listado && (
 				<div className="overflow-x-auto rounded-xl border border-border">
-					<Table>
+					<Table className="min-w-[550px]">
 						<TableHeader>
 							<TableRow>
 								<TableHead>Nombre</TableHead>
@@ -328,8 +331,8 @@ function UsuariosComponent() {
 			)}
 
 			{listado && listado.data.length > 0 && (
-				<div className="flex items-center justify-between pt-2">
-					<p className="text-sm text-muted-foreground">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+					<p className="text-sm text-muted-foreground text-center sm:text-left">
 						Página <span className="font-semibold text-foreground">{page}</span>{" "}
 						de{" "}
 						<span className="font-semibold text-foreground">
@@ -342,6 +345,7 @@ function UsuariosComponent() {
 							size="sm"
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 							disabled={page === 1}
+							className="cursor-pointer"
 						>
 							<ChevronLeft className="size-4" />
 							Anterior
@@ -351,6 +355,7 @@ function UsuariosComponent() {
 							size="sm"
 							onClick={() => setPage((p) => p + 1)}
 							disabled={page >= listado.totalPages}
+							className="cursor-pointer"
 						>
 							Siguiente
 							<ChevronRight className="size-4" />

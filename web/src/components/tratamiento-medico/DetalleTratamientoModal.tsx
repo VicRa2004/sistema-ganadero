@@ -162,7 +162,7 @@ export function DetalleTratamientoModal({
 							<Button
 								variant="outline"
 								onClick={() => onOpenChange(false)}
-								className="cursor-pointer text-xs"
+								className="cursor-pointer text-xs w-full sm:w-auto"
 							>
 								Cerrar
 							</Button>

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import {
 	ArrowRight,
@@ -123,10 +124,10 @@ function LandingComponent() {
 	];
 
 	return (
-		<div className="flex flex-col gap-20 py-6 animate-fade-in text-foreground">
+		<div className="flex flex-col gap-12 sm:gap-20 py-3 sm:py-6 animate-fade-in text-foreground">
 			{/* Hero Section */}
-			<section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-2">
-				<div className="flex flex-col gap-6 text-left">
+			<section className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center pt-2">
+				<div className="flex flex-col gap-5 sm:gap-6 text-left">
 					<div className="flex items-center gap-2">
 						<Badge
 							variant="outline"
@@ -137,23 +138,23 @@ function LandingComponent() {
 						</Badge>
 					</div>
 
-					<h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
+					<h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
 						Gestión Ganadera Inteligente y{" "}
 						<span className="text-primary">Trazabilidad Total</span>
 					</h1>
 
-					<p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-xl">
+					<p className="text-muted-foreground text-sm sm:text-lg leading-relaxed max-w-xl">
 						Digitaliza la operación integral de tu rancho: control de aretes y
 						genealogía, rotación de potreros, pesajes periódicos, sanidad
 						preventiva e inventario veterinario desde una sola plataforma.
 					</p>
 
 					{/* Botones de acción principales */}
-					<div className="flex flex-wrap items-center gap-4 pt-1">
+					<div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
 						<Link to={isAuthenticated ? "/dashboard" : "/login"}>
 							<Button
 								size="lg"
-								className="gap-2 cursor-pointer shadow-md font-semibold h-11 px-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+								className="gap-2 cursor-pointer shadow-md font-semibold h-10 sm:h-11 px-5 sm:px-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
 							>
 								{isAuthenticated ? "Ir al Panel de Control" : "Comenzar ahora"}
 								<ArrowRight className="size-4" />
@@ -164,7 +165,7 @@ function LandingComponent() {
 							type="button"
 							variant="outline"
 							size="lg"
-							className="gap-2 cursor-pointer font-medium h-11 px-6 border-border hover:bg-secondary/60 hover:text-foreground transition-all"
+							className="gap-2 cursor-pointer font-medium h-10 sm:h-11 px-5 sm:px-6 border-border hover:bg-secondary/60 hover:text-foreground transition-all text-sm sm:text-base"
 							onClick={() => {
 								const el = document.getElementById("modulos");
 								el?.scrollIntoView({ behavior: "smooth" });
@@ -195,31 +196,31 @@ function LandingComponent() {
 						{/* Gradiente de fondo sutil */}
 						<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
-						{/* Badge flotante superior: Estado de potrero */}
-						<div className="absolute top-4 left-4 bg-background/95 backdrop-blur-md border border-border/70 rounded-xl p-3 shadow-lg flex items-center gap-3">
-							<div className="size-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold">
-								<Warehouse className="size-5 text-primary" />
+						{/* Badge flotante superior: Estado de potrero (escalado en móvil) */}
+						<div className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 bg-background/95 backdrop-blur-md border border-border/70 rounded-xl p-2 sm:p-3 shadow-lg flex items-center gap-2 sm:gap-3 max-w-[200px] sm:max-w-none">
+							<div className="size-7 sm:size-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold shrink-0">
+								<Warehouse className="size-3.5 sm:size-5 text-primary" />
 							</div>
-							<div className="text-left">
-								<p className="font-semibold text-xs text-foreground">
+							<div className="text-left min-w-0">
+								<p className="font-semibold text-[11px] sm:text-xs text-foreground truncate">
 									Potrero San Carlos #3
 								</p>
-								<p className="text-[11px] text-muted-foreground">
+								<p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
 									Pastoreo activo · 45 Cabezas
 								</p>
 							</div>
 						</div>
 
-						{/* Badge flotante inferior: Métrica de pesaje */}
-						<div className="absolute bottom-4 right-4 bg-background/95 backdrop-blur-md border border-border/70 rounded-xl p-3 shadow-lg flex items-center gap-3">
-							<div className="size-9 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-								<Scale className="size-5 text-amber-600 dark:text-amber-400" />
+						{/* Badge flotante inferior: Métrica de pesaje (escalado en móvil) */}
+						<div className="absolute bottom-2.5 right-2.5 sm:bottom-4 sm:right-4 bg-background/95 backdrop-blur-md border border-border/70 rounded-xl p-2 sm:p-3 shadow-lg flex items-center gap-2 sm:gap-3 max-w-[200px] sm:max-w-none">
+							<div className="size-7 sm:size-9 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+								<Scale className="size-3.5 sm:size-5 text-amber-600 dark:text-amber-400" />
 							</div>
-							<div className="text-left">
-								<p className="font-semibold text-xs text-foreground">
+							<div className="text-left min-w-0">
+								<p className="font-semibold text-[11px] sm:text-xs text-foreground truncate">
 									Ganancia Media Diaria
 								</p>
-								<p className="text-[11px] text-muted-foreground">
+								<p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
 									+0.85 kg/día · Estado Óptimo
 								</p>
 							</div>
@@ -229,11 +230,17 @@ function LandingComponent() {
 			</section>
 
 			{/* Franja de Métricas / Impacto en el Rancho */}
-			<section className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-6 border-y border-border/80 bg-card/40 rounded-2xl p-6">
-				{stats.map((item) => (
+			<section className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-5 sm:py-6 border-y border-border/80 bg-card/40 rounded-2xl p-4 sm:p-6">
+				{stats.map((item, idx) => (
 					<div
 						key={item.label}
-						className="flex flex-col gap-1 text-center sm:text-left px-2 sm:px-4 border-r last:border-r-0 border-border/50"
+						className={cn(
+							"flex flex-col gap-1 text-center sm:text-left px-2 sm:px-4",
+							idx % 2 === 0
+								? "border-r border-border/50 lg:border-r"
+								: "lg:border-r",
+							idx === stats.length - 1 && "lg:border-r-0",
+						)}
 					>
 						<span className="text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
 							{item.metric}

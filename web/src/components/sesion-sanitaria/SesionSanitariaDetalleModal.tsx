@@ -76,7 +76,7 @@ export function SesionSanitariaDetalleModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-6 gap-4">
+			<DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-4 sm:p-6 gap-4">
 				<DialogHeader className="space-y-1 text-left border-b border-border pb-3">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<Activity className="size-5 text-primary" />
@@ -272,9 +272,9 @@ export function SesionSanitariaDetalleModal({
 								</form>
 							)}
 
-							<div className="border border-border rounded-xl overflow-hidden">
-								<table className="w-full text-left text-xs">
-									<thead className="bg-muted/50 border-b border-border text-muted-foreground uppercase text-[10px] tracking-wider">
+							<div className="border border-border rounded-xl overflow-x-auto">
+								<table className="w-full text-left text-xs min-w-[480px]">
+									<thead className="bg-muted/50 border-b border-border text-muted-foreground uppercase text-[10px] tracking-wider whitespace-nowrap">
 										<tr>
 											<th className="p-3">Ganado / Arete</th>
 											<th className="p-3">Dosis Aplicada</th>

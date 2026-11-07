@@ -67,7 +67,7 @@ function TratamientoDetalleRouteComponent() {
 					No se encontró el tratamiento médico especificado.
 				</div>
 			) : (
-				<div className="bg-card p-6 rounded-xl border border-border shadow-xs space-y-6">
+				<div className="bg-card p-4 sm:p-6 rounded-xl border border-border shadow-xs space-y-6">
 					<div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 border-b border-border">
 						<div>
 							<div className="flex items-center gap-2">

@@ -103,7 +103,7 @@ function DetallePropietarioComponent() {
 					<Button
 						onClick={() => setIsEditOpen(true)}
 						variant="outline"
-						className="gap-2"
+						className="gap-2 cursor-pointer w-full sm:w-auto"
 					>
 						<Pencil className="size-4" />
 						Editar Propietario
@@ -114,7 +114,7 @@ function DetallePropietarioComponent() {
 			{/* Tarjeta principal del propietario */}
 			<Card className="border border-border bg-card/60 shadow-sm relative overflow-hidden">
 				<div className="absolute top-0 left-0 w-full h-[3px] bg-primary/60" />
-				<CardHeader className="flex flex-row items-start gap-4 pb-4">
+				<CardHeader className="flex flex-col sm:flex-row items-start gap-4 pb-4">
 					{propietario.imagenMarca ? (
 						<div className="size-14 rounded-xl border border-border bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden shadow-sm">
 							<img
@@ -192,7 +192,7 @@ function DetallePropietarioComponent() {
 					</p>
 				) : (
 					<div className="rounded-xl border border-border overflow-hidden shadow-sm">
-						<Table>
+						<Table className="min-w-[450px]">
 							<TableHeader>
 								<TableRow className="bg-muted/40 hover:bg-muted/40">
 									<TableHead className="font-semibold text-foreground">
@@ -256,7 +256,7 @@ function DetallePropietarioComponent() {
 					</p>
 				) : (
 					<div className="rounded-xl border border-border overflow-hidden shadow-sm">
-						<Table>
+						<Table className="min-w-[400px]">
 							<TableHeader>
 								<TableRow className="bg-muted/40 hover:bg-muted/40">
 									<TableHead className="font-semibold text-foreground text-left">

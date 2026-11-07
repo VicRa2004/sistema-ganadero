@@ -494,20 +494,20 @@ export function ProgramarTratamientoModal({
 							)}
 						</form.Field>
 
-						<div className="flex justify-end gap-2 pt-3 border-t border-border">
+						<div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border">
 							<Button
 								type="button"
 								variant="outline"
 								onClick={() => handleCloseModal(false)}
 								disabled={programarMutation.isPending}
-								className="cursor-pointer"
+								className="cursor-pointer w-full sm:w-auto"
 							>
 								Cancelar
 							</Button>
 							<Button
 								type="submit"
 								disabled={programarMutation.isPending}
-								className="cursor-pointer gap-2"
+								className="cursor-pointer gap-2 w-full sm:w-auto"
 							>
 								{programarMutation.isPending && (
 									<Loader2 className="size-4 animate-spin" />

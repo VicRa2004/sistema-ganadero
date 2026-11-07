@@ -81,7 +81,7 @@ function PropietariosComponent() {
 				{canCreate && (
 					<Button
 						onClick={() => setIsFormOpen(true)}
-						className="gap-2 shrink-0 shadow-sm shadow-primary/20"
+						className="gap-2 shrink-0 shadow-sm shadow-primary/20 cursor-pointer w-full sm:w-auto"
 					>
 						<Plus className="size-4" />
 						Registrar Propietario
@@ -106,8 +106,8 @@ function PropietariosComponent() {
 
 			{/* Paginación */}
 			{!isLoading && propietarios && propietarios.data.length > 0 && (
-				<div className="flex items-center justify-between pt-2">
-					<p className="text-sm text-muted-foreground">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+					<p className="text-sm text-muted-foreground text-center sm:text-left">
 						Página <span className="font-semibold text-foreground">{page}</span>{" "}
 						de{" "}
 						<span className="font-semibold text-foreground">
@@ -120,7 +120,7 @@ function PropietariosComponent() {
 							size="sm"
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 							disabled={page === 1}
-							className="gap-1"
+							className="gap-1 cursor-pointer"
 						>
 							<ChevronLeft className="size-4" />
 							Anterior
@@ -130,7 +130,7 @@ function PropietariosComponent() {
 							size="sm"
 							onClick={() => setPage((p) => p + 1)}
 							disabled={page >= propietarios.totalPages}
-							className="gap-1"
+							className="gap-1 cursor-pointer"
 						>
 							Siguiente
 							<ChevronRight className="size-4" />

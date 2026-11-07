@@ -157,7 +157,10 @@ function RazasComponent() {
 					</div>
 				</div>
 				{canCreate && (
-					<Button onClick={() => setFormOpen(true)} className="gap-2 shrink-0">
+					<Button
+						onClick={() => setFormOpen(true)}
+						className="gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
+					>
 						<Plus className="size-4" />
 						Registrar raza
 					</Button>
@@ -168,7 +171,7 @@ function RazasComponent() {
 
 			{!isLoading && !isError && (
 				<div className="overflow-x-auto rounded-xl border border-border">
-					<Table>
+					<Table className="min-w-[450px]">
 						<TableHeader>
 							<TableRow>
 								<TableHead>Nombre</TableHead>

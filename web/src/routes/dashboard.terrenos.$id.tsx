@@ -127,7 +127,7 @@ function DetalleTerrenoComponent() {
 					<Button
 						onClick={() => setIsEditOpen(true)}
 						variant="outline"
-						className="gap-2 cursor-pointer"
+						className="gap-2 cursor-pointer w-full sm:w-auto"
 					>
 						<Pencil className="size-4" />
 						Editar Terreno

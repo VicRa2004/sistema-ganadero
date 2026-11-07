@@ -128,7 +128,7 @@ export function TratamientoMedicoTable() {
 				{canCreate && (
 					<Button
 						onClick={() => setProgramarOpen(true)}
-						className="gap-2 cursor-pointer shrink-0"
+						className="gap-2 cursor-pointer shrink-0 w-full sm:w-auto"
 					>
 						<Plus className="size-4" />
 						Recetar Tratamiento
@@ -232,8 +232,8 @@ export function TratamientoMedicoTable() {
 					</div>
 				) : (
 					<div className="overflow-x-auto">
-						<table className="w-full text-left text-xs">
-							<thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
+						<table className="w-full text-left text-xs min-w-[720px]">
+							<thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider text-[10px] whitespace-nowrap">
 								<tr>
 									<th className="px-4 py-3">Paciente (Ganado)</th>
 									<th className="px-4 py-3">Diagnóstico</th>
@@ -372,7 +372,7 @@ export function TratamientoMedicoTable() {
 				)}
 
 				{/* Paginación */}
-				<div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20 text-xs text-muted-foreground">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-border bg-muted/20 text-xs text-muted-foreground text-center sm:text-left">
 					<span>
 						Página {page} de {totalPages} ({pagination?.totalItems ?? 0}{" "}
 						tratamientos)

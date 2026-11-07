@@ -40,14 +40,16 @@ function RootComponent() {
 			</main>
 
 			{/* Footer */}
-			<footer className="border-t border-border bg-card/60 backdrop-blur-xs py-6">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-					<div className="flex items-center gap-2 text-xs text-muted-foreground">
+			<footer className="border-t border-border bg-card/60 backdrop-blur-xs py-4 sm:py-6">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+					<div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 text-xs text-muted-foreground">
 						<span className="font-semibold text-foreground">
 							🐮 Sistema Ganadero
 						</span>
 						<span>·</span>
-						<span>Trazabilidad Bovina y Gestión Agropecuaria de Precisión</span>
+						<span className="text-[11px] sm:text-xs">
+							Trazabilidad Bovina y Gestión Agropecuaria de Precisión
+						</span>
 					</div>
 					<div className="flex gap-4 text-xs text-muted-foreground">
 						<span>v0.1.0</span>

@@ -46,7 +46,7 @@ export function PropietariosTable({
 
 	return (
 		<div className="rounded-xl border border-border overflow-hidden shadow-sm">
-			<Table>
+			<Table className="min-w-[550px]">
 				<TableHeader>
 					<TableRow className="bg-muted/40 hover:bg-muted/40">
 						<TableHead className="font-semibold text-foreground">

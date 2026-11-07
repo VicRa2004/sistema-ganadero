@@ -215,7 +215,7 @@ export function RegistrarSesionSanitariaModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-4xl max-h-[92vh] flex flex-col p-6 gap-4">
+			<DialogContent className="sm:max-w-4xl max-h-[92vh] flex flex-col p-4 sm:p-6 gap-4">
 				<DialogHeader className="space-y-1 text-left border-b border-border pb-3">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<Activity className="size-5 text-primary" />
@@ -401,7 +401,7 @@ export function RegistrarSesionSanitariaModal({
 									{/* Selector rápido de ganado activo */}
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/10 p-3 rounded-xl border border-border">
 										{/* Columna Izquierda: Buscador y selección de disponibles */}
-										<div className="space-y-2.5 border-r border-border/50 pr-2 flex flex-col justify-between">
+										<div className="space-y-2.5 border-b md:border-b-0 md:border-r border-border/50 pb-4 md:pb-0 md:pr-3 flex flex-col justify-between">
 											<div className="space-y-2.5">
 												<div className="flex items-center justify-between gap-2">
 													<span className="text-xs font-semibold text-muted-foreground">

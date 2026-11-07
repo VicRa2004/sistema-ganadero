@@ -133,7 +133,7 @@ export function GanadoSelectorModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-6 gap-4">
+			<DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-4 sm:p-6 gap-4">
 				<DialogHeader className="space-y-1 text-left">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<Sparkles className="size-5 text-primary" />

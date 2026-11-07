@@ -178,20 +178,20 @@ export function AplicarDosisDiariaModal({
 						)}
 					</form.Field>
 
-					<div className="flex justify-end gap-2 pt-3 border-t border-border">
+					<div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border">
 						<Button
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 							disabled={aplicarMutation.isPending}
-							className="cursor-pointer text-xs"
+							className="cursor-pointer text-xs w-full sm:w-auto"
 						>
 							Cancelar
 						</Button>
 						<Button
 							type="submit"
 							disabled={aplicarMutation.isPending}
-							className="cursor-pointer gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+							className="cursor-pointer gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
 						>
 							{aplicarMutation.isPending ? (
 								<Loader2 className="size-4 animate-spin" />

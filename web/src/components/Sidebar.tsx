@@ -9,6 +9,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
 	Activity,
 	Database,
@@ -265,7 +266,11 @@ export function Sidebar() {
 
 // ─── Sidebar Mobile (Sheet/Drawer, visible solo en móvil) ─────────────────────
 
-export function MobileSidebarTrigger() {
+export function MobileSidebarTrigger({
+	className,
+}: {
+	className?: string;
+} = {}) {
 	const [open, setOpen] = useState(false);
 
 	return (
@@ -275,7 +280,10 @@ export function MobileSidebarTrigger() {
 					<Button
 						variant="ghost"
 						size="icon"
-						className="md:hidden text-muted-foreground hover:text-foreground cursor-pointer"
+						className={cn(
+							"md:hidden text-muted-foreground hover:text-foreground cursor-pointer h-8 w-8 sm:h-9 sm:w-9 shrink-0",
+							className,
+						)}
 						aria-label="Abrir menú de navegación"
 					/>
 				}

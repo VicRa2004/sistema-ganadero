@@ -90,7 +90,7 @@ export function SesionesSanitariasTable() {
 				{canCreate && (
 					<Button
 						onClick={() => setRegistrarOpen(true)}
-						className="gap-2 cursor-pointer shrink-0"
+						className="gap-2 cursor-pointer shrink-0 w-full sm:w-auto"
 					>
 						<Plus className="size-4" />
 						Nueva Sesión Sanitaria
@@ -114,7 +114,7 @@ export function SesionesSanitariasTable() {
 					<Button
 						type="submit"
 						size="sm"
-						className="h-9 px-4 gap-1.5 cursor-pointer"
+						className="h-9 px-4 gap-1.5 cursor-pointer shrink-0"
 					>
 						<Search className="size-3.5" />
 						Buscar
@@ -187,8 +187,8 @@ export function SesionesSanitariasTable() {
 					</div>
 				) : (
 					<div className="overflow-x-auto">
-						<table className="w-full text-left text-sm">
-							<thead className="bg-muted/50 border-b border-border text-muted-foreground text-xs uppercase tracking-wider font-semibold">
+						<table className="w-full text-left text-sm min-w-[700px]">
+							<thead className="bg-muted/50 border-b border-border text-muted-foreground text-xs uppercase tracking-wider font-semibold whitespace-nowrap">
 								<tr>
 									<th className="p-3.5">ID / Fecha</th>
 									<th className="p-3.5">Descripción / Motivo</th>
@@ -281,7 +281,7 @@ export function SesionesSanitariasTable() {
 				)}
 
 				{/* Controles de Paginación */}
-				<div className="flex items-center justify-between p-4 border-t border-border text-xs">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-border text-xs text-center sm:text-left">
 					<span className="text-muted-foreground font-medium">
 						Página {page} de {totalPages || 1} ({pagination?.totalItems ?? 0}{" "}
 						registros)

@@ -250,15 +250,16 @@ function DashboardIndexComponent() {
 									y visualiza bitácoras de actividad.
 								</p>
 								<div className="flex justify-end pt-2">
-									<Button
-										variant="outline"
-										size="sm"
-										className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed border-amber-500/30 text-amber-600 dark:text-amber-400"
-										disabled
-									>
-										Administrar Usuarios
-										<ArrowUpRight className="h-3 w-3" />
-									</Button>
+									<Link to="/dashboard/usuarios">
+										<Button
+											variant="outline"
+											size="sm"
+											className="h-8 gap-1.5 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+										>
+											Administrar Usuarios
+											<ArrowUpRight className="h-3 w-3" />
+										</Button>
+									</Link>
 								</div>
 							</CardContent>
 						</Card>
@@ -285,15 +286,16 @@ function DashboardIndexComponent() {
 									excepciones por usuario para restringir acciones críticas.
 								</p>
 								<div className="flex justify-end pt-2">
-									<Button
-										variant="outline"
-										size="sm"
-										className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed border-amber-500/30 text-amber-600 dark:text-amber-400"
-										disabled
-									>
-										Ver Matriz de Permisos
-										<ArrowUpRight className="h-3 w-3" />
-									</Button>
+									<Link to="/dashboard/permisos">
+										<Button
+											variant="outline"
+											size="sm"
+											className="h-8 gap-1.5 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+										>
+											Ver Matriz de Permisos
+											<ArrowUpRight className="h-3 w-3" />
+										</Button>
+									</Link>
 								</div>
 							</CardContent>
 						</Card>
@@ -320,15 +322,16 @@ function DashboardIndexComponent() {
 									sistema para homogeneizar el registro de animales.
 								</p>
 								<div className="flex justify-end pt-2">
-									<Button
-										variant="outline"
-										size="sm"
-										className="h-8 gap-1.5 text-xs opacity-50 cursor-not-allowed border-amber-500/30 text-amber-600 dark:text-amber-400"
-										disabled
-									>
-										Gestionar Razas
-										<ArrowUpRight className="h-3 w-3" />
-									</Button>
+									<Link to="/dashboard/razas">
+										<Button
+											variant="outline"
+											size="sm"
+											className="h-8 gap-1.5 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+										>
+											Gestionar Razas
+											<ArrowUpRight className="h-3 w-3" />
+										</Button>
+									</Link>
 								</div>
 							</CardContent>
 						</Card>

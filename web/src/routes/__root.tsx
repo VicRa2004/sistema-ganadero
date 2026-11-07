@@ -40,12 +40,15 @@ function RootComponent() {
 			</main>
 
 			{/* Footer */}
-			<footer className="border-t border-border bg-background py-6">
+			<footer className="border-t border-border bg-card/60 backdrop-blur-xs py-6">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-					<p className="text-xs text-muted-foreground">
-						&copy; {new Date().getFullYear()} Sistema Ganadero. Todos los
-						derechos reservados.
-					</p>
+					<div className="flex items-center gap-2 text-xs text-muted-foreground">
+						<span className="font-semibold text-foreground">
+							🐮 Sistema Ganadero
+						</span>
+						<span>·</span>
+						<span>Trazabilidad Bovina y Gestión Agropecuaria de Precisión</span>
+					</div>
 					<div className="flex gap-4 text-xs text-muted-foreground">
 						<span>v0.1.0</span>
 					</div>

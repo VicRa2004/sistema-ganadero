@@ -54,9 +54,19 @@ export function Navbar() {
 				{/* Logo */}
 				<Link
 					to="/"
-					className="flex items-center gap-2 font-bold text-xl tracking-tight text-foreground hover:opacity-90 transition-opacity"
+					className="flex items-center gap-2.5 font-bold tracking-tight text-foreground hover:opacity-95 transition-opacity"
 				>
-					🐮 Sistema Ganadero
+					<div className="size-8 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center shadow-xs">
+						<span className="text-base select-none leading-none">🐮</span>
+					</div>
+					<div className="flex flex-col leading-none text-left">
+						<span className="text-base font-extrabold tracking-tight text-foreground">
+							Sistema Ganadero
+						</span>
+						<span className="text-[10px] font-semibold text-primary tracking-wider uppercase">
+							Gestión Bovina
+						</span>
+					</div>
 				</Link>
 
 				{/* Lado derecho — Tema y Auth */}

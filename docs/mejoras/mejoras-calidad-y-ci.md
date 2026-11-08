@@ -24,7 +24,7 @@
 
 - ✅ Implementado — **Tests unitarios ejecutables:** `bunfig.toml` (con `preload = ["reflect-metadata"]`) vive en `api/`, donde `bun test` lo lee.
 - ✅ Implementado — **`pnpm lint` en verde:** Biome ignora `**/.agents` (skills de terceros).
-- ✅ Implementado — **Tests prioritarios** (propuesta 1): `auth` (Login, Register, Refresh, Logout), `ganado` (registrar, trasladar, baja), `terreno` (capacidad, eliminar, registrar) y `sesion-sanitaria` (descuento de stock atómico y carrera). `tratamiento-medico` no existe como módulo en el código, así que no aplica.
+- ✅ Implementado — **Tests prioritarios** (propuesta 1): `auth` (Login, Register, Refresh, Logout), `ganado` (registrar, trasladar, baja), `terreno` (capacidad, eliminar, registrar), `sesion-sanitaria` (descuento de stock atómico y carrera) y `tratamiento-medico` (recetar, aplicación diaria con descuento de stock atómico y carrera, finalizar, actualizar y eliminar).
 - ✅ Implementado — **Traslado respetando capacidad:** `TrasladarGanadoUseCase` rechaza (400) el traslado a un terreno lleno.
 - ✅ Implementado — **E2E con BD real** (propuesta 2): el job `e2e` del CI levanta Postgres 16, aplica migraciones y seed, y corre los `*.e2e.spec.ts` con `E2E_DATABASE_URL` (verificado en local con Postgres en docker: 175 tests pasan).
 - ✅ Implementado — **Workflow de GitHub Actions** (propuesta 3): `.github/workflows/ci.yml` con jobs `checks` (format, lint, typecheck api y web, tests con cobertura), `e2e` y `docker` (build de la imagen).

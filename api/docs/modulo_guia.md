@@ -58,21 +58,21 @@ El sistema distingue entre módulos transversales de la aplicación y módulos d
 * **`user`** (`src/core/user/`): Gestión y persistencia de cuentas de usuario de la plataforma.
 
 ### C. Módulos de Lógica de Negocio Ganadero
-*Módulos enfocados de manera exclusiva en las reglas del negocio ganadero. Se ubican en `src/modules/` y se encuentran por implementar o en desarrollo inicial:*
+*Módulos enfocados de manera exclusiva en las reglas del negocio ganadero. Se ubican en `src/modules/` y se encuentran implementados:*
 
-1. **[Ganado](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/ganado.md)** (`src/modules/ganado/`) — *Por implementar*  
+1. **[Ganado](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/ganado.md)** (`src/modules/ganado/`) — *Implementado*  
    Control individual del ganado: pesaje, edad, sexo, asignación a ranchos e historial de salud.
-2. **[Inventario de Insumos](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/inventario-insumos.md)** (`src/modules/inventario-insumos/`) — *Por implementar*  
+2. **[Inventario de Insumos](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/inventario-insumos.md)** (`src/modules/inventario-insumos/`) — *Implementado*  
    Administración de medicamentos, vacunas y alimentos del rancho. Control de existencias y alertas de bajo stock.
-3. **[Propietario](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/propietario.md)** (`src/modules/propietario/`) — *En desarrollo (solo posee entidad básica)*  
+3. **[Propietario](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/propietario.md)** (`src/modules/propietario/`) — *Implementado*  
    Administración de los dueños legales de los animales y ranchos asociados.
-4. **[Rancho](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/rancho.md)** (`src/modules/rancho/`) — *Por implementar*  
+4. **[Rancho / Terreno](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/rancho.md)** (`src/modules/terreno/`) — *Implementado*  
    Definición y capacidad de las fincas/ranchos de producción.
-5. **[Raza](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/raza.md)** (`src/modules/raza/`) — *Por implementar*  
+5. **[Raza](file:///home/victor-raul/proyectos/sistema-ganadero/docs/modules/raza.md)** (`src/modules/raza/`) — *Implementado*  
    Catálogo de razas de ganado y sus características.
-6. [Sesión Sanitaria](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/sesion-sanitaria.md) (`src/modules/sesion-sanitaria/`) — *Por implementar*  
+6. [Sesión Sanitaria](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/sesion-sanitaria.md) (`src/modules/sesion-sanitaria/`) — *Implementado*  
    Jornadas de atención médica masiva (vacunaciones, desparasitaciones conjuntas).
-7. [Tratamiento Médico](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/tratamiento-medico.md) (`src/modules/tratamiento-medico/`) — *Por implementar*  
+7. [Tratamiento Médico](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/tratamiento-medico.md) (`src/modules/tratamiento-medico/`) — *Implementado*  
    Recetas, aplicaciones diarias de medicamentos y seguimiento a animales enfermos de forma individual.
 8. [Veterinario](file:///home/victor-raul/proyectos/sistema-ganadero/api/docs/modules/veterinario.md) (`src/modules/veterinario/`) — *Implementado*  
    Catálogo y gestión de los médicos veterinarios del sistema.

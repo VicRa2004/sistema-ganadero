@@ -10,11 +10,15 @@ import { useObtenerFichaGanado } from "@/modules/ganado/hooks/useObtenerFichaGan
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { useListarPropietarios } from "@/modules/propietario/hooks/useListarPropietarios";
+import { useObtenerHistorialSanitarioGanado } from "@/modules/sesion-sanitaria/hooks/useObtenerHistorialSanitarioGanado";
+import { useObtenerTratamientosGanado } from "@/modules/tratamiento-medico/hooks/useObtenerTratamientosGanado";
 import { GanadoFormDialog } from "@/components/ganado/GanadoFormDialog";
 import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
 import { HistorialPesajesCard } from "@/components/ganado/HistorialPesajesCard";
+import { HistorialSanitarioCard } from "@/components/ganado/HistorialSanitarioCard";
+import { HistorialTratamientosCard } from "@/components/ganado/HistorialTratamientosCard";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -76,6 +80,11 @@ function DetalleGanadoComponent() {
 	const canDelete = permissions.includes("ganado:delete");
 
 	const { data: ganado, isLoading, isError } = useObtenerFichaGanado(id);
+	const ganadoNumericId = ganado?.id ?? (Number(id) || 0);
+	const tratamientosQuery = useObtenerTratamientosGanado(ganadoNumericId);
+	const historialSanitarioQuery = useObtenerHistorialSanitarioGanado(
+		ganadoNumericId > 0 ? ganadoNumericId : null,
+	);
 
 	// Controles de modales
 	const [isEditOpen, setIsEditOpen] = useState(false);
@@ -332,6 +341,20 @@ function DetalleGanadoComponent() {
 			</Card>
 
 			<HistorialPesajesCard ganadoId={ganado.id} />
+
+			<HistorialTratamientosCard
+				ganadoId={ganado.id}
+				tratamientos={tratamientosQuery.data}
+				isLoading={tratamientosQuery.isLoading}
+				isError={tratamientosQuery.isError}
+			/>
+
+			<HistorialSanitarioCard
+				ganadoId={ganado.id}
+				historial={historialSanitarioQuery.data}
+				isLoading={historialSanitarioQuery.isLoading}
+				isError={historialSanitarioQuery.isError}
+			/>
 
 			{/* Linaje */}
 			{(ganado.padre || ganado.madre) && (

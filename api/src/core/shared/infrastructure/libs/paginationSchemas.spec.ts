@@ -4,6 +4,7 @@ import { listarGanadoQuerySchema } from "@/modules/ganado/infrastructure/http/sc
 import { listarInsumosQuerySchema } from "@/modules/inventario-insumos/infrastructure/http/schemas/InsumoSchemas";
 import { listarPropietariosQuerySchema } from "@/modules/propietario/infrastructure/http/schemas/PropietarioSchemas";
 import { listarTerrenosQuerySchema } from "@/modules/terreno/infrastructure/http/schemas/TerrenoSchemas";
+import { listarTratamientosQuerySchema } from "@/modules/tratamiento-medico/infrastructure/http/schemas/tratamientoMedicoSchema";
 import { listarVeterinariosQuerySchema } from "@/modules/veterinario/infrastructure/http/schemas/VeterinarioSchemas";
 import { getAllUsersSchema } from "@/core/user/infrastructure/http/schemas/userSchemas";
 import { limitQuerySchema, pageQuerySchema } from "./paginationSchemas";
@@ -47,6 +48,7 @@ describe("schemas de listados", () => {
 		["insumos", listarInsumosQuerySchema as never],
 		["propietarios", listarPropietariosQuerySchema as never],
 		["terrenos", listarTerrenosQuerySchema as never],
+		["tratamientos", listarTratamientosQuerySchema as never],
 		["veterinarios", listarVeterinariosQuerySchema as never],
 	];
 

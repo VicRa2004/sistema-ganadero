@@ -1,6 +1,6 @@
 # Sistema Ganadero
 
-Aplicación web para gestionar un rancho: ganado (con historial de pesajes, traslados y bajas), propietarios, terrenos, razas, veterinarios, sesiones sanitarias e inventario de insumos, con usuarios, roles y permisos granulares.
+Aplicación web para gestionar un rancho: ganado (con historial de pesajes, historial clínico, traslados y bajas), propietarios, terrenos, razas, veterinarios, sesiones sanitarias, tratamientos médicos e inventario de insumos, con usuarios, roles y permisos granulares.
 
 Monorepo con **pnpm workspaces**:
 

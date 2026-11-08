@@ -49,7 +49,7 @@ Todo lo de este archivo debe quedar resuelto lo antes posible. Orden sugerido: U
 
 ## U-4 · Falta aislamiento por usuario en Ganado y Propietario (IDOR)
 
-> ✅ **Implementado.** Ganado hereda el dueño de su terreno; `Propietario` tiene `usuarioId` (migración `20261017150000_add_usuario_to_propietario` con backfill); sesiones sanitarias heredan el dueño del veterinario. Servicios `GanadoAccessService` y `SesionAccessService`; recursos ajenos devuelven 404. Pruebas en `api/src/e2e/aislamiento-usuarios.e2e.spec.ts` (requieren `E2E_DATABASE_URL`). No existe módulo `tratamiento-medico` en la API (solo la tabla), por lo que no hubo qué proteger.
+> ✅ **Implementado.** Ganado hereda el dueño de su terreno; `Propietario` tiene `usuarioId` (migración `20261017150000_add_usuario_to_propietario` con backfill); sesiones sanitarias heredan el dueño del veterinario y `tratamiento-medico` aísla por propietario del animal (además de validar pertenencia de `Insumo` y `Veterinario`). Servicios `GanadoAccessService`, `SesionAccessService` y `TratamientoAccessService`; recursos ajenos devuelven 404. Pruebas en `api/src/e2e/aislamiento-usuarios.e2e.spec.ts` (requieren `E2E_DATABASE_URL`).
 
 - **Dónde:** `api/src/modules/ganado/**`, `api/src/modules/propietario/**` (y _verificar_ `sesion-sanitaria`, `tratamiento-medico`).
 - **Problema:** `Terreno`, `Insumo` y `Veterinario` tienen `usuarioId` y validan `rol !== "ADMIN" && x.usuarioId !== usuarioId`. `Ganado` y `Propietario` no, así que cualquier `USER` puede listar/editar/borrar los de otro usuario. Una sesión sanitaria también puede referenciar insumos o veterinarios ajenos.

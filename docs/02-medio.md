@@ -66,7 +66,7 @@ Cosas que pueden esperar un poco más que lo crítico, pero conviene atender pro
 
 ## M-9 · Condición de carrera al descontar stock
 
-> ✅ **Implementado.** `descontarStock`/`adicionarStock` son `updateMany` atómicos (`stock >= cantidad`, `decrement`/`increment`); `save` ya no escribe el stock al actualizar (evita pisarlo desde `PUT /insumos/:id`). Las sesiones sanitarias descuentan y guardan en una misma transacción (`TransactionRunner` + `db()` con `AsyncLocalStorage`). Pruebas de concurrencia y rollback en `api/src/e2e/stock-y-permisos.e2e.spec.ts`.
+> ✅ **Implementado.** `descontarStock`/`adicionarStock` son `updateMany` atómicos (`stock >= cantidad`, `decrement`/`increment`); `save` ya no escribe el stock al actualizar (evita pisarlo desde `PUT /insumos/:id`). Las sesiones sanitarias y los tratamientos médicos (`RegistrarAplicacionDiariaUseCase`) descuentan y guardan en una misma transacción (`TransactionRunner` + `db()` con `AsyncLocalStorage`). Pruebas de concurrencia y rollback en `api/src/e2e/stock-y-permisos.e2e.spec.ts`.
 
 - **Dónde:** `ConsumirInsumoUseCase`, `AbastecerInsumoUseCase`, `PrismaInsumoRepository.save`.
 - **Problema:** leer → modificar → guardar permite pérdida de actualizaciones con consumos simultáneos (también desde sesiones sanitarias y tratamientos).

@@ -170,6 +170,28 @@ import { ObtenerHistorialSanitarioGanadoController } from "@/modules/sesion-sani
 import { EliminarSesionSanitariaController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/EliminarSesionSanitariaController";
 import { SesionSanitariaRouter } from "@/modules/sesion-sanitaria/infrastructure/http/routes/SesionSanitariaRouter";
 
+// Tratamiento Médico
+import { PrismaTratamientoMedicoRepository } from "@/modules/tratamiento-medico/infrastructure/repository/PrismaTratamientoMedicoRepository";
+import { TratamientoMedicoMapper } from "@/modules/tratamiento-medico/application/mappers/TratamientoMedicoMapper";
+import { TratamientoAccessService } from "@/modules/tratamiento-medico/application/services/TratamientoAccessService";
+import { RecetarTratamientoUseCase } from "@/modules/tratamiento-medico/application/useCases/RecetarTratamientoUseCase";
+import { RegistrarAplicacionDiariaUseCase } from "@/modules/tratamiento-medico/application/useCases/RegistrarAplicacionDiariaUseCase";
+import { FinalizarTratamientoUseCase } from "@/modules/tratamiento-medico/application/useCases/FinalizarTratamientoUseCase";
+import { ActualizarTratamientoUseCase } from "@/modules/tratamiento-medico/application/useCases/ActualizarTratamientoUseCase";
+import { ObtenerTratamientoUseCase } from "@/modules/tratamiento-medico/application/useCases/ObtenerTratamientoUseCase";
+import { ListarTratamientosUseCase } from "@/modules/tratamiento-medico/application/useCases/ListarTratamientosUseCase";
+import { ListarTratamientosPorGanadoUseCase } from "@/modules/tratamiento-medico/application/useCases/ListarTratamientosPorGanadoUseCase";
+import { EliminarTratamientoUseCase } from "@/modules/tratamiento-medico/application/useCases/EliminarTratamientoUseCase";
+import { RecetarTratamientoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/RecetarTratamientoController";
+import { RegistrarAplicacionDiariaController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/RegistrarAplicacionDiariaController";
+import { FinalizarTratamientoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/FinalizarTratamientoController";
+import { ActualizarTratamientoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/ActualizarTratamientoController";
+import { ObtenerTratamientoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/ObtenerTratamientoController";
+import { ListarTratamientosController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/ListarTratamientosController";
+import { ListarTratamientosPorGanadoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/ListarTratamientosPorGanadoController";
+import { EliminarTratamientoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/EliminarTratamientoController";
+import { TratamientoMedicoRouter } from "@/modules/tratamiento-medico/infrastructure/http/routes/TratamientoMedicoRouter";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -616,6 +638,74 @@ container.register("EliminarSesionSanitariaController", {
 // Módulo Sesión Sanitaria - Router
 container.register("SesionSanitariaRouter", {
 	useClass: SesionSanitariaRouter,
+});
+
+// Módulo Tratamiento Médico - Repositorio, Servicio de Acceso & Mapper
+container.register("TratamientoMedicoRepository", {
+	useClass: PrismaTratamientoMedicoRepository,
+});
+container.register("TratamientoAccessService", {
+	useClass: TratamientoAccessService,
+});
+container.register("TratamientoMedicoMapper", {
+	useClass: TratamientoMedicoMapper,
+});
+
+// Módulo Tratamiento Médico - Casos de Uso
+container.register("RecetarTratamientoUseCase", {
+	useClass: RecetarTratamientoUseCase,
+});
+container.register("RegistrarAplicacionDiariaUseCase", {
+	useClass: RegistrarAplicacionDiariaUseCase,
+});
+container.register("FinalizarTratamientoUseCase", {
+	useClass: FinalizarTratamientoUseCase,
+});
+container.register("ActualizarTratamientoUseCase", {
+	useClass: ActualizarTratamientoUseCase,
+});
+container.register("ObtenerTratamientoUseCase", {
+	useClass: ObtenerTratamientoUseCase,
+});
+container.register("ListarTratamientosUseCase", {
+	useClass: ListarTratamientosUseCase,
+});
+container.register("ListarTratamientosPorGanadoUseCase", {
+	useClass: ListarTratamientosPorGanadoUseCase,
+});
+container.register("EliminarTratamientoUseCase", {
+	useClass: EliminarTratamientoUseCase,
+});
+
+// Módulo Tratamiento Médico - Controladores
+container.register("RecetarTratamientoController", {
+	useClass: RecetarTratamientoController,
+});
+container.register("RegistrarAplicacionDiariaController", {
+	useClass: RegistrarAplicacionDiariaController,
+});
+container.register("FinalizarTratamientoController", {
+	useClass: FinalizarTratamientoController,
+});
+container.register("ActualizarTratamientoController", {
+	useClass: ActualizarTratamientoController,
+});
+container.register("ObtenerTratamientoController", {
+	useClass: ObtenerTratamientoController,
+});
+container.register("ListarTratamientosController", {
+	useClass: ListarTratamientosController,
+});
+container.register("ListarTratamientosPorGanadoController", {
+	useClass: ListarTratamientosPorGanadoController,
+});
+container.register("EliminarTratamientoController", {
+	useClass: EliminarTratamientoController,
+});
+
+// Módulo Tratamiento Médico - Router
+container.register("TratamientoMedicoRouter", {
+	useClass: TratamientoMedicoRouter,
 });
 
 container.register(

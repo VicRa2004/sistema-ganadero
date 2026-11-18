@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import type { Actor } from "@/core/shared/domain/Actor";
 import { buildCsv } from "@/core/shared/infrastructure/libs/CsvBuilder";
 import { PdfBuilder } from "@/core/shared/infrastructure/libs/PdfBuilder";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
@@ -8,7 +9,7 @@ import type { InsumoMapper } from "../mappers/InsumoMapper";
 export interface ExportarInsumosFilters {
 	nombre?: string;
 	tipo?: string;
-	usuarioId?: number;
+	actor: Actor;
 }
 
 @injectable()
@@ -28,7 +29,7 @@ export class ExportarInsumosUseCase {
 			limit: 5000,
 			nombre: filters.nombre,
 			tipo: filters.tipo,
-			usuarioId: filters.usuarioId,
+			actor: filters.actor,
 		});
 		return res.data.map((i) => this.mapper.toDto(i));
 	}

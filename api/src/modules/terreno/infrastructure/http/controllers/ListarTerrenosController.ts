@@ -1,5 +1,4 @@
 import type { Context } from "hono";
-import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import { inject, injectable } from "tsyringe";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import { validate } from "@/core/shared/infrastructure/libs/validate";
@@ -21,7 +20,7 @@ export class ListarTerrenosController extends BaseController {
 			const dto = validate(listarTerrenosQuerySchema, query);
 			const filters = {
 				...dto,
-				usuarioId: usuarioIdDeFiltro(this.getActor(c)),
+				actor: this.getActor(c),
 			};
 			const result = await this.listarTerrenosUseCase.run(filters);
 			return this.ok(c, result);

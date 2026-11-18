@@ -26,7 +26,7 @@ export class ObtenerDashboardResumenUseCase {
 			return hit.data;
 		}
 
-		const data = await this.query.obtenerResumen(usuarioId);
+		const data = await this.query.obtenerResumen(actor);
 		this.cache.set(cacheKey, {
 			expiresAt: ahora + CACHE_TTL_MS,
 			data,

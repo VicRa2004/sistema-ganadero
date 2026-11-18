@@ -1,10 +1,16 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type {
 	GanadoDetalleQuery,
 	RetiroVigenteInfo,
 } from "../../application/queries/GanadoDetalleQuery";
-import type { GanadoDetalleOutputDto } from "../../application/dtos/GanadoDto";
+import type {
+	DescendienteDto,
+	GanadoDetalleOutputDto,
+	GenealogiaOutputDto,
+	NodoGenealogiaDto,
+} from "../../application/dtos/GanadoDto";
 
 interface PrismaGanadoDetalleRecord {
 	id: number;
@@ -142,8 +148,9 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 
 	public async obtenerFichaPorId(
 		id: number,
-		usuarioId?: number,
+		actor: Actor,
 	): Promise<GanadoDetalleOutputDto | null> {
+		const usuarioId = usuarioIdDeFiltro(actor);
 		const record = await prisma.ganado.findFirst({
 			where: {
 				id,
@@ -162,8 +169,9 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 
 	public async obtenerFichaPorIdentificador(
 		identificador: string,
-		usuarioId?: number,
+		actor: Actor,
 	): Promise<GanadoDetalleOutputDto | null> {
+		const usuarioId = usuarioIdDeFiltro(actor);
 		const record = await prisma.ganado.findFirst({
 			where: {
 				identificador,
@@ -178,5 +186,149 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 			record as unknown as PrismaGanadoDetalleRecord,
 			retiro,
 		);
+	}
+
+	public async obtenerGenealogia(
+		ganadoId: number,
+		generaciones: number,
+		actor: Actor,
+	): Promise<GenealogiaOutputDto | null> {
+		const usuarioId = usuarioIdDeFiltro(actor);
+		const filtroPropiedad =
+			usuarioId !== undefined ? { terreno: { usuarioId } } : {};
+
+		type NodoDb = {
+			id: number;
+			identificador: string;
+			sexo: "MACHO" | "HEMBRA";
+			fechaNacimiento: Date;
+			peso: number;
+			padreId: number | null;
+			madreId: number | null;
+			fechaBaja: Date | null;
+			raza: { nombre: string };
+		};
+
+		const selectNodo = {
+			id: true,
+			identificador: true,
+			sexo: true,
+			fechaNacimiento: true,
+			peso: true,
+			padreId: true,
+			madreId: true,
+			fechaBaja: true,
+			raza: { select: { nombre: true } },
+		} as const;
+
+		const raiz = await prisma.ganado.findFirst({
+			where: { id: ganadoId, ...filtroPropiedad },
+			select: selectNodo,
+		});
+		if (!raiz) return null;
+
+		const mapa = new Map<number, NodoDb>([[raiz.id, raiz as NodoDb]]);
+		let nivelActual: NodoDb[] = [raiz as NodoDb];
+
+		for (let gen = 0; gen < generaciones; gen++) {
+			const idsPendientes = new Set<number>();
+			for (const nodo of nivelActual) {
+				if (nodo.padreId !== null && !mapa.has(nodo.padreId)) {
+					idsPendientes.add(nodo.padreId);
+				}
+				if (nodo.madreId !== null && !mapa.has(nodo.madreId)) {
+					idsPendientes.add(nodo.madreId);
+				}
+			}
+			if (idsPendientes.size === 0) break;
+
+			const encontrados = await prisma.ganado.findMany({
+				where: {
+					id: { in: Array.from(idsPendientes) },
+					...filtroPropiedad,
+				},
+				select: selectNodo,
+			});
+			nivelActual = encontrados as NodoDb[];
+			for (const item of nivelActual) {
+				mapa.set(item.id, item);
+			}
+		}
+
+		const construirNodo = (
+			id: number,
+			profundidadRestante: number,
+			camino: Set<number>,
+		): NodoGenealogiaDto | null => {
+			if (camino.has(id)) return null;
+			const registro = mapa.get(id);
+			if (!registro) return null;
+
+			const siguienteCamino = new Set(camino);
+			siguienteCamino.add(id);
+
+			return {
+				id: registro.id,
+				identificador: registro.identificador,
+				sexo: registro.sexo,
+				fechaNacimiento:
+					registro.fechaNacimiento.toISOString().split("T")[0] ?? "",
+				peso: registro.peso,
+				razaNombre: registro.raza.nombre,
+				fechaBaja: registro.fechaBaja?.toISOString() ?? null,
+				padre:
+					profundidadRestante > 0 && registro.padreId !== null
+						? construirNodo(
+								registro.padreId,
+								profundidadRestante - 1,
+								siguienteCamino,
+							)
+						: null,
+				madre:
+					profundidadRestante > 0 && registro.madreId !== null
+						? construirNodo(
+								registro.madreId,
+								profundidadRestante - 1,
+								siguienteCamino,
+							)
+						: null,
+			};
+		};
+
+		const animal = construirNodo(raiz.id, generaciones, new Set<number>());
+		if (!animal) return null;
+
+		const hijos = await prisma.ganado.findMany({
+			where: {
+				OR: [{ padreId: ganadoId }, { madreId: ganadoId }],
+				...filtroPropiedad,
+			},
+			select: {
+				id: true,
+				identificador: true,
+				sexo: true,
+				fechaNacimiento: true,
+				peso: true,
+				fechaBaja: true,
+				raza: { select: { nombre: true } },
+			},
+			orderBy: [{ fechaNacimiento: "desc" }, { id: "desc" }],
+		});
+
+		const descendencia: DescendienteDto[] = hijos.map((h) => ({
+			id: h.id,
+			identificador: h.identificador,
+			sexo: h.sexo,
+			fechaNacimiento: h.fechaNacimiento.toISOString().split("T")[0] ?? "",
+			peso: h.peso,
+			razaNombre: h.raza.nombre,
+			fechaBaja: h.fechaBaja?.toISOString() ?? null,
+		}));
+
+		return {
+			generaciones,
+			animal,
+			descendencia,
+		};
 	}
 }

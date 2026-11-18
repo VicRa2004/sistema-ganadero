@@ -157,6 +157,21 @@ enum TipoNotificacion {
   TRATAMIENTO_POR_VENCER
   SESION_PROGRAMADA
   VACUNA_PENDIENTE
+  PARTO_PROXIMO
+}
+
+enum TipoEventoReproductivo {
+  MONTA
+  INSEMINACION
+  DIAGNOSTICO_GESTACION
+  PARTO
+  DESTETE
+  ABORTO
+}
+
+enum ResultadoDiagnostico {
+  POSITIVO
+  NEGATIVO
 }
 
 // ─────────────────────────────────────────────
@@ -239,6 +254,7 @@ model Ganado {
   propietarioId   Int        @map("gan_fkpropietario")
   padreId         Int?       @map("gan_fkpadre")
   madreId         Int?       @map("gan_fkmadre")
+  partoEventoId   Int?       @map("gan_fkparto_evento")
   fechaBaja       DateTime?  @map("gan_fecha_baja")
   motivoBajaId    Int?       @map("gan_fkmotivo_baja")
   createdAt       DateTime   @default(now()) @map("created_at")
@@ -252,6 +268,9 @@ model Ganado {
   madre                  Ganado?               @relation("Linaje_Madre", fields: [madreId], references: [id], onDelete: Restrict)
   hijosComoPadre         Ganado[]              @relation("Linaje_Padre")
   hijosComoMadre         Ganado[]              @relation("Linaje_Madre")
+  eventoParto            EventoReproductivo?   @relation("PartoCrias", fields: [partoEventoId], references: [id], onDelete: SetNull)
+  eventosComoHembra      EventoReproductivo[]  @relation("Reproduccion_Hembra")
+  eventosComoMacho       EventoReproductivo[]  @relation("Reproduccion_Macho")
   motivoBaja             MotivoBaja?           @relation(fields: [motivoBajaId], references: [id], onDelete: Restrict)
   aplicacionesSanitarias AplicacionSanitaria[]
   tratamientosMedicos    TratamientoMedico[]
@@ -340,7 +359,7 @@ model AplicacionSanitaria {
   deletedAt     DateTime? @map("deleted_at")
 
   sesion SesionSanitaria @relation(fields: [sesionId], references: [id], onDelete: Cascade)
-  ganado Ganado          @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+  ganado Ganado          @relation(fields: [ganadoId], references: [id], onDelete: Restrict)
 
   @@unique([sesionId, ganadoId])
   @@map("aplicacion_sanitaria")
@@ -360,7 +379,7 @@ model TratamientoMedico {
   updatedAt     DateTime? @updatedAt @map("updated_at")
   deletedAt     DateTime? @map("deleted_at")
 
-  ganado      Ganado       @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+  ganado      Ganado       @relation(fields: [ganadoId], references: [id], onDelete: Restrict)
   insumo      Insumo       @relation(fields: [insumoId], references: [id], onDelete: Restrict)
   veterinario Veterinario? @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
 
@@ -368,6 +387,31 @@ model TratamientoMedico {
   @@index([activo])
   @@index([fechaFin])
   @@map("tratamiento_medico")
+}
+
+model EventoReproductivo {
+  id                 Int                    @id @default(autoincrement()) @map("evr_id")
+  hembraId           Int                    @map("evr_fkhembra")
+  machoId            Int?                   @map("evr_fkmacho")
+  tipo               TipoEventoReproductivo @map("evr_tipo")
+  fecha              DateTime               @map("evr_fecha")
+  resultado          ResultadoDiagnostico?  @map("evr_resultado")
+  fechaProbableParto DateTime?              @map("evr_fecha_probable_parto")
+  observaciones      String?                @map("evr_observaciones") @db.Text
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime?              @updatedAt @map("updated_at")
+  deletedAt          DateTime?              @map("deleted_at")
+
+  hembra Ganado   @relation("Reproduccion_Hembra", fields: [hembraId], references: [id], onDelete: Restrict)
+  macho  Ganado?  @relation("Reproduccion_Macho", fields: [machoId], references: [id], onDelete: Restrict)
+  crias  Ganado[] @relation("PartoCrias")
+
+  @@index([hembraId, fecha])
+  @@index([machoId])
+  @@index([tipo])
+  @@index([fechaProbableParto])
+  @@index([deletedAt])
+  @@map("evento_reproductivo")
 }
 
 model Veterinario {

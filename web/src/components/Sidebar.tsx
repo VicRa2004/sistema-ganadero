@@ -15,6 +15,7 @@ import {
 	Calendar,
 	Database,
 	Dna,
+	Heart,
 	KeyRound,
 	LayoutDashboard,
 	Lock,
@@ -66,6 +67,12 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 				resource: "ganado",
 				href: "/dashboard/ganado",
 				icon: Sprout,
+			},
+			{
+				label: "Reproducción",
+				resource: "reproduccion",
+				href: "/dashboard/reproduccion",
+				icon: Heart,
 			},
 			{
 				label: "Terrenos",

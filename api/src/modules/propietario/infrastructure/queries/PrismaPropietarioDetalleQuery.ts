@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { PropietarioDetalleOutputDto } from "../../application/dtos/PropietarioDto";
 import type { PropietarioDetalleQuery } from "../../application/queries/PropietarioDetalleQuery";
 
@@ -7,8 +8,9 @@ import type { PropietarioDetalleQuery } from "../../application/queries/Propieta
 export class PrismaPropietarioDetalleQuery implements PropietarioDetalleQuery {
 	public async obtenerDetalle(
 		id: number,
-		usuarioId?: number,
+		actor: Actor,
 	): Promise<PropietarioDetalleOutputDto | null> {
+		const usuarioId = usuarioIdDeFiltro(actor);
 		const record = await prisma.propietario.findFirst({
 			where: {
 				id,

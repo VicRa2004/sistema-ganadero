@@ -1,3 +1,5 @@
+import type { Actor } from "@/core/shared/domain/Actor";
+
 export interface TratamientoMedicoFilters {
 	page: number;
 	limit: number;
@@ -6,6 +8,6 @@ export interface TratamientoMedicoFilters {
 	insumoId?: number;
 	veterinarioId?: number;
 	search?: string;
-	/** Si se indica, solo devuelve tratamientos cuyo ganado pertenece a terrenos de ese usuario. */
-	usuarioId?: number;
+	/** Actor que consulta; el repositorio restringe por propiedad salvo ADMIN. */
+	actor: Actor;
 }

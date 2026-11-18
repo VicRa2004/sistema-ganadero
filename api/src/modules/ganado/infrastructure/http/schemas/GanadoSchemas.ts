@@ -93,6 +93,16 @@ export const ganadoIdOrIdentificadorSchema = z.object({
 	idOrIdentificador: z.string().min(1, "El ID o identificador es requerido"),
 });
 
+export const genealogiaQuerySchema = z.object({
+	generaciones: z
+		.string()
+		.optional()
+		.transform((v) => (v ? Number(v) : 3))
+		.refine((n) => Number.isInteger(n) && n >= 1 && n <= 6, {
+			message: "Las generaciones deben ser un entero entre 1 y 6",
+		}),
+});
+
 export const listarGanadoQuerySchema = z.object({
 	page: pageQuerySchema,
 	limit: limitQuerySchema(),

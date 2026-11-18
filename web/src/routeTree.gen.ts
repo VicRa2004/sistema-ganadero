@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardReproduccionRouteImport } from './routes/dashboard.reproduccion'
 import { Route as DashboardPerfilRouteImport } from './routes/dashboard.perfil'
 import { Route as DashboardVeterinariosIndexRouteImport } from './routes/dashboard.veterinarios.index'
 import { Route as DashboardUsuariosIndexRouteImport } from './routes/dashboard.usuarios.index'
@@ -54,6 +55,11 @@ const IndexRoute = IndexRouteImport.update({
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReproduccionRoute = DashboardReproduccionRouteImport.update({
+  id: '/reproduccion',
+  path: '/reproduccion',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPerfilRoute = DashboardPerfilRouteImport.update({
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard/perfil': typeof DashboardPerfilRoute
+  '/dashboard/reproduccion': typeof DashboardReproduccionRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard/perfil': typeof DashboardPerfilRoute
+  '/dashboard/reproduccion': typeof DashboardReproduccionRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard/perfil': typeof DashboardPerfilRoute
+  '/dashboard/reproduccion': typeof DashboardReproduccionRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/ganado/$id': typeof DashboardGanadoIdRoute
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard/perfil'
+    | '/dashboard/reproduccion'
     | '/dashboard/'
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard/perfil'
+    | '/dashboard/reproduccion'
     | '/dashboard'
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard/perfil'
+    | '/dashboard/reproduccion'
     | '/dashboard/'
     | '/dashboard/ganado/$id'
     | '/dashboard/propietarios/$id'
@@ -325,6 +337,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reproduccion': {
+      id: '/dashboard/reproduccion'
+      path: '/reproduccion'
+      fullPath: '/dashboard/reproduccion'
+      preLoaderRoute: typeof DashboardReproduccionRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/perfil': {
@@ -444,6 +463,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardPerfilRoute: typeof DashboardPerfilRoute
+  DashboardReproduccionRoute: typeof DashboardReproduccionRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardGanadoIdRoute: typeof DashboardGanadoIdRoute
   DashboardPropietariosIdRoute: typeof DashboardPropietariosIdRoute
@@ -464,6 +484,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardPerfilRoute: DashboardPerfilRoute,
+  DashboardReproduccionRoute: DashboardReproduccionRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardGanadoIdRoute: DashboardGanadoIdRoute,
   DashboardPropietariosIdRoute: DashboardPropietariosIdRoute,

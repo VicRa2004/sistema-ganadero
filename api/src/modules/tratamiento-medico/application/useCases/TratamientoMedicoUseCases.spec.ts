@@ -339,7 +339,7 @@ describe("TratamientoMedico Application Layer & Use Cases", () => {
 			expect(dto.ganadoIdentificador).toBe("BOV-010");
 		});
 
-		it("lista tratamientos filtrando por usuarioId para USER y sin filtro para ADMIN", async () => {
+		it("lista tratamientos pasando el actor al repositorio", async () => {
 			tratamientoRepository.find.mockResolvedValue({
 				data: [crearTratamiento(true)],
 				page: 1,
@@ -355,7 +355,7 @@ describe("TratamientoMedico Application Layer & Use Cases", () => {
 				page: 1,
 				limit: 10,
 				activo: true,
-				usuarioId: 1,
+				actor: userActor,
 			});
 			expect(userResult.data).toHaveLength(1);
 
@@ -363,7 +363,7 @@ describe("TratamientoMedico Application Layer & Use Cases", () => {
 			expect(tratamientoRepository.find).toHaveBeenLastCalledWith({
 				page: 1,
 				limit: 10,
-				usuarioId: undefined,
+				actor: adminActor,
 			});
 		});
 

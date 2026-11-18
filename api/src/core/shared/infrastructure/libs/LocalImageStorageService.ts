@@ -2,7 +2,7 @@ import { injectable } from "tsyringe";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { ImageStorageService } from "../../domain/services/ImageStorageService";
-import { validarImagen } from "./validarImagen";
+import { procesarImagenWebP } from "./procesarImagenWebP";
 import { logger } from "@/core/config/logger";
 
 @injectable()
@@ -10,18 +10,18 @@ export class LocalImageStorageService implements ImageStorageService {
 	private readonly uploadDir = path.join(process.cwd(), "uploads");
 
 	public async upload(file: File, folder: string): Promise<string> {
-		const { buffer: arrayBuffer, type: imageType } = await validarImagen(file);
+		const { buffer, extension } = await procesarImagenWebP(file);
 
 		// Crear el directorio de destino si no existe
 		const targetDir = path.join(this.uploadDir, folder);
 		await fs.mkdir(targetDir, { recursive: true });
 
-		// Generar un nombre único con la extensión derivada del tipo detectado
-		const uniqueName = `${crypto.randomUUID()}${imageType.extension}`;
+		// Generar un nombre único con extensión WebP normalizada
+		const uniqueName = `${crypto.randomUUID()}${extension}`;
 		const filePath = path.join(targetDir, uniqueName);
 
 		// Escribir el archivo usando Bun.write (método nativo rápido)
-		await Bun.write(filePath, arrayBuffer);
+		await Bun.write(filePath, buffer);
 
 		// Retornar la ruta relativa de acceso público
 		return `/uploads/${folder}/${uniqueName}`;

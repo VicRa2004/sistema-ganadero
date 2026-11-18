@@ -1,6 +1,12 @@
 import { prisma } from "../src/core/config/prisma";
 import bcrypt from "bcrypt";
-import { RECURSOS } from "../src/modules/authorization/domain/Recursos";
+import {
+	ACCIONES,
+	type Accion,
+	type PermissionKey,
+	RECURSOS,
+	type Recurso,
+} from "../src/modules/authorization/domain/Recursos";
 
 async function main() {
 	console.log("🌱 Iniciando el proceso de seed...");
@@ -31,9 +37,9 @@ async function main() {
 
 	// ─── 2. Recursos y Permisos atómicos ─────────────────────────────────────────
 	const resources = RECURSOS;
-	const actions = ["create", "read", "update", "delete"];
+	const actions = ACCIONES;
 
-	const permissionsList: { resource: string; action: string }[] = [];
+	const permissionsList: { resource: Recurso; action: Accion }[] = [];
 	for (const resource of resources) {
 		for (const action of actions) {
 			permissionsList.push({ resource, action });
@@ -58,8 +64,8 @@ async function main() {
 	console.log("✅ Permisos atómicos inicializados");
 
 	// ─── 3. Asignación de permisos a roles (Idempotente & Limpieza de obsoletos) ──
-	const rolePermissionsSetup: Record<string, string[]> = {
-		ADMIN: Object.keys(permissionsMap), // Todos los permisos
+	const rolePermissionsSetup: Record<string, PermissionKey[]> = {
+		ADMIN: Object.keys(permissionsMap) as PermissionKey[], // Todos los permisos
 		USER: [
 			// Lectura de todo el negocio
 			"ganado:read",
@@ -89,6 +95,10 @@ async function main() {
 			"veterinarios:create",
 			"veterinarios:update",
 			"veterinarios:delete",
+			"reproduccion:read",
+			"reproduccion:create",
+			"reproduccion:update",
+			"reproduccion:delete",
 		],
 	};
 

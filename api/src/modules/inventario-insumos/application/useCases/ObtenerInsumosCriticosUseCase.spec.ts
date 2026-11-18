@@ -36,9 +36,10 @@ describe("ObtenerInsumosCriticosUseCase", () => {
 	});
 
 	it("debe retornar la lista de insumos con stock igual o inferior al stock mínimo", async () => {
-		const result = await useCase.run(1);
+		const actor = { id: 1, role: "USER" };
+		const result = await useCase.run(actor);
 
-		expect(repository.findCriticos).toHaveBeenCalledWith(1);
+		expect(repository.findCriticos).toHaveBeenCalledWith(actor);
 		expect(result).toHaveLength(1);
 		expect(result[0].nombre).toBe("Vacuna Critica");
 		expect(result[0].esBajoStock).toBeTrue();

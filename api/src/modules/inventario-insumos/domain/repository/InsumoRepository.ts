@@ -1,3 +1,4 @@
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { Insumo } from "../Insumo";
 import type { InsumoFilters } from "./InsumoFilters";
@@ -5,7 +6,7 @@ import type { InsumoFilters } from "./InsumoFilters";
 export interface InsumoRepository {
 	findById(id: number): Promise<Insumo | null>;
 	findAll(filters: InsumoFilters): Promise<Pagination<Insumo>>;
-	findCriticos(usuarioId?: number): Promise<Insumo[]>;
+	findCriticos(actor: Actor): Promise<Insumo[]>;
 	/**
 	 * Persiste el insumo. Al actualizar uno existente NO se escribe el stock, para no
 	 * pisar movimientos concurrentes: usa `descontarStock` / `adicionarStock`.

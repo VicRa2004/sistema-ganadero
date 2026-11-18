@@ -1,3 +1,4 @@
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { SexoGanado } from "../Ganado";
 
 export interface GanadoFilters {
@@ -8,8 +9,8 @@ export interface GanadoFilters {
 	razaId?: number;
 	propietarioId?: number;
 	sexo?: SexoGanado;
-	/** Si se indica, solo devuelve el ganado de terrenos de ese usuario. */
-	usuarioId?: number;
+	/** Actor que consulta; el repositorio restringe por propiedad salvo ADMIN. */
+	actor: Actor;
 	/** Si es true (valor por defecto), excluye ganados con fechaBaja establecida */
 	soloActivos?: boolean;
 }

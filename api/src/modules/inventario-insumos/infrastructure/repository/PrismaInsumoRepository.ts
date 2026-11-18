@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/core/config/transaction";
+import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import { Insumo } from "../../domain/Insumo";
 import type { TipoInsumo } from "../../domain/TipoInsumo";
@@ -50,8 +51,9 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		const skip = (filters.page - 1) * filters.limit;
 		const whereClause: Prisma.InsumoWhereInput = {};
 
-		if (filters.usuarioId !== undefined) {
-			whereClause.usuarioId = filters.usuarioId;
+		const usuarioId = usuarioIdDeFiltro(filters.actor);
+		if (usuarioId !== undefined) {
+			whereClause.usuarioId = usuarioId;
 		}
 
 		if (filters.nombre && filters.nombre.trim() !== "") {
@@ -89,11 +91,12 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		};
 	}
 
-	public async findCriticos(usuarioId?: number): Promise<Insumo[]> {
+	public async findCriticos(actor: Actor): Promise<Insumo[]> {
 		const whereClause: Prisma.InsumoWhereInput = {
 			// Comparación columna con columna en la BD: stock <= stock_minimo
 			stock: { lte: db().insumo.fields.stockMinimo },
 		};
+		const usuarioId = usuarioIdDeFiltro(actor);
 		if (usuarioId !== undefined) {
 			whereClause.usuarioId = usuarioId;
 		}

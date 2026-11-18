@@ -23,6 +23,9 @@ const accessService = {
 	obtenerTerreno: mock(),
 	obtenerPropietario: mock(),
 };
+const linajeService = {
+	validarPadres: mock(async () => ({ padre: null, madre: null })),
+};
 
 const terreno = (capacidad: number) =>
 	Terreno.reconstitute(5, "Potrero", "Norte", 10, capacidad, null, 1);
@@ -63,6 +66,7 @@ describe("RegistrarGanadoUseCase", () => {
 		ganadoRepository as any,
 		razaRepository as any,
 		accessService as any,
+		linajeService as any,
 		mapper,
 		imageStorage as any,
 	);

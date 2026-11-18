@@ -19,7 +19,7 @@ export class ExportarGanadoUseCase {
 	) {}
 
 	public async exportarCsv(
-		filters: Omit<GanadoFilters, "page" | "limit" | "usuarioId">,
+		filters: Omit<GanadoFilters, "page" | "limit" | "actor">,
 		actor: Actor,
 	): Promise<string> {
 		const usuarioFiltro = usuarioIdDeFiltro(actor);
@@ -85,16 +85,15 @@ export class ExportarGanadoUseCase {
 		idOrIdentificador: string,
 		actor: Actor,
 	): Promise<Uint8Array> {
-		const usuarioFiltro = usuarioIdDeFiltro(actor);
 		const numericId = Number(idOrIdentificador);
 		const isNumeric =
 			!Number.isNaN(numericId) && /^\d+$/.test(idOrIdentificador);
 
 		const ficha = isNumeric
-			? await this.detalleQuery.obtenerFichaPorId(numericId, usuarioFiltro)
+			? await this.detalleQuery.obtenerFichaPorId(numericId, actor)
 			: await this.detalleQuery.obtenerFichaPorIdentificador(
 					idOrIdentificador,
-					usuarioFiltro,
+					actor,
 				);
 
 		if (!ficha) {

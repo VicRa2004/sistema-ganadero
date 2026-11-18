@@ -19,6 +19,7 @@ const softDeleteModels = new Set<string>([
 	"TratamientoMedico",
 	"Veterinario",
 	"PlanSanitario",
+	"EventoReproductivo",
 ] satisfies Prisma.ModelName[]);
 const filteredOperations = new Set([
 	"findFirst",

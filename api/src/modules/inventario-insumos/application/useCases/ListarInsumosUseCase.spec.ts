@@ -54,7 +54,12 @@ describe("ListarInsumosUseCase", () => {
 	});
 
 	it("debe retornar insumos paginados mapeados a DTOs", async () => {
-		const filters = { page: 1, limit: 10, nombre: "Insumo" };
+		const filters = {
+			page: 1,
+			limit: 10,
+			nombre: "Insumo",
+			actor: { id: 1, role: "USER" },
+		};
 		const result = await useCase.run(filters);
 
 		expect(repository.findAll).toHaveBeenCalledWith(filters);

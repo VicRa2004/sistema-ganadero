@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
 	AlertTriangle,
+	Baby,
 	Bell,
 	Calendar,
 	CheckCheck,
@@ -44,6 +45,8 @@ function iconForTipo(tipo: TipoNotificacion) {
 			return Calendar;
 		case "VACUNA_PENDIENTE":
 			return Syringe;
+		case "PARTO_PROXIMO":
+			return Baby;
 	}
 }
 
@@ -57,6 +60,10 @@ function rutaParaNotificacion(n: NotificacionDto): string {
 		case "SESION_PROGRAMADA":
 		case "VACUNA_PENDIENTE":
 			return "/dashboard/calendario-sanitario";
+		case "PARTO_PROXIMO":
+			return n.referenciaId
+				? `/dashboard/ganado/${n.referenciaId}`
+				: "/dashboard/reproduccion";
 	}
 }
 

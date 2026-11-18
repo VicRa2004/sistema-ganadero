@@ -1,3 +1,4 @@
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { EstadoSesionSanitaria } from "../SesionSanitaria";
 
 export interface SesionSanitariaFilters {
@@ -9,6 +10,6 @@ export interface SesionSanitariaFilters {
 	insumoId?: number;
 	estado?: EstadoSesionSanitaria;
 	busqueda?: string;
-	/** Si se indica, solo devuelve las sesiones de veterinarios de ese usuario. */
-	usuarioId?: number;
+	/** Actor que consulta; el repositorio restringe por propiedad salvo ADMIN. */
+	actor: Actor;
 }

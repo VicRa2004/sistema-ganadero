@@ -1,6 +1,5 @@
 import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
-import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { PropietarioFilters } from "../../domain/repository/PropietarioFilters";
 import type { PropietarioRepository } from "../../domain/repository/PropietarioRepository";
@@ -17,12 +16,12 @@ export class ListarPropietariosUseCase {
 	) {}
 
 	public async run(
-		filters: PropietarioFilters,
+		filters: Omit<PropietarioFilters, "actor">,
 		actor: Actor,
 	): Promise<Pagination<PropietarioOutputDto>> {
 		const pagination = await this.propietarioRepository.findAll({
 			...filters,
-			usuarioId: usuarioIdDeFiltro(actor),
+			actor,
 		});
 		return {
 			data: pagination.data.map((p) => this.mapper.toDto(p)),

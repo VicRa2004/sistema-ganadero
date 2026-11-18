@@ -1,6 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoAccessService } from "../services/GanadoAccessService";
+import type { GanadoLinajeService } from "../services/GanadoLinajeService";
 import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { Ganado } from "../../domain/Ganado";
 import { GanadoDuplicateIdentificadorError } from "../../domain/error/GanadoDuplicateIdentificadorError";
@@ -27,6 +28,8 @@ export class RegistrarGanadoUseCase {
 		private readonly razaRepository: RazaRepository,
 		@inject("GanadoAccessService")
 		private readonly accessService: GanadoAccessService,
+		@inject("GanadoLinajeService")
+		private readonly linajeService: GanadoLinajeService,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
 		@inject("ImageStorageService")
@@ -57,17 +60,17 @@ export class RegistrarGanadoUseCase {
 		// 4. Validar que el propietario exista y pertenezca al usuario
 		await this.accessService.obtenerPropietario(dto.propietarioId, actor);
 
-		// 5. Validar padre si se proporcionó
-		if (dto.padreId) {
-			await this.accessService.obtenerGanado(dto.padreId, actor);
-		}
+		const fechaNacimiento = new Date(dto.fechaNacimiento);
 
-		// 6. Validar madre si se proporcionó
-		if (dto.madreId) {
-			await this.accessService.obtenerGanado(dto.madreId, actor);
-		}
+		// 5. Validar padre y madre (acceso, sexo, edad mínima reproductiva)
+		await this.linajeService.validarPadres({
+			fechaNacimientoCria: fechaNacimiento,
+			padreId: dto.padreId ?? null,
+			madreId: dto.madreId ?? null,
+			actor,
+		});
 
-		// 7. Subir imagen si se proporcionó
+		// 6. Subir imagen si se proporcionó
 		let imagenGanadoPath: string | null = null;
 		if (dto.imagenGanado && dto.imagenGanado instanceof File) {
 			imagenGanadoPath = await this.imageStorageService.upload(
@@ -76,8 +79,7 @@ export class RegistrarGanadoUseCase {
 			);
 		}
 
-		// 8. Instanciar y persistir
-		const fechaNacimiento = new Date(dto.fechaNacimiento);
+		// 7. Instanciar y persistir
 		const ganado = Ganado.create(
 			dto.identificador,
 			dto.peso,

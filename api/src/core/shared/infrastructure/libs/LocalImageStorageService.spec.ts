@@ -1,12 +1,26 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { rm } from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 import { BaseError } from "../../domain/error/BaseError";
 import { LocalImageStorageService } from "./LocalImageStorageService";
 
-const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]);
 const FOLDER = "test-uploads";
 const service = new LocalImageStorageService();
+
+async function crearPng(width: number, height: number): Promise<Uint8Array> {
+	const buf = await sharp({
+		create: {
+			width,
+			height,
+			channels: 3,
+			background: { r: 34, g: 139, b: 34 },
+		},
+	})
+		.png()
+		.toBuffer();
+	return new Uint8Array(buf);
+}
 
 afterEach(async () => {
 	await rm(path.join(process.cwd(), "uploads", FOLDER), {
@@ -16,13 +30,32 @@ afterEach(async () => {
 });
 
 describe("LocalImageStorageService", () => {
-	it("guarda una imagen válida con extensión derivada del contenido", async () => {
-		const file = new File([PNG], "foto.html", { type: "text/html" });
+	it("valida el contenido real, convierte a WebP y guarda el archivo", async () => {
+		const png = await crearPng(20, 20);
+		const file = new File([png], "foto.html", { type: "text/html" });
 		const url = await service.upload(file, FOLDER);
 
-		expect(url).toMatch(new RegExp(`^/uploads/${FOLDER}/[0-9a-f-]+\\.png$`));
+		expect(url).toMatch(new RegExp(`^/uploads/${FOLDER}/[0-9a-f-]+\\.webp$`));
+
+		const guardado = await Bun.file(path.join(process.cwd(), url)).bytes();
+		const meta = await sharp(guardado).metadata();
+		expect(meta.format).toBe("webp");
+		expect(meta.width).toBe(20);
+
 		await service.delete(url);
 		expect(await Bun.file(path.join(process.cwd(), url)).exists()).toBe(false);
+	});
+
+	it("redimensiona imágenes mayores a 1600px manteniendo proporción", async () => {
+		const pngGrande = await crearPng(2400, 1200);
+		const file = new File([pngGrande], "grande.png", { type: "image/png" });
+		const url = await service.upload(file, FOLDER);
+
+		const guardado = await Bun.file(path.join(process.cwd(), url)).bytes();
+		const meta = await sharp(guardado).metadata();
+		expect(meta.format).toBe("webp");
+		expect(meta.width).toBe(1600);
+		expect(meta.height).toBe(800);
 	});
 
 	it("rechaza HTML y SVG aunque se renombren como imagen", async () => {

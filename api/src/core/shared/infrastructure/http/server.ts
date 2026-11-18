@@ -39,6 +39,7 @@ import { TratamientoMedicoRouter } from "@/modules/tratamiento-medico/infrastruc
 import { NotificacionRouter } from "@/core/notificacion/infrastructure/http/routes/NotificacionRouter";
 import { SaludRouter } from "@/modules/salud/infrastructure/http/routes/SaludRouter";
 import { DashboardRouter } from "@/modules/dashboard/infrastructure/http/routes/DashboardRouter";
+import { ReproduccionRouter } from "@/modules/reproduccion/infrastructure/http/routes/ReproduccionRouter";
 
 const app = new Hono();
 
@@ -135,6 +136,7 @@ const tratamientoMedicoRouter = container.resolve(TratamientoMedicoRouter);
 const notificacionRouter = container.resolve(NotificacionRouter);
 const saludRouter = container.resolve(SaludRouter);
 const dashboardRouter = container.resolve(DashboardRouter);
+const reproduccionRouter = container.resolve(ReproduccionRouter);
 
 // 4. Registro de rutas
 // En Hono se usa .route() en lugar de .use() para anidar otros routers
@@ -152,6 +154,7 @@ app.route("/api/tratamientos-medicos", tratamientoMedicoRouter.router);
 app.route("/api/notificaciones", notificacionRouter.router);
 app.route("/api/salud", saludRouter.router);
 app.route("/api/dashboard", dashboardRouter.router);
+app.route("/api/reproduccion", reproduccionRouter.router);
 
 // 5. Servir Frontend (Vite SPA) en producción
 const distPath = existsSync(path.resolve(process.cwd(), "web/dist"))

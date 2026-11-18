@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import {
 	AlertaNotificacionDomainEvent,
 	type OutboxEventPublisher,
@@ -21,7 +22,8 @@ export class EvaluarAlertasSanitariasUseCase {
 		private readonly generarSesionesPlanesUseCase: GenerarSesionesPlanesUseCase,
 	) {}
 
-	public async run(usuarioId?: number): Promise<EvaluacionAlertasResumenDto> {
+	public async run(actor?: Actor): Promise<EvaluacionAlertasResumenDto> {
+		const usuarioId = actor ? usuarioIdDeFiltro(actor) : undefined;
 		const ahora = new Date();
 		const hoyInicio = new Date(
 			ahora.getFullYear(),
@@ -32,7 +34,7 @@ export class EvaluarAlertasSanitariasUseCase {
 
 		// 1. Generar sesiones programadas desde planes de vacunación activos
 		const { sesionesGeneradas } = await this.generarSesionesPlanesUseCase.run(
-			usuarioId,
+			actor,
 			7,
 		);
 
@@ -243,6 +245,64 @@ export class EvaluarAlertasSanitariasUseCase {
 		}
 
 		const outboxReprocesados = await this.outbox.reprocesarPendientes();
+
+		// 6. Partos próximos estimados (próximos 14 días) sin parto ni aborto posterior
+		const limitePartos = new Date(hoyInicio);
+		limitePartos.setDate(limitePartos.getDate() + 14);
+		const eventosGestacion = await prisma.eventoReproductivo.findMany({
+			where: {
+				fechaProbableParto: { gte: hoyInicio, lte: limitePartos },
+				OR: [
+					{ tipo: { in: ["MONTA", "INSEMINACION"] } },
+					{ tipo: "DIAGNOSTICO_GESTACION", resultado: "POSITIVO" },
+				],
+				hembra: {
+					deletedAt: null,
+					fechaBaja: null,
+					...(usuarioId !== undefined && { terreno: { usuarioId } }),
+				},
+			},
+			include: {
+				hembra: {
+					select: {
+						identificador: true,
+						terreno: { select: { usuarioId: true } },
+					},
+				},
+			},
+			orderBy: [{ fecha: "desc" }, { id: "desc" }],
+		});
+
+		const hembrasVistasParto = new Set<number>();
+		for (const ev of eventosGestacion) {
+			if (hembrasVistasParto.has(ev.hembraId) || !ev.fechaProbableParto) {
+				continue;
+			}
+			hembrasVistasParto.add(ev.hembraId);
+			const cierre = await prisma.eventoReproductivo.findFirst({
+				where: {
+					hembraId: ev.hembraId,
+					tipo: { in: ["PARTO", "ABORTO"] },
+					fecha: { gte: ev.fecha },
+				},
+				select: { id: true },
+			});
+			if (cierre) continue;
+
+			const fechaPartoKey = ev.fechaProbableParto.toISOString().slice(0, 10);
+			await this.outbox.publish(
+				new AlertaNotificacionDomainEvent("reproduccion.parto-proximo", {
+					usuarioId: ev.hembra.terreno.usuarioId,
+					tipo: "PARTO_PROXIMO",
+					titulo: `Parto próximo: ${ev.hembra.identificador}`,
+					cuerpo: `La hembra ${ev.hembra.identificador} tiene fecha probable de parto el ${fechaPartoKey}.`,
+					claveDeduplicacion: `parto-proximo:${ev.hembraId}:${fechaPartoKey}`,
+					referenciaTipo: "GANADO",
+					referenciaId: ev.hembraId,
+				}),
+			);
+			eventosEmitidos++;
+		}
 
 		return {
 			eventosEmitidos,

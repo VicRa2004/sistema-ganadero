@@ -1,14 +1,14 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import { Prisma } from "@/generated/prisma/client";
 import type { DashboardResumenDto } from "../../application/dtos/DashboardResumenDto";
 import type { DashboardResumenQuery } from "../../application/queries/DashboardResumenQuery";
 
 @injectable()
 export class PrismaDashboardResumenQuery implements DashboardResumenQuery {
-	public async obtenerResumen(
-		usuarioId?: number,
-	): Promise<DashboardResumenDto> {
+	public async obtenerResumen(actor: Actor): Promise<DashboardResumenDto> {
+		const usuarioId = usuarioIdDeFiltro(actor);
 		const ahora = new Date();
 		const en30Dias = new Date(ahora);
 		en30Dias.setDate(en30Dias.getDate() + 30);

@@ -1,9 +1,10 @@
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { PropietarioDetalleOutputDto } from "../dtos/PropietarioDto";
 
 export interface PropietarioDetalleQuery {
-	/** `usuarioId` restringe la consulta a los propietarios de ese usuario (undefined = sin restricción). */
+	/** Restringe la consulta a los propietarios accesibles por `actor`. */
 	obtenerDetalle(
 		id: number,
-		usuarioId?: number,
+		actor: Actor,
 	): Promise<PropietarioDetalleOutputDto | null>;
 }

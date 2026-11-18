@@ -1,4 +1,5 @@
 import { injectable, inject } from "tsyringe";
+import type { Accion, Recurso } from "../../domain/Recursos";
 import type { AuthorizationRepository } from "../../domain/repository/AuthorizationRepository";
 import { ForbiddenError } from "../../domain/error/ForbiddenError";
 
@@ -24,7 +25,7 @@ export class CheckUserPermissionUseCase {
 	 * @param action   - Acción a verificar (ej: "create")
 	 * @throws {ForbiddenError} si el usuario no posee el permiso
 	 */
-	async run(userId: number, resource: string, action: string): Promise<void> {
+	async run(userId: number, resource: Recurso, action: Accion): Promise<void> {
 		const effectivePermissions =
 			await this.authorizationRepository.getEffectivePermissions(userId);
 

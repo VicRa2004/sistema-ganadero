@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import type { Actor } from "@/core/shared/domain/Actor";
 import {
 	AlertaNotificacionDomainEvent,
 	type OutboxEventPublisher,
@@ -24,7 +25,7 @@ export class GenerarSesionesPlanesUseCase {
 	) {}
 
 	public async run(
-		usuarioId?: number,
+		actor?: Actor,
 		diasAnticipacion = 7,
 	): Promise<{ sesionesGeneradas: number }> {
 		const ahora = new Date();
@@ -33,7 +34,7 @@ export class GenerarSesionesPlanesUseCase {
 
 		const planes = await this.planRepository.findActivosPorEjecutar(
 			limite,
-			usuarioId,
+			actor,
 		);
 
 		let sesionesGeneradas = 0;

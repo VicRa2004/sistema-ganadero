@@ -1,6 +1,5 @@
 import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
-import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { TratamientoMedicoFilters } from "../../domain/repository/TratamientoMedicoFilters";
 import type { TratamientoMedicoRepository } from "../../domain/repository/TratamientoMedicoRepository";
@@ -17,12 +16,12 @@ export class ListarTratamientosUseCase {
 	) {}
 
 	public async run(
-		filters: TratamientoMedicoFilters,
+		filters: Omit<TratamientoMedicoFilters, "actor">,
 		actor: Actor,
 	): Promise<Pagination<TratamientoMedicoOutputDto>> {
 		const result = await this.tratamientoRepository.find({
 			...filters,
-			usuarioId: usuarioIdDeFiltro(actor),
+			actor,
 		});
 
 		const data = result.data.map((tratamiento) =>

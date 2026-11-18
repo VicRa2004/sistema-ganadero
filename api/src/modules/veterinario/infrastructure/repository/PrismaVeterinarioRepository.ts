@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/core/config/prisma";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import { Veterinario } from "../../domain/Veterinario";
 import type { VeterinarioFilters } from "../../domain/repository/VeterinarioFilters";
@@ -67,8 +68,9 @@ export class PrismaVeterinarioRepository implements VeterinarioRepository {
 			};
 		}
 
-		if (filters.usuarioId !== undefined) {
-			whereClause.usuarioId = filters.usuarioId;
+		const usuarioId = usuarioIdDeFiltro(filters.actor);
+		if (usuarioId !== undefined) {
+			whereClause.usuarioId = usuarioId;
 		}
 
 		const [records, totalItems] = await Promise.all([

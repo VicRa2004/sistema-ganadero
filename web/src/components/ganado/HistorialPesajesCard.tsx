@@ -1,4 +1,4 @@
-import { Scale, TrendingDown } from "lucide-react";
+import { Scale, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { useListarPesajes } from "@/modules/ganado/hooks/useListarPesajes";
 import type { PesajeDto } from "@/modules/ganado/types";
+import { cn } from "@/lib/utils";
 
 const W = 600;
 const H = 160;
@@ -51,6 +52,7 @@ function Grafica({ pesajes }: { pesajes: PesajeDto[] }) {
 export function HistorialPesajesCard({ ganadoId }: { ganadoId: number }) {
 	const { data, isLoading, isError } = useListarPesajes(ganadoId);
 	const pesajes = data?.pesajes ?? [];
+	const comp = data?.comparacionRazaEdad;
 
 	return (
 		<Card className="border border-border bg-card/60 shadow-sm">
@@ -80,14 +82,60 @@ export function HistorialPesajesCard({ ganadoId }: { ganadoId: number }) {
 								El último pesaje es menor que el anterior.
 							</p>
 						)}
-						{data.gananciaDiariaAcumulada !== null && (
-							<p className="text-sm text-muted-foreground">
-								Ganancia diaria acumulada:{" "}
-								<span className="font-semibold text-foreground">
-									{data.gananciaDiariaAcumulada.toFixed(2)} kg/día
-								</span>
-							</p>
-						)}
+						<div className="flex flex-wrap gap-3">
+							{data.gananciaDiariaAcumulada !== null && (
+								<div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+									<span className="text-muted-foreground">
+										Ganancia diaria acumulada:{" "}
+									</span>
+									<span className="font-semibold text-foreground">
+										{data.gananciaDiariaAcumulada.toFixed(2)} kg/día
+									</span>
+								</div>
+							)}
+							{comp && (
+								<div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm flex items-center gap-2">
+									<Users className="size-4 text-muted-foreground shrink-0" />
+									{comp.promedioRazaEdad !== null &&
+									comp.diferenciaKg !== null ? (
+										<span>
+											Promedio {comp.razaNombre} ({comp.edadMeses} m ±3):{" "}
+											<strong className="text-foreground">
+												{comp.promedioRazaEdad} kg
+											</strong>{" "}
+											<span
+												className={cn(
+													"inline-flex items-center gap-0.5 font-semibold",
+													comp.diferenciaKg >= 0
+														? "text-emerald-600 dark:text-emerald-400"
+														: "text-amber-600 dark:text-amber-400",
+												)}
+											>
+												{comp.diferenciaKg >= 0 ? (
+													<TrendingUp className="size-3.5" />
+												) : (
+													<TrendingDown className="size-3.5" />
+												)}
+												{comp.diferenciaKg >= 0 ? "+" : ""}
+												{comp.diferenciaKg} kg (
+												{comp.porcentajeDiferencia !== null
+													? `${comp.porcentajeDiferencia >= 0 ? "+" : ""}${comp.porcentajeDiferencia}%`
+													: ""}
+												)
+											</span>{" "}
+											<span className="text-xs text-muted-foreground">
+												· muestra: {comp.cantidadMuestra}
+											</span>
+										</span>
+									) : (
+										<span className="text-muted-foreground">
+											Sin pares de {comp.razaNombre} ({comp.edadMeses} m ±3)
+											para comparar
+										</span>
+									)}
+								</div>
+							)}
+						</div>
 						<Grafica pesajes={pesajes} />
 						<Table className="min-w-[420px]">
 							<TableHeader>

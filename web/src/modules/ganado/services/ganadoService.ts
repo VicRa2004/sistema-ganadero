@@ -7,6 +7,7 @@ import type {
 	GanadoDetalleDto,
 	GanadoDto,
 	GanadoFilters,
+	GenealogiaDto,
 	HistorialPesajesDto,
 	MotivoBajaDto,
 	PaginatedResponse,
@@ -92,6 +93,16 @@ export const ganadoService = {
 		const { data } = await api.get<HistorialPesajesDto>(
 			`/ganado/${id}/pesajes`,
 		);
+		return data;
+	},
+
+	async obtenerGenealogia(
+		id: number,
+		generaciones = 3,
+	): Promise<GenealogiaDto> {
+		const { data } = await api.get<GenealogiaDto>(`/ganado/${id}/genealogia`, {
+			params: { generaciones },
+		});
 		return data;
 	},
 

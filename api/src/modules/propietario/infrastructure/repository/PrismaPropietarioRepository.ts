@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/core/config/prisma";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import { Propietario } from "../../domain/Propietario";
 import type { PropietarioFilters } from "../../domain/repository/PropietarioFilters";
@@ -64,8 +65,9 @@ export class PrismaPropietarioRepository implements PropietarioRepository {
 			};
 		}
 
-		if (filters.usuarioId !== undefined) {
-			whereClause.usuarioId = filters.usuarioId;
+		const usuarioId = usuarioIdDeFiltro(filters.actor);
+		if (usuarioId !== undefined) {
+			whereClause.usuarioId = usuarioId;
 		}
 
 		const [records, totalItems] = await Promise.all([

@@ -1,7 +1,9 @@
+import type { Actor } from "@/core/shared/domain/Actor";
+
 export interface PropietarioFilters {
 	page: number;
 	limit: number;
 	nombre?: string;
-	/** Si se indica, solo devuelve los propietarios de ese usuario. */
-	usuarioId?: number;
+	/** Actor que consulta; el repositorio restringe por propiedad salvo ADMIN. */
+	actor: Actor;
 }

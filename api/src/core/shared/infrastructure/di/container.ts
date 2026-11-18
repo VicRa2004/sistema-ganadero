@@ -116,6 +116,9 @@ import { PrismaGanadoDetalleQuery } from "@/modules/ganado/infrastructure/querie
 import { PrismaMotivoBajaRepository } from "@/modules/ganado/infrastructure/repository/PrismaMotivoBajaRepository";
 import { GanadoMapper } from "@/modules/ganado/application/mappers/GanadoMapper";
 import { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
+import { GanadoLinajeService } from "@/modules/ganado/application/services/GanadoLinajeService";
+import { ObtenerGenealogiaUseCase } from "@/modules/ganado/application/useCases/ObtenerGenealogiaUseCase";
+import { ObtenerGenealogiaController } from "@/modules/ganado/infrastructure/http/controllers/ObtenerGenealogiaController";
 import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
 import { RegistrarPesajeUseCase } from "@/modules/ganado/application/useCases/RegistrarPesajeUseCase";
 import { ListarPesajesUseCase } from "@/modules/ganado/application/useCases/ListarPesajesUseCase";
@@ -545,6 +548,9 @@ container.register("GanadoMapper", { useClass: GanadoMapper });
 container.register("GanadoAccessService", {
 	useClass: GanadoAccessService,
 });
+container.register("GanadoLinajeService", {
+	useClass: GanadoLinajeService,
+});
 
 // Módulo Ganado - Casos de Uso
 container.register("RegistrarGanadoUseCase", {
@@ -574,6 +580,9 @@ container.register("DarDeBajaGanadoUseCase", {
 });
 container.register("ListarMotivosBajaUseCase", {
 	useClass: ListarMotivosBajaUseCase,
+});
+container.register("ObtenerGenealogiaUseCase", {
+	useClass: ObtenerGenealogiaUseCase,
 });
 
 // Módulo Ganado - Controladores
@@ -606,6 +615,9 @@ container.register("DarDeBajaGanadoController", {
 });
 container.register("ListarMotivosBajaController", {
 	useClass: ListarMotivosBajaController,
+});
+container.register("ObtenerGenealogiaController", {
+	useClass: ObtenerGenealogiaController,
 });
 
 // Módulo Veterinario - Repositorio & Mapper
@@ -967,6 +979,55 @@ container.register(
 container.register("ObtenerDashboardResumenController", {
 	useClass: ObtenerDashboardResumenController,
 });
+import { PrismaEventoReproductivoRepository } from "@/modules/reproduccion/infrastructure/repository/PrismaEventoReproductivoRepository";
+import { PrismaIndicadoresReproductivosQuery } from "@/modules/reproduccion/infrastructure/queries/PrismaIndicadoresReproductivosQuery";
+import { EventoReproductivoMapper } from "@/modules/reproduccion/application/mappers/EventoReproductivoMapper";
+import { RegistrarEventoReproductivoUseCase } from "@/modules/reproduccion/application/useCases/RegistrarEventoReproductivoUseCase";
+import { ListarEventosReproductivosUseCase } from "@/modules/reproduccion/application/useCases/ListarEventosReproductivosUseCase";
+import { EliminarEventoReproductivoUseCase } from "@/modules/reproduccion/application/useCases/EliminarEventoReproductivoUseCase";
+import { ObtenerIndicadoresReproductivosUseCase } from "@/modules/reproduccion/application/useCases/ObtenerIndicadoresReproductivosUseCase";
+import { RegistrarEventoReproductivoController } from "@/modules/reproduccion/infrastructure/http/controllers/RegistrarEventoReproductivoController";
+import { ListarEventosReproductivosController } from "@/modules/reproduccion/infrastructure/http/controllers/ListarEventosReproductivosController";
+import { EliminarEventoReproductivoController } from "@/modules/reproduccion/infrastructure/http/controllers/EliminarEventoReproductivoController";
+import { ObtenerIndicadoresReproductivosController } from "@/modules/reproduccion/infrastructure/http/controllers/ObtenerIndicadoresReproductivosController";
+import { ReproduccionRouter } from "@/modules/reproduccion/infrastructure/http/routes/ReproduccionRouter";
+
 container.register("DashboardRouter", { useClass: DashboardRouter });
+
+// Reproducción
+container.register("EventoReproductivoRepository", {
+	useClass: PrismaEventoReproductivoRepository,
+});
+container.register("IndicadoresReproductivosQuery", {
+	useClass: PrismaIndicadoresReproductivosQuery,
+});
+container.register("EventoReproductivoMapper", {
+	useClass: EventoReproductivoMapper,
+});
+container.register("RegistrarEventoReproductivoUseCase", {
+	useClass: RegistrarEventoReproductivoUseCase,
+});
+container.register("ListarEventosReproductivosUseCase", {
+	useClass: ListarEventosReproductivosUseCase,
+});
+container.register("EliminarEventoReproductivoUseCase", {
+	useClass: EliminarEventoReproductivoUseCase,
+});
+container.register("ObtenerIndicadoresReproductivosUseCase", {
+	useClass: ObtenerIndicadoresReproductivosUseCase,
+});
+container.register("RegistrarEventoReproductivoController", {
+	useClass: RegistrarEventoReproductivoController,
+});
+container.register("ListarEventosReproductivosController", {
+	useClass: ListarEventosReproductivosController,
+});
+container.register("EliminarEventoReproductivoController", {
+	useClass: EliminarEventoReproductivoController,
+});
+container.register("ObtenerIndicadoresReproductivosController", {
+	useClass: ObtenerIndicadoresReproductivosController,
+});
+container.register("ReproduccionRouter", { useClass: ReproduccionRouter });
 
 export { container };

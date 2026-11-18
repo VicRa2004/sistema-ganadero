@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { db } from "@/core/config/transaction";
+import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Prisma } from "@/generated/prisma/client";
 import { PlanSanitario } from "../../domain/PlanSanitario";
 import type { PlanSanitarioRepository } from "../../domain/repository/PlanSanitarioRepository";
@@ -99,7 +100,8 @@ export class PrismaPlanSanitarioRepository implements PlanSanitarioRepository {
 		return this.toDomain(record as unknown as PrismaPlanRecord);
 	}
 
-	public async findByUsuario(usuarioId?: number): Promise<PlanSanitario[]> {
+	public async findByUsuario(actor: Actor): Promise<PlanSanitario[]> {
+		const usuarioId = usuarioIdDeFiltro(actor);
 		const records = await db().planSanitario.findMany({
 			where: usuarioId !== undefined ? { usuarioId } : {},
 			include: this.includeRelaciones,
@@ -110,8 +112,9 @@ export class PrismaPlanSanitarioRepository implements PlanSanitarioRepository {
 
 	public async findActivosPorEjecutar(
 		hasta: Date,
-		usuarioId?: number,
+		actor?: Actor,
 	): Promise<PlanSanitario[]> {
+		const usuarioId = actor ? usuarioIdDeFiltro(actor) : undefined;
 		const records = await db().planSanitario.findMany({
 			where: {
 				activo: true,

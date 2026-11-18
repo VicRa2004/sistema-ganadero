@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
 import { db } from "@/core/config/transaction";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { Prisma } from "@/generated/prisma/client";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
@@ -96,8 +97,9 @@ export class PrismaSesionSanitariaRepository
 		}
 
 		// La sesión pertenece al usuario dueño del veterinario
-		if (filters.usuarioId !== undefined) {
-			whereClause.veterinario = { usuarioId: filters.usuarioId };
+		const usuarioId = usuarioIdDeFiltro(filters.actor);
+		if (usuarioId !== undefined) {
+			whereClause.veterinario = { usuarioId };
 		}
 
 		if (filters.fechaInicio || filters.fechaFin) {

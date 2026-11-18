@@ -2,12 +2,17 @@ import { injectable } from "tsyringe";
 import type { Prisma } from "@/generated/prisma/client";
 import { db, runInTransaction } from "@/core/config/transaction";
 import { prisma } from "@/core/config/prisma";
+import type { Actor } from "@/core/shared/domain/Actor";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import { Ganado } from "../../domain/Ganado";
 import type { SexoGanado } from "../../domain/Ganado";
 import type { NuevoPesaje, Pesaje } from "../../domain/Pesaje";
 import type { GanadoFilters } from "../../domain/repository/GanadoFilters";
-import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
+import type {
+	GanadoRepository,
+	PromedioPesoRazaEdadResult,
+} from "../../domain/repository/GanadoRepository";
 
 interface PrismaGanadoRecord {
 	id: number;
@@ -47,7 +52,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 	}
 
 	public async findById(id: number): Promise<Ganado | null> {
-		const record = (await prisma.ganado.findFirst({
+		const record = (await db().ganado.findFirst({
 			where: { id },
 		})) as PrismaGanadoRecord | null;
 
@@ -58,7 +63,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 	public async findByIdentificador(
 		identificador: string,
 	): Promise<Ganado | null> {
-		const record = (await prisma.ganado.findFirst({
+		const record = (await db().ganado.findFirst({
 			where: { identificador },
 		})) as PrismaGanadoRecord | null;
 
@@ -100,8 +105,9 @@ export class PrismaGanadoRepository implements GanadoRepository {
 		}
 
 		// El ganado pertenece al usuario dueño de su terreno
-		if (filters.usuarioId !== undefined) {
-			whereClause.terreno = { usuarioId: filters.usuarioId };
+		const usuarioId = usuarioIdDeFiltro(filters.actor);
+		if (usuarioId !== undefined) {
+			whereClause.terreno = { usuarioId };
 		}
 
 		const [records, totalItems] = await Promise.all([
@@ -146,7 +152,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 
 		if (ganado.esNuevo()) {
 			// El peso inicial es el primer pesaje del historial
-			const record = (await prisma.ganado.create({
+			const record = (await db().ganado.create({
 				data: {
 					...data,
 					pesajes: {
@@ -160,7 +166,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 		// El peso no se escribe aquí: lo gobierna el historial (registrarPesaje),
 		// así una edición con datos viejos no pisa el último pesaje.
 		const { peso: _peso, ...dataSinPeso } = data;
-		const record = (await prisma.ganado.update({
+		const record = (await db().ganado.update({
 			where: { id: ganado.getId() },
 			data: dataSinPeso,
 		})) as PrismaGanadoRecord;
@@ -197,6 +203,54 @@ export class PrismaGanadoRepository implements GanadoRepository {
 				observaciones: true,
 			},
 		});
+	}
+
+	public async obtenerPromedioPesoRazaEdad({
+		razaId,
+		fechaNacimiento,
+		excluirGanadoId,
+		actor,
+	}: {
+		razaId: number;
+		fechaNacimiento: Date;
+		excluirGanadoId: number;
+		actor: Actor;
+	}): Promise<PromedioPesoRazaEdadResult> {
+		const usuarioId = usuarioIdDeFiltro(actor);
+		const minNacimiento = new Date(fechaNacimiento);
+		minNacimiento.setUTCMonth(minNacimiento.getUTCMonth() - 3);
+		const maxNacimiento = new Date(fechaNacimiento);
+		maxNacimiento.setUTCMonth(maxNacimiento.getUTCMonth() + 3);
+
+		const [raza, agregado] = await Promise.all([
+			prisma.raza.findFirst({
+				where: { id: razaId },
+				select: { nombre: true },
+			}),
+			prisma.ganado.aggregate({
+				where: {
+					id: { not: excluirGanadoId },
+					razaId,
+					fechaBaja: null,
+					fechaNacimiento: {
+						gte: minNacimiento,
+						lte: maxNacimiento,
+					},
+					...(usuarioId !== undefined && { terreno: { usuarioId } }),
+				},
+				_avg: { peso: true },
+				_count: { _all: true },
+			}),
+		]);
+
+		const cantidadMuestra = agregado._count._all;
+		const avg = agregado._avg.peso;
+		return {
+			promedio:
+				cantidadMuestra > 0 && avg !== null ? Number(avg.toFixed(2)) : null,
+			cantidadMuestra,
+			razaNombre: raza?.nombre ?? "Raza",
+		};
 	}
 
 	public async delete(id: number): Promise<void> {

@@ -1,6 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoAccessService } from "../services/GanadoAccessService";
+import type { GanadoLinajeService } from "../services/GanadoLinajeService";
 import type { ImageStorageService } from "@/core/shared/domain/services/ImageStorageService";
 import { GanadoDuplicateIdentificadorError } from "../../domain/error/GanadoDuplicateIdentificadorError";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
@@ -28,6 +29,8 @@ export class ActualizarGanadoUseCase {
 		private readonly razaRepository: RazaRepository,
 		@inject("GanadoAccessService")
 		private readonly accessService: GanadoAccessService,
+		@inject("GanadoLinajeService")
+		private readonly linajeService: GanadoLinajeService,
 		@inject("MotivoBajaRepository")
 		private readonly motivoBajaRepository: MotivoBajaRepository,
 		@inject("GanadoMapper")
@@ -88,14 +91,19 @@ export class ActualizarGanadoUseCase {
 			await this.accessService.obtenerPropietario(dto.propietarioId, actor);
 		}
 
-		// 6. Validar padre si se actualizó
-		if (nuevoPadreId && nuevoPadreId !== ganado.getPadreId()) {
-			await this.accessService.obtenerGanado(nuevoPadreId, actor);
-		}
-
-		// 7. Validar madre si se actualizó
-		if (nuevaMadreId && nuevaMadreId !== ganado.getMadreId()) {
-			await this.accessService.obtenerGanado(nuevaMadreId, actor);
+		// 6. Validar padre y madre (sexo, edad mínima, sin ciclos genealógicos)
+		if (
+			nuevoPadreId !== ganado.getPadreId() ||
+			nuevaMadreId !== ganado.getMadreId() ||
+			dto.fechaNacimiento !== undefined
+		) {
+			await this.linajeService.validarPadres({
+				ganadoId: id,
+				fechaNacimientoCria: nuevaFechaNacimiento,
+				padreId: nuevoPadreId,
+				madreId: nuevaMadreId,
+				actor,
+			});
 		}
 
 		// 8. Validar información de baja si se proporcionó

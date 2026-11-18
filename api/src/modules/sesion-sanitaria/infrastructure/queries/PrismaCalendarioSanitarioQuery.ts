@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { CalendarioEventoDto } from "../../application/dtos/CalendarioSanitarioDto";
 import type {
 	CalendarioSanitarioFilters,
@@ -13,7 +14,8 @@ export class PrismaCalendarioSanitarioQuery
 	public async obtenerEventos(
 		filters: CalendarioSanitarioFilters,
 	): Promise<CalendarioEventoDto[]> {
-		const { desde, hasta, usuarioId, terrenoId, ganadoId } = filters;
+		const { desde, hasta, actor, terrenoId, ganadoId } = filters;
+		const usuarioId = usuarioIdDeFiltro(actor);
 
 		const [sesiones, tratamientos, insumos] = await Promise.all([
 			prisma.sesionSanitaria.findMany({

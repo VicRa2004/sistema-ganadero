@@ -19,6 +19,8 @@ import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
 import { HistorialPesajesCard } from "@/components/ganado/HistorialPesajesCard";
 import { HistorialSanitarioCard } from "@/components/ganado/HistorialSanitarioCard";
 import { HistorialTratamientosCard } from "@/components/ganado/HistorialTratamientosCard";
+import { GenealogiaCard } from "@/components/ganado/GenealogiaCard";
+import { ReproduccionGanadoCard } from "@/components/reproduccion/ReproduccionGanadoCard";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
 import { ganadoService } from "@/modules/ganado/services/ganadoService";
 import { sesionSanitariaService } from "@/modules/sesion-sanitaria/services/sesionSanitariaService";
@@ -38,7 +40,6 @@ import {
 	Loader2,
 	Dna,
 	Sparkles,
-	GitBranch,
 	AlertTriangle,
 	FileText,
 	ShieldAlert,
@@ -398,59 +399,9 @@ function DetalleGanadoComponent() {
 				isError={historialSanitarioQuery.isError}
 			/>
 
-			{/* Linaje */}
-			{(ganado.padre || ganado.madre) && (
-				<Card className="border border-border bg-card/60 shadow-sm">
-					<CardHeader className="pb-3">
-						<CardTitle className="flex items-center gap-2 text-base font-semibold">
-							<GitBranch className="size-4 text-primary" />
-							Linaje
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							{ganado.padre && (
-								<Link
-									to="/dashboard/ganado/$id"
-									params={{ id: String(ganado.padre.id) }}
-									className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors cursor-pointer"
-								>
-									<div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
-										<GitBranch className="size-4" />
-									</div>
-									<div className="text-left">
-										<p className="text-xs text-muted-foreground uppercase font-semibold">
-											Padre (MACHO)
-										</p>
-										<p className="text-sm font-bold text-foreground">
-											{ganado.padre.identificador}
-										</p>
-									</div>
-								</Link>
-							)}
-							{ganado.madre && (
-								<Link
-									to="/dashboard/ganado/$id"
-									params={{ id: String(ganado.madre.id) }}
-									className="flex items-center gap-3 p-4 rounded-xl bg-pink-500/5 border border-pink-500/20 hover:bg-pink-500/10 transition-colors cursor-pointer"
-								>
-									<div className="size-8 rounded-lg bg-pink-500/10 text-pink-600 flex items-center justify-center">
-										<GitBranch className="size-4" />
-									</div>
-									<div className="text-left">
-										<p className="text-xs text-muted-foreground uppercase font-semibold">
-											Madre (HEMBRA)
-										</p>
-										<p className="text-sm font-bold text-foreground">
-											{ganado.madre.identificador}
-										</p>
-									</div>
-								</Link>
-							)}
-						</div>
-					</CardContent>
-				</Card>
-			)}
+			<ReproduccionGanadoCard ganado={ganado} />
+
+			<GenealogiaCard ganadoId={ganado.id} />
 
 			{/* Diálogos */}
 			<GanadoFormDialog

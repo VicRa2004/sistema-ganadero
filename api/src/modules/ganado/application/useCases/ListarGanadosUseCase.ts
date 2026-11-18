@@ -1,6 +1,5 @@
 import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
-import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { GanadoFilters } from "../../domain/repository/GanadoFilters";
 import type { GanadoRepository } from "../../domain/repository/GanadoRepository";
@@ -17,12 +16,12 @@ export class ListarGanadosUseCase {
 	) {}
 
 	public async run(
-		filters: GanadoFilters,
+		filters: Omit<GanadoFilters, "actor">,
 		actor: Actor,
 	): Promise<Pagination<GanadoOutputDto>> {
 		const pagination = await this.ganadoRepository.findAll({
 			...filters,
-			usuarioId: usuarioIdDeFiltro(actor),
+			actor,
 		});
 		return {
 			data: pagination.data.map((g) => this.mapper.toDto(g)),

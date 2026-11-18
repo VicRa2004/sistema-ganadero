@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
+import type { Actor } from "@/core/shared/domain/Actor";
 import { buildCsv } from "@/core/shared/infrastructure/libs/CsvBuilder";
 import { PdfBuilder } from "@/core/shared/infrastructure/libs/PdfBuilder";
 import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
@@ -45,7 +45,7 @@ export class ExportarSesionesSanitariasUseCase {
 			page: 1,
 			limit: 5000,
 			...filters,
-			usuarioId: usuarioIdDeFiltro(actor),
+			actor,
 		});
 
 		const vetCache = new Map<number, string>();

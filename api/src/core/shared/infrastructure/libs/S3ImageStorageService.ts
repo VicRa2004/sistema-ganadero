@@ -3,7 +3,7 @@ import { S3Client } from "bun";
 import { env } from "@/core/config/env";
 import { logger } from "@/core/config/logger";
 import type { ImageStorageService } from "../../domain/services/ImageStorageService";
-import { validarImagen } from "./validarImagen";
+import { procesarImagenWebP } from "./procesarImagenWebP";
 
 const PREFIJO = "/uploads/";
 /** Vigencia de las URL firmadas con las que se sirve un bucket privado. */
@@ -25,9 +25,9 @@ export class S3ImageStorageService implements ImageStorageService {
 	});
 
 	public async upload(file: File, folder: string): Promise<string> {
-		const { buffer, type } = await validarImagen(file);
-		const key = `${folder}/${crypto.randomUUID()}${type.extension}`;
-		await this.client.write(key, buffer, { type: type.mime });
+		const { buffer, extension, mime } = await procesarImagenWebP(file);
+		const key = `${folder}/${crypto.randomUUID()}${extension}`;
+		await this.client.write(key, buffer, { type: mime });
 		return `${PREFIJO}${key}`;
 	}
 

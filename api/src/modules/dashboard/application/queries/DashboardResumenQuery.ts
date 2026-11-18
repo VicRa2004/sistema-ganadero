@@ -1,5 +1,6 @@
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { DashboardResumenDto } from "../dtos/DashboardResumenDto";
 
 export interface DashboardResumenQuery {
-	obtenerResumen(usuarioId?: number): Promise<DashboardResumenDto>;
+	obtenerResumen(actor: Actor): Promise<DashboardResumenDto>;
 }

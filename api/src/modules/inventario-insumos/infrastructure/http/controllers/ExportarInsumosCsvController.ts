@@ -1,6 +1,5 @@
 import type { Context } from "hono";
 import { inject, injectable } from "tsyringe";
-import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import { BaseController } from "@/core/shared/infrastructure/http/base.controller";
 import { validate } from "@/core/shared/infrastructure/libs/validate";
 import type { ExportarInsumosUseCase } from "../../../application/useCases/ExportarInsumosUseCase";
@@ -21,7 +20,7 @@ export class ExportarInsumosCsvController extends BaseController {
 			const query = validate(exportarInsumosQuerySchema, c.req.query());
 			const csv = await this.useCase.exportarCsv({
 				...query,
-				usuarioId: usuarioIdDeFiltro(actor),
+				actor,
 			});
 
 			return new Response(csv, {

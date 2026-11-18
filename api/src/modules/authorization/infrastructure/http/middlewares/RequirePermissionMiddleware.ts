@@ -4,7 +4,7 @@ import { toStatusCode } from "@/core/shared/infrastructure/http/context";
 import { injectable, inject } from "tsyringe";
 import type { CheckUserPermissionUseCase } from "@/modules/authorization/application/useCases/CheckUserPermissionUseCase";
 import { ForbiddenError } from "@/modules/authorization/domain/error/ForbiddenError";
-import type { Recurso } from "@/modules/authorization/domain/Recursos";
+import type { Accion, Recurso } from "@/modules/authorization/domain/Recursos";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
 
 /**
@@ -34,9 +34,9 @@ export class RequirePermissionMiddleware {
 	 * Retorna un middleware configurado para validar un recurso y acción específicos.
 	 *
 	 * @param resource - Nombre del recurso (ver `RECURSOS`)
-	 * @param action   - Acción requerida (ej: "create", "read", "update", "delete")
+	 * @param action   - Acción requerida (ver `ACCIONES`)
 	 */
-	handle = (resource: Recurso, action: string) => {
+	handle = (resource: Recurso, action: Accion) => {
 		return async (c: Context, next: Next): Promise<Response | void> => {
 			// En Hono, la convención para pasar variables entre middlewares es usar c.get()
 			// Asumiendo que tu authMiddleware hace algo como: c.set('user', user)

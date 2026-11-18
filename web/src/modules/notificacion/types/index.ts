@@ -3,7 +3,8 @@ export type TipoNotificacion =
 	| "INSUMO_POR_CADUCAR"
 	| "TRATAMIENTO_POR_VENCER"
 	| "SESION_PROGRAMADA"
-	| "VACUNA_PENDIENTE";
+	| "VACUNA_PENDIENTE"
+	| "PARTO_PROXIMO";
 
 export interface NotificacionDto {
 	id: number;
@@ -57,5 +58,10 @@ export const TIPO_NOTIFICACION_LABELS: Record<
 		label: "Animales sin vacuna vigente",
 		descripcion:
 			"Resumen mensual de animales sin vacunación registrada en 6 meses.",
+	},
+	PARTO_PROXIMO: {
+		label: "Partos próximos estimados",
+		descripcion:
+			"Aviso de hembras con fecha probable de parto dentro de los próximos 14 días.",
 	},
 };

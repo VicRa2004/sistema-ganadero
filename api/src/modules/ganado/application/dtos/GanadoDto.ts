@@ -114,8 +114,47 @@ export interface PesajeOutputDto {
 	gananciaDiaria: number | null;
 }
 
+export interface ComparacionRazaEdadDto {
+	pesoActual: number;
+	razaNombre: string;
+	edadMeses: number;
+	promedioRazaEdad: number | null;
+	cantidadMuestra: number;
+	diferenciaKg: number | null;
+	porcentajeDiferencia: number | null;
+}
+
 export interface HistorialPesajesOutputDto {
 	pesajes: PesajeOutputDto[];
 	gananciaDiariaAcumulada: number | null;
 	perdidaDePeso: boolean;
+	comparacionRazaEdad: ComparacionRazaEdadDto;
+}
+
+export interface NodoGenealogiaDto {
+	id: number;
+	identificador: string;
+	sexo: SexoGanado;
+	fechaNacimiento: string;
+	peso: number;
+	razaNombre: string;
+	fechaBaja: string | null;
+	padre: NodoGenealogiaDto | null;
+	madre: NodoGenealogiaDto | null;
+}
+
+export interface DescendienteDto {
+	id: number;
+	identificador: string;
+	sexo: SexoGanado;
+	fechaNacimiento: string;
+	peso: number;
+	razaNombre: string;
+	fechaBaja: string | null;
+}
+
+export interface GenealogiaOutputDto {
+	generaciones: number;
+	animal: NodoGenealogiaDto;
+	descendencia: DescendienteDto[];
 }

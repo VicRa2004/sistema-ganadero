@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { type Actor, usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
+import type { Actor } from "@/core/shared/domain/Actor";
 import type { CalendarioSanitarioOutputDto } from "../dtos/CalendarioSanitarioDto";
 import type { CalendarioSanitarioQuery } from "../queries/CalendarioSanitarioQuery";
 
@@ -32,7 +32,7 @@ export class ObtenerCalendarioSanitarioUseCase {
 		const eventos = await this.query.obtenerEventos({
 			desde,
 			hasta,
-			usuarioId: usuarioIdDeFiltro(actor),
+			actor,
 			terrenoId: input.terrenoId,
 			ganadoId: input.ganadoId,
 		});

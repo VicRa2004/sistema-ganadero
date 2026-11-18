@@ -77,7 +77,8 @@ export class PrismaOutboxEventPublisher implements OutboxEventPublisher {
 				eventName === "insumo.por-caducar" ||
 				eventName === "tratamiento.por-vencer" ||
 				eventName === "sesion.programada" ||
-				eventName === "ganado.vacuna-pendiente"
+				eventName === "ganado.vacuna-pendiente" ||
+				eventName === "reproduccion.parto-proximo"
 			) {
 				await this.subscriber.handle({
 					eventName,

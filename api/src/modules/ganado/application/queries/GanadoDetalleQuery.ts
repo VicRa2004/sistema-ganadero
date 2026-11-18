@@ -1,4 +1,8 @@
-import type { GanadoDetalleOutputDto } from "../dtos/GanadoDto";
+import type { Actor } from "@/core/shared/domain/Actor";
+import type {
+	GanadoDetalleOutputDto,
+	GenealogiaOutputDto,
+} from "../dtos/GanadoDto";
 
 export interface RetiroVigenteInfo {
 	vigente: boolean;
@@ -6,18 +10,23 @@ export interface RetiroVigenteInfo {
 	motivo: string | null;
 }
 
-/** `usuarioId` restringe la consulta al ganado de terrenos de ese usuario (undefined = sin restricción). */
+/** Restringe la consulta al ganado de terrenos accesibles para `actor`. */
 export interface GanadoDetalleQuery {
 	obtenerFichaPorId(
 		id: number,
-		usuarioId?: number,
+		actor: Actor,
 	): Promise<GanadoDetalleOutputDto | null>;
 	obtenerFichaPorIdentificador(
 		identificador: string,
-		usuarioId?: number,
+		actor: Actor,
 	): Promise<GanadoDetalleOutputDto | null>;
 	obtenerRetiroVigente(
 		ganadoId: number,
 		fechaReferencia?: Date,
 	): Promise<RetiroVigenteInfo>;
+	obtenerGenealogia(
+		ganadoId: number,
+		generaciones: number,
+		actor: Actor,
+	): Promise<GenealogiaOutputDto | null>;
 }

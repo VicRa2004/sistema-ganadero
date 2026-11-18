@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
 import { db } from "@/core/config/transaction";
+import { usuarioIdDeFiltro } from "@/core/shared/domain/Actor";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { Prisma } from "@/generated/prisma/client";
 import type { TratamientoMedicoFilters } from "../../domain/repository/TratamientoMedicoFilters";
@@ -76,13 +77,14 @@ export class PrismaTratamientoMedicoRepository
 		const andConditions: Prisma.TratamientoMedicoWhereInput[] = [];
 
 		// El tratamiento pertenece al dueño del terreno del ganado
-		if (filters.usuarioId !== undefined) {
+		const usuarioId = usuarioIdDeFiltro(filters.actor);
+		if (usuarioId !== undefined) {
 			andConditions.push({
 				ganado: {
 					deletedAt: null,
 					terreno: {
 						deletedAt: null,
-						usuarioId: filters.usuarioId,
+						usuarioId,
 					},
 				},
 			});

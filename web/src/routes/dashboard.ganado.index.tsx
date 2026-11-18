@@ -11,6 +11,8 @@ import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
+import { ImportarGanadoDialog } from "@/components/ganado/ImportarGanadoDialog";
+import { ganadoService } from "@/modules/ganado/services/ganadoService";
 import { ListaEstado } from "@/components/ListaEstado";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,8 @@ import {
 	Search,
 	RotateCcw,
 	Filter,
+	Upload,
+	Download,
 } from "lucide-react";
 import type { GanadoDto } from "@/modules/ganado/types";
 
@@ -84,6 +88,7 @@ function GanadosComponent() {
 
 	// Controles de modales
 	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	const [ganadoEditar, setGanadoEditar] = useState<GanadoDto | null>(null);
 	const [ganadoEliminar, setGanadoEliminar] = useState<GanadoDto | null>(null);
 	const [ganadoPesaje, setGanadoPesaje] = useState<GanadoDto | null>(null);
@@ -163,15 +168,47 @@ function GanadosComponent() {
 					</div>
 				</div>
 
-				{canCreate && (
+				<div className="flex flex-wrap items-center gap-2">
 					<Button
-						onClick={() => setIsFormOpen(true)}
-						className="gap-2 shrink-0 shadow-sm shadow-primary/20 cursor-pointer w-full sm:w-auto"
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							ganadoService.exportarCsv({
+								identificador: filterIdentificador || undefined,
+								razaId: filterRazaId,
+								terrenoId: filterTerrenoId,
+								propietarioId: filterPropietarioId,
+								soloActivos,
+							})
+						}
+						className="gap-1.5 cursor-pointer"
 					>
-						<Plus className="size-4" />
-						Registrar Ganado
+						<Download className="size-4" />
+						Exportar CSV
 					</Button>
-				)}
+					{canCreate && (
+						<>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setIsImportOpen(true)}
+								className="gap-1.5 cursor-pointer"
+							>
+								<Upload className="size-4" />
+								Importar CSV
+							</Button>
+							<Button
+								onClick={() => setIsFormOpen(true)}
+								className="gap-2 shrink-0 shadow-sm shadow-primary/20 cursor-pointer w-full sm:w-auto"
+							>
+								<Plus className="size-4" />
+								Registrar Ganado
+							</Button>
+						</>
+					)}
+				</div>
 			</section>
 
 			{/* Panel de Filtros */}
@@ -359,6 +396,11 @@ function GanadosComponent() {
 				razas={razas}
 				terrenos={terrenos}
 				propietarios={propietarios}
+			/>
+
+			<ImportarGanadoDialog
+				open={isImportOpen}
+				onOpenChange={setIsImportOpen}
 			/>
 
 			{/* Registrar Pesaje Dialog */}

@@ -1,6 +1,8 @@
 import { api } from "@/config/axios";
+import { descargarArchivoApi } from "@/lib/descargarArchivo";
 import type {
 	ActualizarGanadoInput,
+	ConfirmacionImportacionGanadoDto,
 	DarDeBajaGanadoInput,
 	GanadoDetalleDto,
 	GanadoDto,
@@ -8,6 +10,7 @@ import type {
 	HistorialPesajesDto,
 	MotivoBajaDto,
 	PaginatedResponse,
+	PrevisualizacionImportacionGanadoDto,
 	RegistrarGanadoInput,
 	RegistrarPesajeInput,
 	TrasladarGanadoInput,
@@ -112,5 +115,52 @@ export const ganadoService = {
 
 	async eliminar(id: number): Promise<void> {
 		await api.delete(`/ganado/${id}`);
+	},
+
+	async descargarPlantillaCsv(): Promise<void> {
+		await descargarArchivoApi(
+			"/ganado/importar/plantilla",
+			"plantilla-ganado.csv",
+		);
+	},
+
+	async previsualizarImportacion(
+		csv: string,
+	): Promise<PrevisualizacionImportacionGanadoDto> {
+		const { data } = await api.post<PrevisualizacionImportacionGanadoDto>(
+			"/ganado/importar/previsualizar",
+			{ csv },
+		);
+		return data;
+	},
+
+	async confirmarImportacion(
+		csv: string,
+	): Promise<ConfirmacionImportacionGanadoDto> {
+		const { data } = await api.post<ConfirmacionImportacionGanadoDto>(
+			"/ganado/importar/confirmar",
+			{ csv },
+		);
+		return data;
+	},
+
+	async exportarCsv(
+		filters: Omit<GanadoFilters, "page" | "limit">,
+	): Promise<void> {
+		await descargarArchivoApi("/ganado/exportar/csv", "ganado.csv", {
+			identificador: filters.identificador || undefined,
+			sexo: filters.sexo || undefined,
+			razaId: filters.razaId || undefined,
+			terrenoId: filters.terrenoId || undefined,
+			propietarioId: filters.propietarioId || undefined,
+			soloActivos: filters.soloActivos !== false ? "true" : "false",
+		});
+	},
+
+	async exportarFichaPdf(idOrIdentificador: string | number): Promise<void> {
+		await descargarArchivoApi(
+			`/ganado/${idOrIdentificador}/ficha-pdf`,
+			`ficha-ganado-${idOrIdentificador}.pdf`,
+		);
 	},
 };

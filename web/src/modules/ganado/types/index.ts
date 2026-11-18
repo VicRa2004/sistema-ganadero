@@ -56,6 +56,34 @@ export interface GanadoDetalleDto {
 		id: number;
 		nombre: string;
 	} | null;
+	enPeriodoRetiro?: boolean;
+	retiroHasta?: string | null;
+	retiroMotivo?: string | null;
+}
+
+export interface FilaImportacionGanadoDto {
+	fila: number;
+	valido: boolean;
+	errores: string[];
+	identificador: string;
+	sexo: string;
+	peso: number | null;
+	fechaNacimiento: string;
+	raza: string;
+	terreno: string;
+	propietario: string;
+}
+
+export interface PrevisualizacionImportacionGanadoDto {
+	totalFilas: number;
+	validasCount: number;
+	erroresCount: number;
+	filas: FilaImportacionGanadoDto[];
+}
+
+export interface ConfirmacionImportacionGanadoDto {
+	insertados: number;
+	identificadores: string[];
 }
 
 export interface MotivoBajaDto {

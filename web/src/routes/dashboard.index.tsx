@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import { useDashboardResumen } from "@/modules/dashboard/hooks/useDashboardResumen";
+import { DashboardKpiGrid } from "@/components/dashboard/DashboardKpiGrid";
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -12,9 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import {
 	Activity,
 	ArrowUpRight,
+	Calendar,
 	ClipboardList,
 	Database,
 	Dna,
+	Loader2,
 	ShieldAlert,
 	ShieldCheck,
 	Sprout,
@@ -90,6 +95,15 @@ const OPERATIONS_DATA: OperationCard[] = [
 		href: "/dashboard/sesiones-sanitarias",
 	},
 	{
+		resource: "sesiones-sanitarias",
+		title: "Calendario Sanitario",
+		description: "Agenda de vacunación, tratamientos y planes recurrentes.",
+		icon: Calendar,
+		readAction: "read",
+		badge: "Sanidad",
+		href: "/dashboard/calendario-sanitario",
+	},
+	{
 		resource: "tratamientos-medicos",
 		title: "Tratamientos Médicos",
 		description: "Historial de tratamientos y prescripciones veterinarias.",
@@ -114,6 +128,7 @@ const OPERATIONS_DATA: OperationCard[] = [
 function DashboardIndexComponent() {
 	const user = useAuthStore((state) => state.user);
 	const permissions = useAuthStore((state) => state.permissions) || [];
+	const { data: resumen, isLoading: isLoadingResumen } = useDashboardResumen();
 
 	const hasPermission = (resource: string, action: string): boolean => {
 		return permissions.includes(`${resource}:${action}`);
@@ -145,6 +160,21 @@ function DashboardIndexComponent() {
 						{user?.role || "USER"}
 					</Badge>
 				</div>
+			</section>
+
+			{/* Resumen Analítico y KPIs */}
+			<section className="space-y-6">
+				{isLoadingResumen ? (
+					<div className="flex items-center justify-center py-10 gap-2 text-sm text-muted-foreground border border-border rounded-xl bg-card/40">
+						<Loader2 className="size-4 animate-spin text-primary" />
+						Cargando métricas del rancho...
+					</div>
+				) : resumen ? (
+					<>
+						<DashboardKpiGrid totales={resumen.totales} />
+						<DashboardCharts resumen={resumen} />
+					</>
+				) : null}
 			</section>
 
 			{/* Tarjetas de operaciones */}

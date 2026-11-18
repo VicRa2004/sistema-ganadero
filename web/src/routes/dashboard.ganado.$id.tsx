@@ -20,6 +20,8 @@ import { HistorialPesajesCard } from "@/components/ganado/HistorialPesajesCard";
 import { HistorialSanitarioCard } from "@/components/ganado/HistorialSanitarioCard";
 import { HistorialTratamientosCard } from "@/components/ganado/HistorialTratamientosCard";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
+import { ganadoService } from "@/modules/ganado/services/ganadoService";
+import { sesionSanitariaService } from "@/modules/sesion-sanitaria/services/sesionSanitariaService";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +40,8 @@ import {
 	Sparkles,
 	GitBranch,
 	AlertTriangle,
+	FileText,
+	ShieldAlert,
 } from "lucide-react";
 import type { GanadoDto } from "@/modules/ganado/types";
 
@@ -167,6 +171,26 @@ function DetalleGanadoComponent() {
 				</Link>
 
 				<div className="flex flex-wrap gap-2">
+					<Button
+						onClick={() => ganadoService.exportarFichaPdf(ganado.id)}
+						variant="outline"
+						size="sm"
+						className="gap-2 cursor-pointer text-xs sm:text-sm"
+					>
+						<FileText className="size-4" />
+						Ficha PDF
+					</Button>
+					<Button
+						onClick={() =>
+							sesionSanitariaService.exportarHistorialGanadoPdf(ganado.id)
+						}
+						variant="outline"
+						size="sm"
+						className="gap-2 cursor-pointer text-xs sm:text-sm"
+					>
+						<FileText className="size-4" />
+						Historial PDF
+					</Button>
 					{canUpdate && estaActivo && (
 						<>
 							<Button
@@ -222,6 +246,24 @@ function DetalleGanadoComponent() {
 					)}
 				</div>
 			</div>
+
+			{/* Banner de período de retiro */}
+			{ganado.enPeriodoRetiro && ganado.retiroHasta && (
+				<div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3 text-red-700 dark:text-red-400">
+					<ShieldAlert className="size-5 shrink-0" />
+					<div className="text-sm text-left">
+						<span className="font-semibold">
+							Animal en período de retiro hasta el{" "}
+							{new Date(ganado.retiroHasta).toLocaleDateString("es-MX")}
+						</span>
+						{ganado.retiroMotivo && (
+							<span className="ml-2 text-red-600 dark:text-red-300">
+								· {ganado.retiroMotivo}
+							</span>
+						)}
+					</div>
+				</div>
+			)}
 
 			{/* Banner de baja */}
 			{!estaActivo && (

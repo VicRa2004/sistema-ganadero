@@ -28,6 +28,9 @@ model User {
   veterinarios      Veterinario[]
   insumos           Insumo[]
   propietarios      Propietario[]
+  planesSanitarios  PlanSanitario[]
+  notificaciones    Notificacion[]
+  preferenciasNotificacion PreferenciaNotificacion[]
 
   @@map("user")
 }
@@ -142,6 +145,20 @@ enum SexoGanado {
   HEMBRA
 }
 
+enum EstadoSesionSanitaria {
+  PROGRAMADA
+  REALIZADA
+  CANCELADA
+}
+
+enum TipoNotificacion {
+  STOCK_BAJO
+  INSUMO_POR_CADUCAR
+  TRATAMIENTO_POR_VENCER
+  SESION_PROGRAMADA
+  VACUNA_PENDIENTE
+}
+
 // ─────────────────────────────────────────────
 //  5. Tablas de Negocio
 // ─────────────────────────────────────────────
@@ -154,7 +171,8 @@ model Raza {
   updatedAt   DateTime? @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  ganados Ganado[]
+  ganados          Ganado[]
+  planesSanitarios PlanSanitario[]
 
   @@map("raza")
 }
@@ -189,8 +207,9 @@ model Terreno {
   updatedAt          DateTime? @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
 
-  usuario            User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario            User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   ganados            Ganado[]
+  planesSanitarios   PlanSanitario[]
 
   @@index([usuarioId])
   @@map("terreno")
@@ -261,22 +280,24 @@ model Pesaje {
 }
 
 model Insumo {
-  id             Int        @id @default(autoincrement()) @map("ins_id")
-  nombre         String     @map("ins_nombre") @db.VarChar(150)
-  tipo           TipoInsumo @map("ins_tipo")
-  stock          Decimal    @map("ins_stock") @db.Decimal(12, 3)
-  stockMinimo    Decimal    @map("ins_stock_minimo") @db.Decimal(12, 3)
-  unidadMedida   String     @map("ins_unidad") @db.VarChar(20)
-  lote           String     @map("ins_lote") @db.VarChar(50)
-  fechaCaducidad DateTime   @map("ins_fecha_caducidad")
-  usuarioId      Int        @map("ins_fkusuario")
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime?  @updatedAt @map("updated_at")
-  deletedAt      DateTime?  @map("deleted_at")
+  id                Int        @id @default(autoincrement()) @map("ins_id")
+  nombre            String     @map("ins_nombre") @db.VarChar(150)
+  tipo              TipoInsumo @map("ins_tipo")
+  stock             Decimal    @map("ins_stock") @db.Decimal(12, 3)
+  stockMinimo       Decimal    @map("ins_stock_minimo") @db.Decimal(12, 3)
+  unidadMedida      String     @map("ins_unidad") @db.VarChar(20)
+  lote              String     @map("ins_lote") @db.VarChar(50)
+  fechaCaducidad    DateTime   @map("ins_fecha_caducidad")
+  periodoRetiroDias Int        @default(0) @map("ins_periodo_retiro_dias")
+  usuarioId         Int        @map("ins_fkusuario")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime?  @updatedAt @map("updated_at")
+  deletedAt         DateTime?  @map("deleted_at")
 
   usuario             User                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
+  planesSanitarios    PlanSanitario[]
 
   @@index([usuarioId])
   @@index([tipo])
@@ -285,22 +306,27 @@ model Insumo {
 }
 
 model SesionSanitaria {
-  id            Int       @id @default(autoincrement()) @map("ses_id")
-  fecha         DateTime  @map("ses_fecha")
-  veterinarioId Int       @map("ses_fkveterinario")
-  descripcion   String    @map("ses_descripcion") @db.Text
-  insumoId      Int       @map("ses_fkinsumo")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime? @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  id              Int                   @id @default(autoincrement()) @map("ses_id")
+  fecha           DateTime              @map("ses_fecha")
+  veterinarioId   Int                   @map("ses_fkveterinario")
+  descripcion     String                @map("ses_descripcion") @db.Text
+  insumoId        Int                   @map("ses_fkinsumo")
+  estado          EstadoSesionSanitaria @default(REALIZADA) @map("ses_estado")
+  planSanitarioId Int?                  @map("ses_fkplan_sanitario")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime?             @updatedAt @map("updated_at")
+  deletedAt       DateTime?             @map("deleted_at")
 
-  insumo       Insumo                @relation(fields: [insumoId], references: [id], onDelete: Restrict)
-  veterinario  Veterinario           @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
-  aplicaciones AplicacionSanitaria[]
+  insumo        Insumo                @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  veterinario   Veterinario           @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
+  planSanitario PlanSanitario?        @relation(fields: [planSanitarioId], references: [id], onDelete: SetNull)
+  aplicaciones  AplicacionSanitaria[]
 
   @@index([fecha])
   @@index([veterinarioId])
   @@index([insumoId])
+  @@index([estado])
+  @@index([planSanitarioId])
   @@map("sesion_sanitaria")
 }
 
@@ -358,7 +384,89 @@ model Veterinario {
   usuario             User                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
+  planesSanitarios    PlanSanitario[]
 
   @@index([usuarioId])
   @@map("veterinario")
+}
+
+// ─────────────────────────────────────────────
+//  6. Planes Sanitarios, Notificaciones y Outbox
+// ─────────────────────────────────────────────
+
+model PlanSanitario {
+  id               Int       @id @default(autoincrement()) @map("pln_id")
+  nombre           String    @map("pln_nombre") @db.VarChar(150)
+  descripcion      String    @map("pln_descripcion") @db.Text
+  frecuenciaDias   Int       @map("pln_frecuencia_dias")
+  dosisPorAnimal   Decimal   @map("pln_dosis_animal") @db.Decimal(12, 3)
+  veterinarioId    Int       @map("pln_fkveterinario")
+  insumoId         Int       @map("pln_fkinsumo")
+  terrenoId        Int?      @map("pln_fkterreno")
+  razaId           Int?      @map("pln_fkraza")
+  edadMinimaMeses  Int?      @map("pln_edad_minima_meses")
+  proximaEjecucion DateTime  @map("pln_proxima_ejecucion")
+  activo           Boolean   @default(true) @map("pln_activo")
+  usuarioId        Int       @map("pln_fkusuario")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime? @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  usuario     User              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  veterinario Veterinario       @relation(fields: [veterinarioId], references: [id], onDelete: Restrict)
+  insumo      Insumo            @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  terreno     Terreno?          @relation(fields: [terrenoId], references: [id], onDelete: SetNull)
+  raza        Raza?             @relation(fields: [razaId], references: [id], onDelete: SetNull)
+  sesiones    SesionSanitaria[]
+
+  @@index([usuarioId])
+  @@index([activo, proximaEjecucion])
+  @@map("plan_sanitario")
+}
+
+model Notificacion {
+  id                 Int              @id @default(autoincrement()) @map("not_id")
+  usuarioId          Int              @map("not_fkusuario")
+  tipo               TipoNotificacion @map("not_tipo")
+  titulo             String           @map("not_titulo") @db.VarChar(200)
+  cuerpo             String           @map("not_cuerpo") @db.Text
+  referenciaTipo     String?          @map("not_ref_tipo") @db.VarChar(50)
+  referenciaId       Int?             @map("not_ref_id")
+  claveDeduplicacion String           @map("not_clave_dedup") @db.VarChar(160)
+  leidaAt            DateTime?        @map("not_leida_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, claveDeduplicacion])
+  @@index([usuarioId, leidaAt])
+  @@index([createdAt])
+  @@map("notificacion")
+}
+
+model PreferenciaNotificacion {
+  id        Int              @id @default(autoincrement()) @map("prf_id")
+  usuarioId Int              @map("prf_fkusuario")
+  tipo      TipoNotificacion @map("prf_tipo")
+  inApp     Boolean          @default(true) @map("prf_in_app")
+  email     Boolean          @default(false) @map("prf_email")
+  updatedAt DateTime?        @updatedAt @map("updated_at")
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, tipo])
+  @@map("preferencia_notificacion")
+}
+
+model EventoOutbox {
+  id          Int       @id @default(autoincrement()) @map("out_id")
+  eventName   String    @map("out_event_name") @db.VarChar(120)
+  payload     Json      @map("out_payload")
+  procesadoAt DateTime? @map("out_procesado_at")
+  error       String?   @map("out_error") @db.Text
+  intentos    Int       @default(0) @map("out_intentos")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([procesadoAt])
+  @@map("evento_outbox")
 }

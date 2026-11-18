@@ -50,6 +50,7 @@ export function InsumoFormDialog({
 			fechaCaducidad: insumo
 				? insumo.fechaCaducidad.substring(0, 10)
 				: new Date().toISOString().substring(0, 10),
+			periodoRetiroDias: (insumo?.periodoRetiroDias ?? 0) as number | string,
 		},
 		onSubmit: async ({ value }) => {
 			setApiError(null);
@@ -67,6 +68,7 @@ export function InsumoFormDialog({
 					unidadMedida: value.unidadMedida.trim(),
 					lote: value.lote.trim(),
 					fechaCaducidad: new Date(value.fechaCaducidad).toISOString(),
+					periodoRetiroDias: Number(value.periodoRetiroDias || 0),
 				};
 				actualizar(payload, {
 					onSuccess: () => {
@@ -83,6 +85,7 @@ export function InsumoFormDialog({
 					unidadMedida: value.unidadMedida.trim(),
 					lote: value.lote.trim(),
 					fechaCaducidad: new Date(value.fechaCaducidad).toISOString(),
+					periodoRetiroDias: Number(value.periodoRetiroDias || 0),
 				};
 				registrar(payload, {
 					onSuccess: () => {
@@ -505,6 +508,59 @@ export function InsumoFormDialog({
 							)}
 						</form.Field>
 					</div>
+
+					{/* Período de Retiro */}
+					<form.Field
+						name="periodoRetiroDias"
+						validators={{
+							onChange: ({ value }) => {
+								if (
+									value === undefined ||
+									value === null ||
+									String(value) === ""
+								)
+									return undefined;
+								const num = Number(value);
+								if (
+									Number.isNaN(num) ||
+									!Number.isInteger(num) ||
+									num < 0 ||
+									num > 365
+								)
+									return "Debe ser un entero entre 0 y 365 días.";
+								return undefined;
+							},
+						}}
+					>
+						{(field) => (
+							<div className="space-y-1.5">
+								<Label htmlFor={field.name}>Período de Retiro (días)</Label>
+								<Input
+									id={field.name}
+									name={field.name}
+									type="number"
+									allowDecimals={false}
+									min="0"
+									max="365"
+									placeholder="0"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									disabled={isPending}
+								/>
+								<p className="text-[11px] text-muted-foreground">
+									Días después de la aplicación en que el animal no puede
+									venderse ni faenarse (0 = sin retiro).
+								</p>
+								{field.state.meta.isTouched &&
+									field.state.meta.errors.length > 0 && (
+										<p className="text-xs text-red-600 dark:text-red-400 font-medium">
+											{field.state.meta.errors.join(", ")}
+										</p>
+									)}
+							</div>
+						)}
+					</form.Field>
 
 					<DialogFooter className="pt-2">
 						<Button

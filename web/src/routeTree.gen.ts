@@ -25,6 +25,7 @@ import { Route as DashboardPropietariosIndexRouteImport } from './routes/dashboa
 import { Route as DashboardPermisosIndexRouteImport } from './routes/dashboard.permisos.index'
 import { Route as DashboardInsumosIndexRouteImport } from './routes/dashboard.insumos.index'
 import { Route as DashboardGanadoIndexRouteImport } from './routes/dashboard.ganado.index'
+import { Route as DashboardCalendarioSanitarioIndexRouteImport } from './routes/dashboard.calendario-sanitario.index'
 import { Route as DashboardTratamientosMedicosIdRouteImport } from './routes/dashboard.tratamientos-medicos.$id'
 import { Route as DashboardTerrenosIdRouteImport } from './routes/dashboard.terrenos.$id'
 import { Route as DashboardPropietariosIdRouteImport } from './routes/dashboard.propietarios.$id'
@@ -114,6 +115,12 @@ const DashboardGanadoIndexRoute = DashboardGanadoIndexRouteImport.update({
   path: '/ganado/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCalendarioSanitarioIndexRoute =
+  DashboardCalendarioSanitarioIndexRouteImport.update({
+    id: '/calendario-sanitario/',
+    path: '/calendario-sanitario/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardTratamientosMedicosIdRoute =
   DashboardTratamientosMedicosIdRouteImport.update({
     id: '/tratamientos-medicos/$id',
@@ -147,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
+  '/dashboard/calendario-sanitario/': typeof DashboardCalendarioSanitarioIndexRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/permisos/': typeof DashboardPermisosIndexRoute
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
+  '/dashboard/calendario-sanitario': typeof DashboardCalendarioSanitarioIndexRoute
   '/dashboard/ganado': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos': typeof DashboardInsumosIndexRoute
   '/dashboard/permisos': typeof DashboardPermisosIndexRoute
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/dashboard/propietarios/$id': typeof DashboardPropietariosIdRoute
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
+  '/dashboard/calendario-sanitario/': typeof DashboardCalendarioSanitarioIndexRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/permisos/': typeof DashboardPermisosIndexRoute
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/dashboard/propietarios/$id'
     | '/dashboard/terrenos/$id'
     | '/dashboard/tratamientos-medicos/$id'
+    | '/dashboard/calendario-sanitario/'
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/permisos/'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/dashboard/propietarios/$id'
     | '/dashboard/terrenos/$id'
     | '/dashboard/tratamientos-medicos/$id'
+    | '/dashboard/calendario-sanitario'
     | '/dashboard/ganado'
     | '/dashboard/insumos'
     | '/dashboard/permisos'
@@ -258,6 +270,7 @@ export interface FileRouteTypes {
     | '/dashboard/propietarios/$id'
     | '/dashboard/terrenos/$id'
     | '/dashboard/tratamientos-medicos/$id'
+    | '/dashboard/calendario-sanitario/'
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/permisos/'
@@ -391,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGanadoIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/calendario-sanitario/': {
+      id: '/dashboard/calendario-sanitario/'
+      path: '/calendario-sanitario'
+      fullPath: '/dashboard/calendario-sanitario/'
+      preLoaderRoute: typeof DashboardCalendarioSanitarioIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/tratamientos-medicos/$id': {
       id: '/dashboard/tratamientos-medicos/$id'
       path: '/tratamientos-medicos/$id'
@@ -429,6 +449,7 @@ interface DashboardRouteChildren {
   DashboardPropietariosIdRoute: typeof DashboardPropietariosIdRoute
   DashboardTerrenosIdRoute: typeof DashboardTerrenosIdRoute
   DashboardTratamientosMedicosIdRoute: typeof DashboardTratamientosMedicosIdRoute
+  DashboardCalendarioSanitarioIndexRoute: typeof DashboardCalendarioSanitarioIndexRoute
   DashboardGanadoIndexRoute: typeof DashboardGanadoIndexRoute
   DashboardInsumosIndexRoute: typeof DashboardInsumosIndexRoute
   DashboardPermisosIndexRoute: typeof DashboardPermisosIndexRoute
@@ -448,6 +469,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardPropietariosIdRoute: DashboardPropietariosIdRoute,
   DashboardTerrenosIdRoute: DashboardTerrenosIdRoute,
   DashboardTratamientosMedicosIdRoute: DashboardTratamientosMedicosIdRoute,
+  DashboardCalendarioSanitarioIndexRoute:
+    DashboardCalendarioSanitarioIndexRoute,
   DashboardGanadoIndexRoute: DashboardGanadoIndexRoute,
   DashboardInsumosIndexRoute: DashboardInsumosIndexRoute,
   DashboardPermisosIndexRoute: DashboardPermisosIndexRoute,

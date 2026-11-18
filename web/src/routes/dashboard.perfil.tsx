@@ -1,12 +1,21 @@
+import { useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { UserCircle } from "lucide-react";
+import { Bell, Loader2, UserCircle } from "lucide-react";
 import { z } from "zod";
 import { CampoTexto } from "@/components/CampoTexto";
 import { Button } from "@/components/ui/button";
 import { useCambiarPassword } from "@/modules/auth/hooks/useCambiarPassword";
 import { passwordSchema } from "@/modules/auth/schemas";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import {
+	useActualizarPreferenciasNotificacion,
+	useObtenerPreferenciasNotificacion,
+} from "@/modules/notificacion/hooks/useNotificaciones";
+import {
+	TIPO_NOTIFICACION_LABELS,
+	type PreferenciaNotificacionDto,
+} from "@/modules/notificacion/types";
 
 export const Route = createFileRoute("/dashboard/perfil")({
 	component: PerfilComponent,
@@ -26,6 +35,26 @@ const cambioSchema = z
 function PerfilComponent() {
 	const user = useAuthStore((state) => state.user);
 	const { mutate: cambiar, isPending } = useCambiarPassword();
+	const { data: prefsRemotas, isLoading: isLoadingPrefs } =
+		useObtenerPreferenciasNotificacion();
+	const actualizarPrefs = useActualizarPreferenciasNotificacion();
+	const [prefsLocales, setPrefsLocales] = useState<
+		PreferenciaNotificacionDto[]
+	>([]);
+
+	useEffect(() => {
+		if (prefsRemotas) {
+			setPrefsLocales(prefsRemotas);
+		}
+	}, [prefsRemotas]);
+
+	const togglePref = (index: number) => {
+		setPrefsLocales((prev) =>
+			prev.map((item, idx) =>
+				idx === index ? { ...item, inApp: !item.inApp } : item,
+			),
+		);
+	};
 
 	const form = useForm({
 		defaultValues: { currentPassword: "", newPassword: "", confirm: "" },
@@ -104,6 +133,64 @@ function PerfilComponent() {
 					{isPending ? "Guardando..." : "Cambiar contraseña"}
 				</Button>
 			</form>
+
+			{/* Preferencias de alertas y notificaciones */}
+			<section className="space-y-4 pt-6 border-t border-border text-left">
+				<div className="flex items-center gap-2">
+					<Bell className="size-5 text-primary" />
+					<h2 className="font-semibold">Preferencias de alertas sanitarias</h2>
+				</div>
+				<p className="text-sm text-muted-foreground">
+					Elige qué tipos de recordatorios deseas recibir en la campana de
+					notificaciones.
+				</p>
+
+				{isLoadingPrefs ? (
+					<div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+						<Loader2 className="size-4 animate-spin" />
+						Cargando preferencias...
+					</div>
+				) : (
+					<div className="space-y-3">
+						{prefsLocales.map((pref, index) => {
+							const info = TIPO_NOTIFICACION_LABELS[pref.tipo];
+							return (
+								<label
+									key={pref.tipo}
+									className="flex items-start justify-between gap-4 p-3.5 rounded-xl border border-border bg-card/50 cursor-pointer hover:bg-muted/30 transition-colors"
+								>
+									<div className="space-y-0.5">
+										<p className="text-sm font-medium text-foreground">
+											{info.label}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											{info.descripcion}
+										</p>
+									</div>
+									<input
+										type="checkbox"
+										checked={pref.inApp}
+										onChange={() => togglePref(index)}
+										className="mt-1 h-4 w-4 accent-primary cursor-pointer shrink-0"
+									/>
+								</label>
+							);
+						})}
+
+						<Button
+							type="button"
+							variant="outline"
+							disabled={actualizarPrefs.isPending || prefsLocales.length === 0}
+							onClick={() => actualizarPrefs.mutate(prefsLocales)}
+							className="cursor-pointer w-full sm:w-auto"
+						>
+							{actualizarPrefs.isPending
+								? "Guardando..."
+								: "Guardar preferencias de alertas"}
+						</Button>
+					</div>
+				)}
+			</section>
 		</div>
 	);
 }

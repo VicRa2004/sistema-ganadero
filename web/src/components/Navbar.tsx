@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
 import { MobileSidebarTrigger } from "@/components/Sidebar";
+import { NotificacionesBell } from "@/components/notificacion/NotificacionesBell";
 import {
 	Sun,
 	Moon,
@@ -181,6 +182,9 @@ export function Navbar() {
 									</Button>
 								</Link>
 							)}
+
+							{/* Campana de notificaciones */}
+							{isAuthenticated && <NotificacionesBell />}
 
 							{/* Toggle de tema */}
 							<Button

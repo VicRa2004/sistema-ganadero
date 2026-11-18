@@ -101,8 +101,13 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 									<div className="font-medium text-foreground">
 										{insumo.nombre}
 									</div>
-									<div className="text-xs text-muted-foreground font-mono mt-0.5">
-										Lote: {insumo.lote}
+									<div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mt-0.5">
+										<span>Lote: {insumo.lote}</span>
+										{insumo.periodoRetiroDias > 0 && (
+											<span className="font-sans px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] font-medium">
+												Retiro: {insumo.periodoRetiroDias}d
+											</span>
+										)}
 									</div>
 								</td>
 

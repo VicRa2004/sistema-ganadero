@@ -5,20 +5,30 @@ import { Badge } from "@/components/ui/badge";
 import {
 	Activity,
 	Calendar,
+	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
 	Database,
+	Download,
 	Eye,
+	FileText,
 	Filter,
 	Loader2,
 	Plus,
 	Search,
 	Trash2,
 	UserCheck,
+	XCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useListarSesionesSanitarias } from "@/modules/sesion-sanitaria/hooks/useListarSesionesSanitarias";
 import { useEliminarSesionSanitaria } from "@/modules/sesion-sanitaria/hooks/useEliminarSesionSanitaria";
+import {
+	useCancelarSesionSanitaria,
+	useRealizarSesionSanitaria,
+} from "@/modules/sesion-sanitaria/hooks/useCalendarioYPlanes";
+import { sesionSanitariaService } from "@/modules/sesion-sanitaria/services/sesionSanitariaService";
+import type { EstadoSesionSanitaria } from "@/modules/sesion-sanitaria/types";
 import { useListarVeterinarios } from "@/modules/veterinario/hooks/useListarVeterinarios";
 import { useListarInsumos } from "@/modules/inventario-insumos/hooks/useListarInsumos";
 import { RegistrarSesionSanitariaModal } from "./RegistrarSesionSanitariaModal";
@@ -33,12 +43,16 @@ export function SesionesSanitariasTable() {
 	const [searchInput, setSearchInput] = useState("");
 	const [veterinarioFilter, setVeterinarioFilter] = useState<number | "">("");
 	const [insumoFilter, setInsumoFilter] = useState<number | "">("");
+	const [estadoFilter, setEstadoFilter] = useState<EstadoSesionSanitaria | "">(
+		"",
+	);
 
 	const [registrarOpen, setRegistrarOpen] = useState(false);
 	const [detalleSesionId, setDetalleSesionId] = useState<number | null>(null);
 
 	const permissions = useAuthStore((state) => state.permissions) ?? [];
 	const canCreate = permissions.includes("sesiones-sanitarias:create");
+	const canUpdate = permissions.includes("sesiones-sanitarias:update");
 	const canDelete = permissions.includes("sesiones-sanitarias:delete");
 
 	const { data: pagination, isLoading } = useListarSesionesSanitarias({
@@ -47,11 +61,14 @@ export function SesionesSanitariasTable() {
 		busqueda: busqueda || undefined,
 		veterinarioId: veterinarioFilter ? Number(veterinarioFilter) : undefined,
 		insumoId: insumoFilter ? Number(insumoFilter) : undefined,
+		estado: estadoFilter || undefined,
 	});
 
 	const { data: veterinariosData } = useListarVeterinarios(1, 100);
 	const { data: insumosData } = useListarInsumos({ page: 1, limit: 100 });
 	const eliminarMutation = useEliminarSesionSanitaria();
+	const realizarMutation = useRealizarSesionSanitaria();
+	const cancelarMutation = useCancelarSesionSanitaria();
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -87,15 +104,55 @@ export function SesionesSanitariasTable() {
 					</p>
 				</div>
 
-				{canCreate && (
+				<div className="flex flex-wrap items-center gap-2">
 					<Button
-						onClick={() => setRegistrarOpen(true)}
-						className="gap-2 cursor-pointer shrink-0 w-full sm:w-auto"
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							sesionSanitariaService.exportarCsv({
+								busqueda: busqueda || undefined,
+								veterinarioId: veterinarioFilter
+									? Number(veterinarioFilter)
+									: undefined,
+								insumoId: insumoFilter ? Number(insumoFilter) : undefined,
+								estado: estadoFilter || undefined,
+							})
+						}
+						className="gap-1.5 cursor-pointer"
 					>
-						<Plus className="size-4" />
-						Nueva Sesión Sanitaria
+						<Download className="size-4" />
+						CSV
 					</Button>
-				)}
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							sesionSanitariaService.exportarPdf({
+								busqueda: busqueda || undefined,
+								veterinarioId: veterinarioFilter
+									? Number(veterinarioFilter)
+									: undefined,
+								insumoId: insumoFilter ? Number(insumoFilter) : undefined,
+								estado: estadoFilter || undefined,
+							})
+						}
+						className="gap-1.5 cursor-pointer"
+					>
+						<FileText className="size-4" />
+						PDF
+					</Button>
+					{canCreate && (
+						<Button
+							onClick={() => setRegistrarOpen(true)}
+							className="gap-2 cursor-pointer shrink-0 w-full sm:w-auto"
+						>
+							<Plus className="size-4" />
+							Nueva Sesión Sanitaria
+						</Button>
+					)}
+				</div>
 			</div>
 
 			{/* Filtros */}
@@ -164,6 +221,20 @@ export function SesionesSanitariasTable() {
 								</option>
 							))}
 					</select>
+
+					<select
+						value={estadoFilter}
+						onChange={(e) => {
+							setEstadoFilter(e.target.value as EstadoSesionSanitaria | "");
+							setPage(1);
+						}}
+						className={SELECT_CLASS}
+					>
+						<option value="">Todos los estados</option>
+						<option value="PROGRAMADA">Programadas</option>
+						<option value="REALIZADA">Realizadas</option>
+						<option value="CANCELADA">Canceladas</option>
+					</select>
 				</div>
 			</div>
 
@@ -216,6 +287,18 @@ export function SesionesSanitariasTable() {
 											<p className="font-semibold text-foreground truncate">
 												{s.descripcion}
 											</p>
+											<Badge
+												variant={
+													s.estado === "REALIZADA"
+														? "secondary"
+														: s.estado === "PROGRAMADA"
+															? "default"
+															: "outline"
+												}
+												className="mt-1 text-[10px]"
+											>
+												{s.estado}
+											</Badge>
 										</td>
 
 										<td className="p-3.5 whitespace-nowrap">
@@ -259,6 +342,32 @@ export function SesionesSanitariasTable() {
 													<Eye className="size-3.5 text-primary" />
 													Ver Detalle
 												</Button>
+
+												{canUpdate && s.estado === "PROGRAMADA" && (
+													<>
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={() => realizarMutation.mutate(s.id)}
+															disabled={realizarMutation.isPending}
+															className="h-8 px-2 text-xs gap-1 cursor-pointer text-emerald-600 dark:text-emerald-400"
+															title="Marcar sesión como realizada y descontar stock"
+														>
+															<CheckCircle2 className="size-3.5" />
+															Realizar
+														</Button>
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={() => cancelarMutation.mutate(s.id)}
+															disabled={cancelarMutation.isPending}
+															className="h-8 w-8 p-0 text-amber-600 cursor-pointer"
+															title="Cancelar sesión programada"
+														>
+															<XCircle className="size-3.5" />
+														</Button>
+													</>
+												)}
 
 												{canDelete && (
 													<Button

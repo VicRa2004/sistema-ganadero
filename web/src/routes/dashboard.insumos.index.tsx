@@ -5,6 +5,7 @@ import { useListarInsumos } from "@/modules/inventario-insumos/hooks/useListarIn
 import { useObtenerInsumosCriticos } from "@/modules/inventario-insumos/hooks/useObtenerInsumosCriticos";
 import { InsumosTable } from "@/components/insumo/InsumosTable";
 import { InsumoFormDialog } from "@/components/insumo/InsumoFormDialog";
+import { insumoService } from "@/modules/inventario-insumos/services/insumoService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +20,8 @@ import {
 	Loader2,
 	RefreshCw,
 	X,
+	Download,
+	FileText,
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/insumos/")({
@@ -73,15 +76,47 @@ function InsumosPage() {
 					</p>
 				</div>
 
-				{canCreate && (
+				<div className="flex flex-wrap items-center gap-2">
 					<Button
-						onClick={() => setIsRegisterOpen(true)}
-						className="cursor-pointer shadow-xs gap-2 shrink-0 w-full sm:w-auto"
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							insumoService.exportarCsv(
+								searchTerm || undefined,
+								selectedTipo || undefined,
+							)
+						}
+						className="cursor-pointer gap-1.5"
 					>
-						<Plus className="h-4 w-4" />
-						Registrar Insumo
+						<Download className="h-4 w-4" />
+						CSV
 					</Button>
-				)}
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() =>
+							insumoService.exportarPdf(
+								searchTerm || undefined,
+								selectedTipo || undefined,
+							)
+						}
+						className="cursor-pointer gap-1.5"
+					>
+						<FileText className="h-4 w-4" />
+						PDF
+					</Button>
+					{canCreate && (
+						<Button
+							onClick={() => setIsRegisterOpen(true)}
+							className="cursor-pointer shadow-xs gap-2 shrink-0 w-full sm:w-auto"
+						>
+							<Plus className="h-4 w-4" />
+							Registrar Insumo
+						</Button>
+					)}
+				</div>
 			</div>
 
 			{/* Tarjetas de Métricas / Resumen */}

@@ -109,6 +109,7 @@ export function RegistrarSesionSanitariaModal({
 			veterinarioId: "",
 			insumoId: "",
 			descripcion: "",
+			estado: "REALIZADA" as "REALIZADA" | "PROGRAMADA",
 		},
 		onSubmit: async ({ value }) => {
 			setApiError(null);
@@ -118,8 +119,10 @@ export function RegistrarSesionSanitariaModal({
 				return;
 			}
 
-			if (aplicaciones.length === 0) {
-				setApiError("Debe agregar al menos un animal a la sesión sanitaria.");
+			if (value.estado === "REALIZADA" && aplicaciones.length === 0) {
+				setApiError(
+					"Debe agregar al menos un animal para una sesión realizada.",
+				);
 				return;
 			}
 
@@ -129,6 +132,7 @@ export function RegistrarSesionSanitariaModal({
 					veterinarioId: Number(value.veterinarioId),
 					insumoId: Number(value.insumoId),
 					descripcion: value.descripcion,
+					estado: value.estado,
 					aplicaciones: aplicaciones.map((app) => ({
 						ganadoId: app.ganadoId,
 						dosisAplicada: Number(app.dosisAplicada) || 0,
@@ -328,7 +332,7 @@ export function RegistrarSesionSanitariaModal({
 						{/* Descripción */}
 						<form.Field name="descripcion">
 							{(field) => (
-								<div className="space-y-1.5 md:col-span-3">
+								<div className="space-y-1.5 md:col-span-2">
 									<label
 										htmlFor="reg-sesion-descripcion"
 										className="text-xs font-semibold flex items-center gap-1.5"
@@ -344,6 +348,38 @@ export function RegistrarSesionSanitariaModal({
 										onChange={(e) => field.handleChange(e.target.value)}
 										className="h-9 text-sm"
 									/>
+								</div>
+							)}
+						</form.Field>
+
+						{/* Estado */}
+						<form.Field name="estado">
+							{(field) => (
+								<div className="space-y-1.5">
+									<label
+										htmlFor="reg-sesion-estado"
+										className="text-xs font-semibold flex items-center gap-1.5"
+									>
+										<Activity className="size-3.5 text-primary" />
+										Estado
+									</label>
+									<select
+										id="reg-sesion-estado"
+										value={field.state.value}
+										onChange={(e) =>
+											field.handleChange(
+												e.target.value as "REALIZADA" | "PROGRAMADA",
+											)
+										}
+										className={SELECT_CLASS}
+									>
+										<option value="REALIZADA">
+											Realizada (descuenta stock)
+										</option>
+										<option value="PROGRAMADA">
+											Programada (futura, sin descontar)
+										</option>
+									</select>
 								</div>
 							)}
 						</form.Field>

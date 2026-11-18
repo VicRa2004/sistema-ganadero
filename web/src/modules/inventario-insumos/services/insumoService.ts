@@ -1,4 +1,5 @@
 import { api } from "@/config/axios";
+import { descargarArchivoApi } from "@/lib/descargarArchivo";
 import type {
 	AbastecerInsumoInput,
 	ActualizarInsumoInput,
@@ -62,5 +63,27 @@ export const insumoService = {
 
 	async eliminar(id: number): Promise<void> {
 		await api.delete(`/insumos/${id}`);
+	},
+
+	async exportarCsv(nombre?: string, tipo?: string): Promise<void> {
+		await descargarArchivoApi(
+			"/insumos/exportar/csv",
+			"inventario-insumos.csv",
+			{
+				nombre: nombre || undefined,
+				tipo: tipo || undefined,
+			},
+		);
+	},
+
+	async exportarPdf(nombre?: string, tipo?: string): Promise<void> {
+		await descargarArchivoApi(
+			"/insumos/exportar/pdf",
+			"inventario-insumos.pdf",
+			{
+				nombre: nombre || undefined,
+				tipo: tipo || undefined,
+			},
+		);
 	},
 };

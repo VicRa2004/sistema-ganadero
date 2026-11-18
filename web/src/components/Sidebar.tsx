@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
 	Activity,
+	Calendar,
 	Database,
 	Dna,
 	KeyRound,
@@ -83,6 +84,12 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 	{
 		title: "Sanidad",
 		items: [
+			{
+				label: "Calendario Sanitario",
+				resource: "sesiones-sanitarias",
+				href: "/dashboard/calendario-sanitario",
+				icon: Calendar,
+			},
 			{
 				label: "Sesiones Sanitarias",
 				resource: "sesiones-sanitarias",

@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { app } from "@/core/shared/infrastructure/http/server";
 import { container } from "@/core/shared/infrastructure/di/container";
 import type { RefreshTokenRepository } from "@/modules/auth/domain/repository/RefreshTokenRepository";
+import type { EvaluarAlertasSanitariasUseCase } from "@/modules/salud/application/useCases/EvaluarAlertasSanitariasUseCase";
 import { env } from "./core/config/env";
 import { logger } from "./core/config/logger";
 
@@ -23,3 +24,23 @@ const limpiarTokensExpirados = () =>
 
 limpiarTokensExpirados();
 setInterval(limpiarTokensExpirados, LIMPIEZA_TOKENS_MS).unref();
+
+// Evaluación diaria de salud y recordatorios (stock bajo, caducidades, tratamientos, planes)
+const EVALUACION_SALUD_MS = 24 * 60 * 60 * 1000;
+const ejecutarEvaluacionSalud = () =>
+	container
+		.resolve<EvaluarAlertasSanitariasUseCase>("EvaluarAlertasSanitariasUseCase")
+		.run()
+		.then((res) =>
+			logger.info(
+				`Evaluación sanitaria completada: ${res.eventosEmitidos} evento(s), ${res.sesionesGeneradasPorPlanes} sesión(es) generada(s)`,
+			),
+		)
+		.catch((error) =>
+			logger.error("Error en evaluación diaria de salud", error),
+		);
+
+if (env.NODE_ENV !== "test") {
+	setTimeout(ejecutarEvaluacionSalud, 10_000).unref();
+	setInterval(ejecutarEvaluacionSalud, EVALUACION_SALUD_MS).unref();
+}

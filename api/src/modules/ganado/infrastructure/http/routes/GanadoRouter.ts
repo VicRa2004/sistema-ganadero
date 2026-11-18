@@ -12,6 +12,11 @@ import type { EliminarGanadoController } from "../controllers/EliminarGanadoCont
 import type { ActualizarGanadoController } from "../controllers/ActualizarGanadoController";
 import type { DarDeBajaGanadoController } from "../controllers/DarDeBajaGanadoController";
 import type { ListarMotivosBajaController } from "../controllers/ListarMotivosBajaController";
+import type { DescargarPlantillaGanadoController } from "../controllers/DescargarPlantillaGanadoController";
+import type { PrevisualizarImportacionGanadoController } from "../controllers/PrevisualizarImportacionGanadoController";
+import type { ConfirmarImportacionGanadoController } from "../controllers/ConfirmarImportacionGanadoController";
+import type { ExportarGanadoCsvController } from "../controllers/ExportarGanadoCsvController";
+import type { ExportarFichaGanadoPdfController } from "../controllers/ExportarFichaGanadoPdfController";
 
 @injectable()
 export class GanadoRouter {
@@ -42,6 +47,16 @@ export class GanadoRouter {
 		private readonly darDeBajaController: DarDeBajaGanadoController,
 		@inject("ListarMotivosBajaController")
 		private readonly listarMotivosBajaController: ListarMotivosBajaController,
+		@inject("DescargarPlantillaGanadoController")
+		private readonly plantillaController: DescargarPlantillaGanadoController,
+		@inject("PrevisualizarImportacionGanadoController")
+		private readonly previsualizarImportacionController: PrevisualizarImportacionGanadoController,
+		@inject("ConfirmarImportacionGanadoController")
+		private readonly confirmarImportacionController: ConfirmarImportacionGanadoController,
+		@inject("ExportarGanadoCsvController")
+		private readonly exportarCsvController: ExportarGanadoCsvController,
+		@inject("ExportarFichaGanadoPdfController")
+		private readonly exportarFichaPdfController: ExportarFichaGanadoPdfController,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -64,6 +79,40 @@ export class GanadoRouter {
 			this.listarMotivosBajaController.run.bind(
 				this.listarMotivosBajaController,
 			),
+		);
+
+		this.router.get(
+			"/importar/plantilla",
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.plantillaController.run.bind(this.plantillaController),
+		);
+
+		this.router.post(
+			"/importar/previsualizar",
+			this.requirePermissionMiddleware.handle("ganado", "create"),
+			this.previsualizarImportacionController.run.bind(
+				this.previsualizarImportacionController,
+			),
+		);
+
+		this.router.post(
+			"/importar/confirmar",
+			this.requirePermissionMiddleware.handle("ganado", "create"),
+			this.confirmarImportacionController.run.bind(
+				this.confirmarImportacionController,
+			),
+		);
+
+		this.router.get(
+			"/exportar/csv",
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.exportarCsvController.run.bind(this.exportarCsvController),
+		);
+
+		this.router.get(
+			"/:idOrIdentificador/ficha-pdf",
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.exportarFichaPdfController.run.bind(this.exportarFichaPdfController),
 		);
 
 		this.router.get(

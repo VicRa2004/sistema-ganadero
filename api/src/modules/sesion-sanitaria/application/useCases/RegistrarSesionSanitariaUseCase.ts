@@ -14,6 +14,10 @@ import type { TransactionRunner } from "@/core/shared/domain/services/Transactio
 import type { SesionSanitariaMapper } from "../mappers/SesionSanitariaMapper";
 import type { SesionAccessService } from "../services/SesionAccessService";
 import { ValidationError } from "@/core/shared/domain/error/ValidationError";
+import {
+	AlertaNotificacionDomainEvent,
+	type OutboxEventPublisher,
+} from "@/core/notificacion/domain/events/SaludEvents";
 
 @injectable()
 export class RegistrarSesionSanitariaUseCase {
@@ -30,12 +34,16 @@ export class RegistrarSesionSanitariaUseCase {
 		private readonly ganadoAccessService: GanadoAccessService,
 		@inject("SesionSanitariaMapper")
 		private readonly mapper: SesionSanitariaMapper,
+		@inject("OutboxEventPublisher")
+		private readonly outbox?: OutboxEventPublisher,
 	) {}
 
 	public async run(
 		dto: RegistrarSesionSanitariaInputDto,
 		actor: Actor,
 	): Promise<SesionSanitariaOutputDto> {
+		const estado = dto.estado ?? "REALIZADA";
+
 		// El veterinario, el insumo y los animales deben existir y ser del usuario
 		const veterinario = await this.accessService.obtenerVeterinario(
 			dto.veterinarioId,
@@ -44,7 +52,10 @@ export class RegistrarSesionSanitariaUseCase {
 
 		const insumo = await this.accessService.obtenerInsumo(dto.insumoId, actor);
 
-		if (!dto.aplicaciones || dto.aplicaciones.length === 0) {
+		if (
+			estado === "REALIZADA" &&
+			(!dto.aplicaciones || dto.aplicaciones.length === 0)
+		) {
 			throw new ValidationError(
 				"Debe incluir al menos una aplicación a un animal de ganado para registrar la sesión",
 			);
@@ -53,7 +64,7 @@ export class RegistrarSesionSanitariaUseCase {
 		const aplicaciones: AplicacionSanitaria[] = [];
 		let totalDosisRequerida = 0;
 
-		for (const appDto of dto.aplicaciones) {
+		for (const appDto of dto.aplicaciones ?? []) {
 			await this.ganadoAccessService.obtenerGanado(appDto.ganadoId, actor);
 
 			const app = AplicacionSanitaria.create(
@@ -63,6 +74,24 @@ export class RegistrarSesionSanitariaUseCase {
 			);
 			aplicaciones.push(app);
 			totalDosisRequerida += appDto.dosisAplicada;
+		}
+
+		if (estado === "PROGRAMADA") {
+			const sesion = SesionSanitaria.create(
+				new Date(dto.fecha),
+				dto.veterinarioId,
+				dto.descripcion,
+				dto.insumoId,
+				aplicaciones,
+				null,
+				"PROGRAMADA",
+			);
+			const sesionGuardada = await this.sesionSanitariaRepository.save(sesion);
+			return this.mapper.toDto(sesionGuardada, {
+				nombreVeterinario: veterinario.getNombre(),
+				nombreInsumo: insumo.getNombre(),
+				unidadMedidaInsumo: insumo.getUnidadMedida(),
+			});
 		}
 
 		if (insumo.getStock() < totalDosisRequerida) {
@@ -79,9 +108,13 @@ export class RegistrarSesionSanitariaUseCase {
 			dto.descripcion,
 			dto.insumoId,
 			aplicaciones,
+			null,
+			"REALIZADA",
 		);
 
 		// El descuento de stock y la sesión se guardan juntos: si algo falla, no se pierde stock
+		let insumoActualizadoBajoStock = false;
+		let stockFinal = insumo.getStock();
 		const sesionGuardada = await this.transactionRunner.run(async () => {
 			const actualizado = await this.insumoRepository.descontarStock(
 				insumo.getId(),
@@ -96,9 +129,30 @@ export class RegistrarSesionSanitariaUseCase {
 					totalDosisRequerida,
 				);
 			}
+			if (
+				typeof actualizado.esBajoStock === "function" &&
+				actualizado.esBajoStock()
+			) {
+				insumoActualizadoBajoStock = true;
+				stockFinal = actualizado.getStock();
+			}
 
 			return this.sesionSanitariaRepository.save(sesion);
 		});
+
+		if (insumoActualizadoBajoStock && this.outbox) {
+			await this.outbox.publish(
+				new AlertaNotificacionDomainEvent("insumo.bajo-stock", {
+					usuarioId: insumo.getUsuarioId(),
+					tipo: "STOCK_BAJO",
+					titulo: `Stock bajo: ${insumo.getNombre()}`,
+					cuerpo: `El insumo "${insumo.getNombre()}" tiene ${stockFinal} ${insumo.getUnidadMedida()} (mínimo: ${insumo.getStockMinimo()} ${insumo.getUnidadMedida()}).`,
+					claveDeduplicacion: `stock-bajo:${insumo.getId()}`,
+					referenciaTipo: "INSUMO",
+					referenciaId: insumo.getId(),
+				}),
+			);
+		}
 
 		return this.mapper.toDto(sesionGuardada, {
 			nombreVeterinario: veterinario.getNombre(),

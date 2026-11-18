@@ -115,3 +115,28 @@ export const listarGanadoQuerySchema = z.object({
 		.optional()
 		.transform((v) => v !== "false"),
 });
+
+export const exportarGanadoQuerySchema = z.object({
+	identificador: z.string().optional(),
+	sexo: z.enum(["MACHO", "HEMBRA"]).optional(),
+	terrenoId: z
+		.string()
+		.optional()
+		.transform((v) => (v ? Number(v) : undefined)),
+	razaId: z
+		.string()
+		.optional()
+		.transform((v) => (v ? Number(v) : undefined)),
+	propietarioId: z
+		.string()
+		.optional()
+		.transform((v) => (v ? Number(v) : undefined)),
+	soloActivos: z
+		.string()
+		.optional()
+		.transform((v) => v !== "false"),
+});
+
+export const importarGanadoCsvSchema = z.object({
+	csv: z.string().min(1, "El contenido CSV es obligatorio"),
+});

@@ -94,6 +94,9 @@ export interface GanadoDetalleOutputDto {
 		id: number;
 		nombre: string;
 	} | null;
+	enPeriodoRetiro: boolean;
+	retiroHasta: string | null;
+	retiroMotivo: string | null;
 }
 
 export interface MotivoBajaOutputDto {

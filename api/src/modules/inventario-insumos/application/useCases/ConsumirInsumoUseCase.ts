@@ -1,5 +1,9 @@
 import { inject, injectable } from "tsyringe";
 import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
+import {
+	AlertaNotificacionDomainEvent,
+	type OutboxEventPublisher,
+} from "@/core/notificacion/domain/events/SaludEvents";
 import { InsumoStockInsuficienteError } from "../../domain/error/InsumoStockInsuficienteError";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
@@ -17,6 +21,8 @@ export class ConsumirInsumoUseCase {
 		private readonly insumoRepository: InsumoRepository,
 		@inject("InsumoMapper")
 		private readonly mapper: InsumoMapper,
+		@inject("OutboxEventPublisher")
+		private readonly outbox?: OutboxEventPublisher,
 	) {}
 
 	public async run(
@@ -51,6 +57,19 @@ export class ConsumirInsumoUseCase {
 			logger.warn(
 				`Alerta de inventario: el insumo "${saved.getNombre()}" (ID: ${saved.getId()}) ha caído por debajo de su stock mínimo de seguridad. Stock actual: ${saved.getStock()} ${saved.getUnidadMedida()} (Mínimo: ${saved.getStockMinimo()}).`,
 			);
+			if (this.outbox) {
+				await this.outbox.publish(
+					new AlertaNotificacionDomainEvent("insumo.bajo-stock", {
+						usuarioId: saved.getUsuarioId(),
+						tipo: "STOCK_BAJO",
+						titulo: `Stock bajo: ${saved.getNombre()}`,
+						cuerpo: `El insumo "${saved.getNombre()}" tiene ${saved.getStock()} ${saved.getUnidadMedida()} (mínimo: ${saved.getStockMinimo()} ${saved.getUnidadMedida()}).`,
+						claveDeduplicacion: `stock-bajo:${saved.getId()}`,
+						referenciaTipo: "INSUMO",
+						referenciaId: saved.getId(),
+					}),
+				);
+			}
 		}
 
 		return this.mapper.toDto(saved);

@@ -9,6 +9,8 @@ import type {
 } from "../dtos/GanadoDto";
 import type { GanadoMapper } from "../mappers/GanadoMapper";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
+import { ValidationError } from "@/core/shared/domain/error/ValidationError";
+import type { GanadoDetalleQuery } from "../queries/GanadoDetalleQuery";
 
 class MotivoBajaNotFoundError extends BaseError {
 	constructor(id: number) {
@@ -33,6 +35,8 @@ export class DarDeBajaGanadoUseCase {
 		private readonly accessService: GanadoAccessService,
 		@inject("GanadoMapper")
 		private readonly mapper: GanadoMapper,
+		@inject("GanadoDetalleQuery")
+		private readonly detalleQuery?: GanadoDetalleQuery,
 	) {}
 
 	public async run(
@@ -54,8 +58,29 @@ export class DarDeBajaGanadoUseCase {
 			throw new MotivoBajaNotFoundError(dto.motivoBajaId);
 		}
 
-		// 4. Aplicar baja en el dominio
+		// 4. Bloquear venta/sacrificio si tiene período de retiro vigente
 		const fechaBaja = new Date(dto.fechaBaja);
+		const nombreMotivo =
+			typeof motivo.getNombre === "function"
+				? motivo.getNombre().toUpperCase()
+				: "";
+		if (
+			this.detalleQuery &&
+			(nombreMotivo === "VENTA" || nombreMotivo === "SACRIFICIO")
+		) {
+			const retiro = await this.detalleQuery.obtenerRetiroVigente(
+				id,
+				fechaBaja,
+			);
+			if (retiro.vigente && retiro.hasta) {
+				const hastaStr = retiro.hasta.toISOString().slice(0, 10);
+				throw new ValidationError(
+					`No se puede dar de baja por ${nombreMotivo}: el animal tiene período de retiro vigente hasta ${hastaStr} (${retiro.motivo ?? "medicamento"})`,
+				);
+			}
+		}
+
+		// 5. Aplicar baja en el dominio
 		ganado.darDeBaja(fechaBaja, dto.motivoBajaId);
 
 		// 5. Persistir

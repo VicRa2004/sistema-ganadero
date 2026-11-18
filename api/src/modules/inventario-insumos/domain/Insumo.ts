@@ -14,6 +14,7 @@ export class Insumo extends Entity {
 	private lote: string;
 	private fechaCaducidad: Date;
 	private usuarioId: number;
+	private periodoRetiroDias: number;
 
 	private constructor(
 		id: EntityId,
@@ -25,6 +26,7 @@ export class Insumo extends Entity {
 		lote: string,
 		fechaCaducidad: Date,
 		usuarioId: number,
+		periodoRetiroDias = 0,
 	) {
 		super(id);
 		this.nombre = nombre;
@@ -35,6 +37,7 @@ export class Insumo extends Entity {
 		this.lote = lote;
 		this.fechaCaducidad = fechaCaducidad;
 		this.usuarioId = usuarioId;
+		this.periodoRetiroDias = periodoRetiroDias;
 	}
 
 	public static create(
@@ -46,6 +49,7 @@ export class Insumo extends Entity {
 		lote: string,
 		fechaCaducidad: Date,
 		usuarioId: number,
+		periodoRetiroDias = 0,
 	): Insumo {
 		if (!nombre || nombre.trim() === "") {
 			throw new ValidationError("El nombre del insumo no puede estar vacío");
@@ -65,6 +69,11 @@ export class Insumo extends Entity {
 		if (!usuarioId || usuarioId <= 0) {
 			throw new ValidationError("El usuarioId debe ser un ID válido");
 		}
+		if (!Number.isInteger(periodoRetiroDias) || periodoRetiroDias < 0) {
+			throw new ValidationError(
+				"El período de retiro debe ser un entero mayor o igual a 0",
+			);
+		}
 		return new Insumo(
 			new EntityId(),
 			nombre,
@@ -75,6 +84,7 @@ export class Insumo extends Entity {
 			lote,
 			fechaCaducidad,
 			usuarioId,
+			periodoRetiroDias,
 		);
 	}
 
@@ -88,6 +98,7 @@ export class Insumo extends Entity {
 		lote: string,
 		fechaCaducidad: Date,
 		usuarioId: number,
+		periodoRetiroDias = 0,
 	): Insumo {
 		return new Insumo(
 			new EntityId(id),
@@ -99,6 +110,7 @@ export class Insumo extends Entity {
 			lote,
 			fechaCaducidad,
 			usuarioId,
+			periodoRetiroDias,
 		);
 	}
 
@@ -132,6 +144,10 @@ export class Insumo extends Entity {
 
 	public getUsuarioId(): number {
 		return this.usuarioId;
+	}
+
+	public getPeriodoRetiroDias(): number {
+		return this.periodoRetiroDias;
 	}
 
 	public esNuevo(): boolean {
@@ -182,6 +198,7 @@ export class Insumo extends Entity {
 		unidadMedida: string,
 		lote: string,
 		fechaCaducidad: Date,
+		periodoRetiroDias?: number,
 	): void {
 		if (!nombre || nombre.trim() === "") {
 			throw new ValidationError("El nombre del insumo no puede estar vacío");
@@ -195,11 +212,22 @@ export class Insumo extends Entity {
 		if (!lote || lote.trim() === "") {
 			throw new ValidationError("El lote del insumo no puede estar vacío");
 		}
+		if (
+			periodoRetiroDias !== undefined &&
+			(!Number.isInteger(periodoRetiroDias) || periodoRetiroDias < 0)
+		) {
+			throw new ValidationError(
+				"El período de retiro debe ser un entero mayor o igual a 0",
+			);
+		}
 		this.nombre = nombre;
 		this.tipo = tipo;
 		this.stockMinimo = stockMinimo;
 		this.unidadMedida = unidadMedida;
 		this.lote = lote;
 		this.fechaCaducidad = fechaCaducidad;
+		if (periodoRetiroDias !== undefined) {
+			this.periodoRetiroDias = periodoRetiroDias;
+		}
 	}
 }

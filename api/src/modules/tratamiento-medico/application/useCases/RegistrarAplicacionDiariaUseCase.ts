@@ -11,6 +11,10 @@ import type {
 } from "../dtos/TratamientoMedicoDto";
 import type { TratamientoMedicoMapper } from "../mappers/TratamientoMedicoMapper";
 import type { TratamientoAccessService } from "../services/TratamientoAccessService";
+import {
+	AlertaNotificacionDomainEvent,
+	type OutboxEventPublisher,
+} from "@/core/notificacion/domain/events/SaludEvents";
 
 @injectable()
 export class RegistrarAplicacionDiariaUseCase {
@@ -25,6 +29,8 @@ export class RegistrarAplicacionDiariaUseCase {
 		private readonly accessService: TratamientoAccessService,
 		@inject("TratamientoMedicoMapper")
 		private readonly mapper: TratamientoMedicoMapper,
+		@inject("OutboxEventPublisher")
+		private readonly outbox?: OutboxEventPublisher,
 	) {}
 
 	public async run(
@@ -62,6 +68,9 @@ export class RegistrarAplicacionDiariaUseCase {
 			);
 		}
 
+		let insumoBajoStock = false;
+		let stockFinal = insumo.getStock();
+
 		const guardado = await this.transactionRunner.run(async () => {
 			const actualizado = await this.insumoRepository.descontarStock(
 				insumo.getId(),
@@ -76,9 +85,30 @@ export class RegistrarAplicacionDiariaUseCase {
 					dosisAplicada,
 				);
 			}
+			if (
+				typeof actualizado.esBajoStock === "function" &&
+				actualizado.esBajoStock()
+			) {
+				insumoBajoStock = true;
+				stockFinal = actualizado.getStock();
+			}
 
 			return this.tratamientoRepository.save(tratamiento);
 		});
+
+		if (insumoBajoStock && this.outbox) {
+			await this.outbox.publish(
+				new AlertaNotificacionDomainEvent("insumo.bajo-stock", {
+					usuarioId: insumo.getUsuarioId(),
+					tipo: "STOCK_BAJO",
+					titulo: `Stock bajo: ${insumo.getNombre()}`,
+					cuerpo: `El insumo "${insumo.getNombre()}" tiene ${stockFinal} ${insumo.getUnidadMedida()} (mínimo: ${insumo.getStockMinimo()} ${insumo.getUnidadMedida()}).`,
+					claveDeduplicacion: `stock-bajo:${insumo.getId()}`,
+					referenciaTipo: "INSUMO",
+					referenciaId: insumo.getId(),
+				}),
+			);
+		}
 
 		return this.mapper.toDto(guardado, {
 			insumoNombre: insumo.getNombre(),

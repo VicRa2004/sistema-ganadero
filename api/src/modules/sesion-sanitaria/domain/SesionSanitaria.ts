@@ -1,6 +1,8 @@
 import type { AplicacionSanitaria } from "./AplicacionSanitaria";
 import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 
+export type EstadoSesionSanitaria = "PROGRAMADA" | "REALIZADA" | "CANCELADA";
+
 export class SesionSanitaria {
 	private constructor(
 		private readonly id: number | null,
@@ -9,6 +11,8 @@ export class SesionSanitaria {
 		private descripcion: string,
 		private insumoId: number,
 		private aplicaciones: AplicacionSanitaria[],
+		private estado: EstadoSesionSanitaria,
+		private readonly planSanitarioId: number | null,
 	) {}
 
 	public static create(
@@ -18,6 +22,8 @@ export class SesionSanitaria {
 		insumoId: number,
 		aplicaciones: AplicacionSanitaria[] = [],
 		id?: number | null,
+		estado: EstadoSesionSanitaria = "REALIZADA",
+		planSanitarioId: number | null = null,
 	): SesionSanitaria {
 		if (!descripcion || descripcion.trim().length === 0) {
 			throw new ValidationError(
@@ -40,6 +46,8 @@ export class SesionSanitaria {
 			descripcion.trim(),
 			insumoId,
 			aplicaciones,
+			estado,
+			planSanitarioId,
 		);
 	}
 
@@ -65,6 +73,30 @@ export class SesionSanitaria {
 
 	public getAplicaciones(): AplicacionSanitaria[] {
 		return [...this.aplicaciones];
+	}
+
+	public getEstado(): EstadoSesionSanitaria {
+		return this.estado;
+	}
+
+	public getPlanSanitarioId(): number | null {
+		return this.planSanitarioId;
+	}
+
+	public marcarRealizada(): void {
+		if (this.estado !== "PROGRAMADA") {
+			throw new ValidationError(
+				"Solo se puede marcar como realizada una sesión programada",
+			);
+		}
+		this.estado = "REALIZADA";
+	}
+
+	public cancelar(): void {
+		if (this.estado !== "PROGRAMADA") {
+			throw new ValidationError("Solo se puede cancelar una sesión programada");
+		}
+		this.estado = "CANCELADA";
 	}
 
 	public calcularTotalDosisConsumida(): number {

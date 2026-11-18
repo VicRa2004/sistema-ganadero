@@ -14,6 +14,7 @@ export class InsumoMapper {
 			unidadMedida: insumo.getUnidadMedida(),
 			lote: insumo.getLote(),
 			fechaCaducidad: insumo.getFechaCaducidad().toISOString(),
+			periodoRetiroDias: insumo.getPeriodoRetiroDias(),
 			esBajoStock: insumo.esBajoStock(),
 			usuarioId: insumo.getUsuarioId(),
 		};

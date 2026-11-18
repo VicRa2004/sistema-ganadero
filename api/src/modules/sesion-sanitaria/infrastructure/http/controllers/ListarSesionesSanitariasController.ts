@@ -24,6 +24,7 @@ export class ListarSesionesSanitariasController extends BaseController {
 					limit: validated.limit,
 					veterinarioId: validated.veterinarioId,
 					insumoId: validated.insumoId,
+					estado: validated.estado,
 					busqueda: validated.busqueda,
 					fechaInicio: validated.fechaInicio
 						? new Date(validated.fechaInicio)

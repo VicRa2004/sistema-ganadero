@@ -43,6 +43,8 @@ export class SesionSanitariaMapper {
 		return {
 			id: sesion.getId() ?? 0,
 			fecha: sesion.getFecha().toISOString(),
+			estado: sesion.getEstado(),
+			planSanitarioId: sesion.getPlanSanitarioId(),
 			veterinarioId: sesion.getVeterinarioId(),
 			nombreVeterinario: detallesExtra?.nombreVeterinario,
 			descripcion: sesion.getDescripcion(),

@@ -16,6 +16,7 @@ interface PrismaInsumoRecord {
 	unidadMedida: string;
 	lote: string;
 	fechaCaducidad: Date;
+	periodoRetiroDias: number;
 	usuarioId: number;
 	deletedAt: Date | null;
 }
@@ -33,6 +34,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 			record.lote,
 			record.fechaCaducidad,
 			record.usuarioId,
+			record.periodoRetiroDias ?? 0,
 		);
 	}
 
@@ -117,6 +119,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 					unidadMedida: insumo.getUnidadMedida(),
 					lote: insumo.getLote(),
 					fechaCaducidad: insumo.getFechaCaducidad(),
+					periodoRetiroDias: insumo.getPeriodoRetiroDias(),
 					usuarioId: insumo.getUsuarioId(),
 				},
 			});
@@ -134,6 +137,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 				unidadMedida: insumo.getUnidadMedida(),
 				lote: insumo.getLote(),
 				fechaCaducidad: insumo.getFechaCaducidad(),
+				periodoRetiroDias: insumo.getPeriodoRetiroDias(),
 				usuarioId: insumo.getUsuarioId(),
 			},
 		});

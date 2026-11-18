@@ -4,7 +4,10 @@ import { db } from "@/core/config/transaction";
 import type { Pagination } from "@/core/shared/domain/Pagination";
 import type { Prisma } from "@/generated/prisma/client";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
-import { SesionSanitaria } from "../../domain/SesionSanitaria";
+import {
+	type EstadoSesionSanitaria,
+	SesionSanitaria,
+} from "../../domain/SesionSanitaria";
 import type { SesionSanitariaFilters } from "../../domain/repository/SesionSanitariaFilters";
 import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
 
@@ -34,6 +37,8 @@ export class PrismaSesionSanitariaRepository
 		veterinarioId: number;
 		descripcion: string;
 		insumoId: number;
+		estado: EstadoSesionSanitaria;
+		planSanitarioId: number | null;
 		aplicaciones?: Array<{
 			id: number;
 			sesionId: number;
@@ -53,6 +58,8 @@ export class PrismaSesionSanitariaRepository
 			record.insumoId,
 			aplicacionesDomain,
 			record.id,
+			record.estado,
+			record.planSanitarioId,
 		);
 	}
 
@@ -82,6 +89,10 @@ export class PrismaSesionSanitariaRepository
 
 		if (filters.insumoId) {
 			whereClause.insumoId = filters.insumoId;
+		}
+
+		if (filters.estado) {
+			whereClause.estado = filters.estado;
 		}
 
 		// La sesión pertenece al usuario dueño del veterinario
@@ -144,6 +155,8 @@ export class PrismaSesionSanitariaRepository
 					veterinarioId: sesion.getVeterinarioId(),
 					descripcion: sesion.getDescripcion(),
 					insumoId: sesion.getInsumoId(),
+					estado: sesion.getEstado(),
+					planSanitarioId: sesion.getPlanSanitarioId(),
 					aplicaciones: {
 						create: sesion.getAplicaciones().map((app) => ({
 							ganadoId: app.getGanadoId(),
@@ -170,6 +183,7 @@ export class PrismaSesionSanitariaRepository
 				veterinarioId: sesion.getVeterinarioId(),
 				descripcion: sesion.getDescripcion(),
 				insumoId: sesion.getInsumoId(),
+				estado: sesion.getEstado(),
 			},
 			include: {
 				aplicaciones: {
@@ -202,6 +216,7 @@ export class PrismaSesionSanitariaRepository
 				ganadoId,
 				sesion: {
 					deletedAt: null,
+					estado: "REALIZADA",
 				},
 			},
 			orderBy: { createdAt: "desc" },

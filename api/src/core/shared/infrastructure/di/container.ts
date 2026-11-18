@@ -192,6 +192,73 @@ import { ListarTratamientosPorGanadoController } from "@/modules/tratamiento-med
 import { EliminarTratamientoController } from "@/modules/tratamiento-medico/infrastructure/http/controllers/EliminarTratamientoController";
 import { TratamientoMedicoRouter } from "@/modules/tratamiento-medico/infrastructure/http/routes/TratamientoMedicoRouter";
 
+// Notificaciones & Outbox
+import { PrismaNotificacionRepository } from "@/core/notificacion/infrastructure/repository/PrismaNotificacionRepository";
+import { NotificacionMapper } from "@/core/notificacion/application/mappers/NotificacionMapper";
+import { NotificacionEventSubscriber } from "@/core/notificacion/application/subscribers/NotificacionEventSubscriber";
+import { PrismaOutboxEventPublisher } from "@/core/notificacion/infrastructure/events/PrismaOutboxEventPublisher";
+import { ListarNotificacionesUseCase } from "@/core/notificacion/application/useCases/ListarNotificacionesUseCase";
+import { MarcarNotificacionLeidaUseCase } from "@/core/notificacion/application/useCases/MarcarNotificacionLeidaUseCase";
+import { MarcarTodasLeidasUseCase } from "@/core/notificacion/application/useCases/MarcarTodasLeidasUseCase";
+import { ObtenerPreferenciasNotificacionUseCase } from "@/core/notificacion/application/useCases/ObtenerPreferenciasNotificacionUseCase";
+import { ActualizarPreferenciasNotificacionUseCase } from "@/core/notificacion/application/useCases/ActualizarPreferenciasNotificacionUseCase";
+import { ListarNotificacionesController } from "@/core/notificacion/infrastructure/http/controllers/ListarNotificacionesController";
+import { MarcarNotificacionLeidaController } from "@/core/notificacion/infrastructure/http/controllers/MarcarNotificacionLeidaController";
+import { MarcarTodasLeidasController } from "@/core/notificacion/infrastructure/http/controllers/MarcarTodasLeidasController";
+import { ObtenerPreferenciasNotificacionController } from "@/core/notificacion/infrastructure/http/controllers/ObtenerPreferenciasNotificacionController";
+import { ActualizarPreferenciasNotificacionController } from "@/core/notificacion/infrastructure/http/controllers/ActualizarPreferenciasNotificacionController";
+import { NotificacionRouter } from "@/core/notificacion/infrastructure/http/routes/NotificacionRouter";
+
+// Insumos Export
+import { ExportarInsumosUseCase } from "@/modules/inventario-insumos/application/useCases/ExportarInsumosUseCase";
+import { ExportarInsumosCsvController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ExportarInsumosCsvController";
+import { ExportarInsumosPdfController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ExportarInsumosPdfController";
+
+// Ganado Import / Export
+import { ImportarGanadoCsvUseCase } from "@/modules/ganado/application/useCases/ImportarGanadoCsvUseCase";
+import { ExportarGanadoUseCase } from "@/modules/ganado/application/useCases/ExportarGanadoUseCase";
+import { DescargarPlantillaGanadoController } from "@/modules/ganado/infrastructure/http/controllers/DescargarPlantillaGanadoController";
+import { PrevisualizarImportacionGanadoController } from "@/modules/ganado/infrastructure/http/controllers/PrevisualizarImportacionGanadoController";
+import { ConfirmarImportacionGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ConfirmarImportacionGanadoController";
+import { ExportarGanadoCsvController } from "@/modules/ganado/infrastructure/http/controllers/ExportarGanadoCsvController";
+import { ExportarFichaGanadoPdfController } from "@/modules/ganado/infrastructure/http/controllers/ExportarFichaGanadoPdfController";
+
+// Sesión Sanitaria: Calendario, Planes y Export
+import { PrismaPlanSanitarioRepository } from "@/modules/sesion-sanitaria/infrastructure/repository/PrismaPlanSanitarioRepository";
+import { PrismaCalendarioSanitarioQuery } from "@/modules/sesion-sanitaria/infrastructure/queries/PrismaCalendarioSanitarioQuery";
+import { PlanSanitarioMapper } from "@/modules/sesion-sanitaria/application/mappers/PlanSanitarioMapper";
+import { RealizarSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/RealizarSesionSanitariaUseCase";
+import { CancelarSesionSanitariaUseCase } from "@/modules/sesion-sanitaria/application/useCases/CancelarSesionSanitariaUseCase";
+import { ObtenerCalendarioSanitarioUseCase } from "@/modules/sesion-sanitaria/application/useCases/ObtenerCalendarioSanitarioUseCase";
+import { CrearPlanSanitarioUseCase } from "@/modules/sesion-sanitaria/application/useCases/CrearPlanSanitarioUseCase";
+import { ListarPlanesSanitariosUseCase } from "@/modules/sesion-sanitaria/application/useCases/ListarPlanesSanitariosUseCase";
+import { ActualizarPlanSanitarioUseCase } from "@/modules/sesion-sanitaria/application/useCases/ActualizarPlanSanitarioUseCase";
+import { EliminarPlanSanitarioUseCase } from "@/modules/sesion-sanitaria/application/useCases/EliminarPlanSanitarioUseCase";
+import { GenerarSesionesPlanesUseCase } from "@/modules/sesion-sanitaria/application/useCases/GenerarSesionesPlanesUseCase";
+import { ExportarSesionesSanitariasUseCase } from "@/modules/sesion-sanitaria/application/useCases/ExportarSesionesSanitariasUseCase";
+import { RealizarSesionSanitariaController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/RealizarSesionSanitariaController";
+import { CancelarSesionSanitariaController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/CancelarSesionSanitariaController";
+import { ObtenerCalendarioSanitarioController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ObtenerCalendarioSanitarioController";
+import { CrearPlanSanitarioController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/CrearPlanSanitarioController";
+import { ListarPlanesSanitariosController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ListarPlanesSanitariosController";
+import { ActualizarPlanSanitarioController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ActualizarPlanSanitarioController";
+import { EliminarPlanSanitarioController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/EliminarPlanSanitarioController";
+import { GenerarSesionesPlanesController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/GenerarSesionesPlanesController";
+import { ExportarSesionesCsvController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ExportarSesionesCsvController";
+import { ExportarSesionesPdfController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ExportarSesionesPdfController";
+import { ExportarHistorialGanadoPdfController } from "@/modules/sesion-sanitaria/infrastructure/http/controllers/ExportarHistorialGanadoPdfController";
+
+// Salud
+import { EvaluarAlertasSanitariasUseCase } from "@/modules/salud/application/useCases/EvaluarAlertasSanitariasUseCase";
+import { EvaluarAlertasSanitariasController } from "@/modules/salud/infrastructure/http/controllers/EvaluarAlertasSanitariasController";
+import { SaludRouter } from "@/modules/salud/infrastructure/http/routes/SaludRouter";
+
+// Dashboard
+import { PrismaDashboardResumenQuery } from "@/modules/dashboard/infrastructure/queries/PrismaDashboardResumenQuery";
+import { ObtenerDashboardResumenUseCase } from "@/modules/dashboard/application/useCases/ObtenerDashboardResumenUseCase";
+import { ObtenerDashboardResumenController } from "@/modules/dashboard/infrastructure/http/controllers/ObtenerDashboardResumenController";
+import { DashboardRouter } from "@/modules/dashboard/infrastructure/http/routes/DashboardRouter";
+
 // Register Tokens
 container.register("UserRepository", {
 	useClass: PrismaUserRepository,
@@ -728,5 +795,178 @@ if (env.STORAGE_DRIVER === "s3") {
 container.register("TransactionRunner", {
 	useClass: PrismaTransactionRunner,
 });
+
+// Notificaciones & Outbox
+container.register("NotificacionRepository", {
+	useClass: PrismaNotificacionRepository,
+});
+container.register("NotificacionMapper", { useClass: NotificacionMapper });
+container.register(
+	"NotificacionEventSubscriber",
+	{ useClass: NotificacionEventSubscriber },
+	{ lifecycle: Lifecycle.Singleton },
+);
+container.register(
+	"OutboxEventPublisher",
+	{ useClass: PrismaOutboxEventPublisher },
+	{ lifecycle: Lifecycle.Singleton },
+);
+container.register("ListarNotificacionesUseCase", {
+	useClass: ListarNotificacionesUseCase,
+});
+container.register("MarcarNotificacionLeidaUseCase", {
+	useClass: MarcarNotificacionLeidaUseCase,
+});
+container.register("MarcarTodasLeidasUseCase", {
+	useClass: MarcarTodasLeidasUseCase,
+});
+container.register("ObtenerPreferenciasNotificacionUseCase", {
+	useClass: ObtenerPreferenciasNotificacionUseCase,
+});
+container.register("ActualizarPreferenciasNotificacionUseCase", {
+	useClass: ActualizarPreferenciasNotificacionUseCase,
+});
+container.register("ListarNotificacionesController", {
+	useClass: ListarNotificacionesController,
+});
+container.register("MarcarNotificacionLeidaController", {
+	useClass: MarcarNotificacionLeidaController,
+});
+container.register("MarcarTodasLeidasController", {
+	useClass: MarcarTodasLeidasController,
+});
+container.register("ObtenerPreferenciasNotificacionController", {
+	useClass: ObtenerPreferenciasNotificacionController,
+});
+container.register("ActualizarPreferenciasNotificacionController", {
+	useClass: ActualizarPreferenciasNotificacionController,
+});
+container.register("NotificacionRouter", { useClass: NotificacionRouter });
+
+// Insumos Export
+container.register("ExportarInsumosUseCase", {
+	useClass: ExportarInsumosUseCase,
+});
+container.register("ExportarInsumosCsvController", {
+	useClass: ExportarInsumosCsvController,
+});
+container.register("ExportarInsumosPdfController", {
+	useClass: ExportarInsumosPdfController,
+});
+
+// Ganado Import / Export
+container.register("ImportarGanadoCsvUseCase", {
+	useClass: ImportarGanadoCsvUseCase,
+});
+container.register("ExportarGanadoUseCase", {
+	useClass: ExportarGanadoUseCase,
+});
+container.register("DescargarPlantillaGanadoController", {
+	useClass: DescargarPlantillaGanadoController,
+});
+container.register("PrevisualizarImportacionGanadoController", {
+	useClass: PrevisualizarImportacionGanadoController,
+});
+container.register("ConfirmarImportacionGanadoController", {
+	useClass: ConfirmarImportacionGanadoController,
+});
+container.register("ExportarGanadoCsvController", {
+	useClass: ExportarGanadoCsvController,
+});
+container.register("ExportarFichaGanadoPdfController", {
+	useClass: ExportarFichaGanadoPdfController,
+});
+
+// Sesión Sanitaria: Calendario, Planes y Export
+container.register("PlanSanitarioRepository", {
+	useClass: PrismaPlanSanitarioRepository,
+});
+container.register("CalendarioSanitarioQuery", {
+	useClass: PrismaCalendarioSanitarioQuery,
+});
+container.register("PlanSanitarioMapper", { useClass: PlanSanitarioMapper });
+container.register("RealizarSesionSanitariaUseCase", {
+	useClass: RealizarSesionSanitariaUseCase,
+});
+container.register("CancelarSesionSanitariaUseCase", {
+	useClass: CancelarSesionSanitariaUseCase,
+});
+container.register("ObtenerCalendarioSanitarioUseCase", {
+	useClass: ObtenerCalendarioSanitarioUseCase,
+});
+container.register("CrearPlanSanitarioUseCase", {
+	useClass: CrearPlanSanitarioUseCase,
+});
+container.register("ListarPlanesSanitariosUseCase", {
+	useClass: ListarPlanesSanitariosUseCase,
+});
+container.register("ActualizarPlanSanitarioUseCase", {
+	useClass: ActualizarPlanSanitarioUseCase,
+});
+container.register("EliminarPlanSanitarioUseCase", {
+	useClass: EliminarPlanSanitarioUseCase,
+});
+container.register("GenerarSesionesPlanesUseCase", {
+	useClass: GenerarSesionesPlanesUseCase,
+});
+container.register("ExportarSesionesSanitariasUseCase", {
+	useClass: ExportarSesionesSanitariasUseCase,
+});
+container.register("RealizarSesionSanitariaController", {
+	useClass: RealizarSesionSanitariaController,
+});
+container.register("CancelarSesionSanitariaController", {
+	useClass: CancelarSesionSanitariaController,
+});
+container.register("ObtenerCalendarioSanitarioController", {
+	useClass: ObtenerCalendarioSanitarioController,
+});
+container.register("CrearPlanSanitarioController", {
+	useClass: CrearPlanSanitarioController,
+});
+container.register("ListarPlanesSanitariosController", {
+	useClass: ListarPlanesSanitariosController,
+});
+container.register("ActualizarPlanSanitarioController", {
+	useClass: ActualizarPlanSanitarioController,
+});
+container.register("EliminarPlanSanitarioController", {
+	useClass: EliminarPlanSanitarioController,
+});
+container.register("GenerarSesionesPlanesController", {
+	useClass: GenerarSesionesPlanesController,
+});
+container.register("ExportarSesionesCsvController", {
+	useClass: ExportarSesionesCsvController,
+});
+container.register("ExportarSesionesPdfController", {
+	useClass: ExportarSesionesPdfController,
+});
+container.register("ExportarHistorialGanadoPdfController", {
+	useClass: ExportarHistorialGanadoPdfController,
+});
+
+// Salud
+container.register("EvaluarAlertasSanitariasUseCase", {
+	useClass: EvaluarAlertasSanitariasUseCase,
+});
+container.register("EvaluarAlertasSanitariasController", {
+	useClass: EvaluarAlertasSanitariasController,
+});
+container.register("SaludRouter", { useClass: SaludRouter });
+
+// Dashboard
+container.register("DashboardResumenQuery", {
+	useClass: PrismaDashboardResumenQuery,
+});
+container.register(
+	"ObtenerDashboardResumenUseCase",
+	{ useClass: ObtenerDashboardResumenUseCase },
+	{ lifecycle: Lifecycle.Singleton },
+);
+container.register("ObtenerDashboardResumenController", {
+	useClass: ObtenerDashboardResumenController,
+});
+container.register("DashboardRouter", { useClass: DashboardRouter });
 
 export { container };

@@ -10,6 +10,8 @@ import type { ListarInsumosController } from "../controllers/ListarInsumosContro
 import type { ObtenerDetalleInsumoController } from "../controllers/ObtenerDetalleInsumoController";
 import type { EliminarInsumoController } from "../controllers/EliminarInsumoController";
 import type { ActualizarInsumoController } from "../controllers/ActualizarInsumoController";
+import type { ExportarInsumosCsvController } from "../controllers/ExportarInsumosCsvController";
+import type { ExportarInsumosPdfController } from "../controllers/ExportarInsumosPdfController";
 
 @injectable()
 export class InsumoRouter {
@@ -36,6 +38,10 @@ export class InsumoRouter {
 		private readonly obtenerDetalleController: ObtenerDetalleInsumoController,
 		@inject("EliminarInsumoController")
 		private readonly eliminarController: EliminarInsumoController,
+		@inject("ExportarInsumosCsvController")
+		private readonly exportarCsvController: ExportarInsumosCsvController,
+		@inject("ExportarInsumosPdfController")
+		private readonly exportarPdfController: ExportarInsumosPdfController,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -56,6 +62,18 @@ export class InsumoRouter {
 			"/criticos",
 			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
 			this.obtenerCriticosController.run.bind(this.obtenerCriticosController),
+		);
+
+		this.router.get(
+			"/exportar/csv",
+			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
+			this.exportarCsvController.run.bind(this.exportarCsvController),
+		);
+
+		this.router.get(
+			"/exportar/pdf",
+			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
+			this.exportarPdfController.run.bind(this.exportarPdfController),
 		);
 
 		this.router.get(

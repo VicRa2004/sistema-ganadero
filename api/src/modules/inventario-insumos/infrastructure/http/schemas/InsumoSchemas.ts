@@ -25,6 +25,13 @@ export const registrarInsumoSchema = z.object({
 	fechaCaducidad: z.string().refine((val) => !Number.isNaN(Date.parse(val)), {
 		message: "La fecha de caducidad debe ser una fecha válida",
 	}),
+	periodoRetiroDias: z
+		.number()
+		.int("El período de retiro debe ser un entero")
+		.min(0, "El período de retiro no puede ser negativo")
+		.max(365, "El período de retiro no puede exceder 365 días")
+		.optional()
+		.default(0),
 });
 
 export const abastecerInsumoSchema = z.object({
@@ -66,6 +73,12 @@ export const actualizarInsumoSchema = z.object({
 			message: "La fecha de caducidad debe ser una fecha válida",
 		})
 		.optional(),
+	periodoRetiroDias: z
+		.number()
+		.int("El período de retiro debe ser un entero")
+		.min(0, "El período de retiro no puede ser negativo")
+		.max(365, "El período de retiro no puede exceder 365 días")
+		.optional(),
 });
 
 export const insumoIdSchema = z.object({
@@ -78,6 +91,11 @@ export const insumoIdSchema = z.object({
 export const listarInsumosQuerySchema = z.object({
 	page: pageQuerySchema,
 	limit: limitQuerySchema(),
+	nombre: z.string().optional(),
+	tipo: z.string().optional(),
+});
+
+export const exportarInsumosQuerySchema = z.object({
 	nombre: z.string().optional(),
 	tipo: z.string().optional(),
 });

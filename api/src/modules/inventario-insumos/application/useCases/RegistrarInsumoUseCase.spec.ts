@@ -31,6 +31,7 @@ describe("RegistrarInsumoUseCase", () => {
 						insumo.getLote(),
 						insumo.getFechaCaducidad(),
 						insumo.getUsuarioId(),
+						insumo.getPeriodoRetiroDias(),
 					),
 				),
 			),
@@ -63,6 +64,7 @@ describe("RegistrarInsumoUseCase", () => {
 			unidadMedida: "ml",
 			lote: "LOT-999",
 			fechaCaducidad: new Date("2028-01-01T00:00:00.000Z").toISOString(),
+			periodoRetiroDias: 0,
 			esBajoStock: false,
 			usuarioId: 1,
 		});

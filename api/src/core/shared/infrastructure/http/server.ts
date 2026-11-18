@@ -36,6 +36,9 @@ import { GanadoRouter } from "@/modules/ganado/infrastructure/http/routes/Ganado
 import { VeterinarioRouter } from "@/modules/veterinario/infrastructure/http/routes/VeterinarioRouter";
 import { SesionSanitariaRouter } from "@/modules/sesion-sanitaria/infrastructure/http/routes/SesionSanitariaRouter";
 import { TratamientoMedicoRouter } from "@/modules/tratamiento-medico/infrastructure/http/routes/TratamientoMedicoRouter";
+import { NotificacionRouter } from "@/core/notificacion/infrastructure/http/routes/NotificacionRouter";
+import { SaludRouter } from "@/modules/salud/infrastructure/http/routes/SaludRouter";
+import { DashboardRouter } from "@/modules/dashboard/infrastructure/http/routes/DashboardRouter";
 
 const app = new Hono();
 
@@ -129,6 +132,9 @@ const ganadoRouter = container.resolve(GanadoRouter);
 const veterinarioRouter = container.resolve(VeterinarioRouter);
 const sesionSanitariaRouter = container.resolve(SesionSanitariaRouter);
 const tratamientoMedicoRouter = container.resolve(TratamientoMedicoRouter);
+const notificacionRouter = container.resolve(NotificacionRouter);
+const saludRouter = container.resolve(SaludRouter);
+const dashboardRouter = container.resolve(DashboardRouter);
 
 // 4. Registro de rutas
 // En Hono se usa .route() en lugar de .use() para anidar otros routers
@@ -143,6 +149,9 @@ app.route("/api/ganado", ganadoRouter.router);
 app.route("/api/veterinarios", veterinarioRouter.router);
 app.route("/api/sesiones-sanitarias", sesionSanitariaRouter.router);
 app.route("/api/tratamientos-medicos", tratamientoMedicoRouter.router);
+app.route("/api/notificaciones", notificacionRouter.router);
+app.route("/api/salud", saludRouter.router);
+app.route("/api/dashboard", dashboardRouter.router);
 
 // 5. Servir Frontend (Vite SPA) en producción
 const distPath = existsSync(path.resolve(process.cwd(), "web/dist"))

@@ -44,6 +44,7 @@ export class ActualizarInsumoUseCase {
 			dto.fechaCaducidad
 				? new Date(dto.fechaCaducidad)
 				: insumo.getFechaCaducidad(),
+			dto.periodoRetiroDias,
 		);
 
 		const saved = await this.insumoRepository.save(insumo);

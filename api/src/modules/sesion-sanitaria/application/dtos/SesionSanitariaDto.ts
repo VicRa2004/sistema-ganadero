@@ -1,3 +1,5 @@
+import type { EstadoSesionSanitaria } from "../../domain/SesionSanitaria";
+
 export interface AplicacionSanitariaInputDto {
 	ganadoId: number;
 	dosisAplicada: number;
@@ -9,6 +11,7 @@ export interface RegistrarSesionSanitariaInputDto {
 	veterinarioId: number;
 	descripcion: string;
 	insumoId: number;
+	estado?: "PROGRAMADA" | "REALIZADA";
 	aplicaciones: AplicacionSanitariaInputDto[];
 }
 
@@ -32,6 +35,8 @@ export interface AplicacionSanitariaOutputDto {
 export interface SesionSanitariaOutputDto {
 	id: number;
 	fecha: string;
+	estado: EstadoSesionSanitaria;
+	planSanitarioId: number | null;
 	veterinarioId: number;
 	nombreVeterinario?: string;
 	descripcion: string;

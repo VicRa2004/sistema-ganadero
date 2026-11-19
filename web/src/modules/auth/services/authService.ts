@@ -1,5 +1,5 @@
 import { api } from "@/config/axios";
-import type { AuthResponse, PermissionDto } from "../types";
+import type { AuthResponse, PermissionDto, UserDto } from "../types";
 
 export const authService = {
 	async login(credentials: Record<string, string>): Promise<AuthResponse> {
@@ -21,6 +21,14 @@ export const authService = {
 		newPassword: string;
 	}): Promise<void> {
 		await api.post("/auth/change-password", input);
+	},
+
+	async updateProfile(input: {
+		name: string;
+		email: string;
+	}): Promise<UserDto> {
+		const { data } = await api.patch<UserDto>("/auth/me", input);
+		return data;
 	},
 
 	async getPermissions(userId: number): Promise<PermissionDto[]> {

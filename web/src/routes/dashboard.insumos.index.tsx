@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarInsumos } from "@/modules/inventario-insumos/hooks/useListarInsumos";
 import { useObtenerInsumosCriticos } from "@/modules/inventario-insumos/hooks/useObtenerInsumosCriticos";
 import { InsumosTable } from "@/components/insumo/InsumosTable";
@@ -25,21 +26,15 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/insumos/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("inventario-insumos:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "inventario-insumos", "read");
 	},
 	component: InsumosPage,
 });
 
 function InsumosPage() {
-	const permissions = useAuthStore((state) => state.permissions) || [];
-	const canCreate = permissions.includes("inventario-insumos:create");
+	const { can } = usePermissions();
+	const canCreate = can("inventario-insumos", "create");
 
 	const [page, setPage] = useState(1);
 	const limit = 10;

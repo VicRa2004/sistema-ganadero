@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { ganadoService } from "../services/ganadoService";
 
 export function usePrevisualizarImportacionGanado() {
@@ -13,8 +14,11 @@ export function useConfirmarImportacionGanado() {
 		mutationFn: (csv: string) => ganadoService.confirmarImportacion(csv),
 		meta: { successMessage: "Ganado importado correctamente" },
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["ganado"] });
-			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.ganado.lists() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.terrenos.all });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.dashboard.resumen(),
+			});
 		},
 	});
 }

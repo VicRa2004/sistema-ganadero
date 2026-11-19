@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { usuarioService } from "../services/usuarioService";
 
 export function useEliminarUsuario() {
@@ -8,7 +9,7 @@ export function useEliminarUsuario() {
 		meta: { successMessage: "Usuario eliminado" },
 		mutationFn: (id: number) => usuarioService.eliminar(id),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["usuarios"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.usuarios.lists() });
 		},
 	});
 }

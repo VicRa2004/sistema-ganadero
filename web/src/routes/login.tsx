@@ -1,20 +1,25 @@
 import { useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Card,
+	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
-	CardContent,
 } from "@/components/ui/card";
-import { useLogin } from "@/modules/auth/hooks/useLogin";
-import { formatApiError } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ALLOW_PUBLIC_REGISTER } from "@/config/features";
-import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import {
+	extractErrorMessages,
+	FormErrorAnnouncer,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
+import { useLogin } from "@/modules/auth/hooks/useLogin";
+import { loginSchema } from "@/modules/auth/schemas";
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: ({ context }) => {
@@ -27,24 +32,16 @@ export const Route = createFileRoute("/login")({
 
 function LoginComponent() {
 	const [showPassword, setShowPassword] = useState(false);
-	const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
 	const { mutate: login, isPending } = useLogin();
 
-	// Configuración de formulario con TanStack Form
 	const form = useForm({
 		defaultValues: {
 			email: "",
 			password: "",
 		},
-		onSubmit: async ({ value }) => {
-			setErrorMsg(null);
-			login(value, {
-				// biome-ignore lint/suspicious/noExplicitAny: error from react-query onError callback
-				onError: (error: any) => {
-					setErrorMsg(formatApiError(error));
-				},
-			});
+		validators: { onChange: loginSchema },
+		onSubmit: ({ value }) => {
+			login({ email: value.email.trim(), password: value.password });
 		},
 	});
 
@@ -65,159 +62,133 @@ function LoginComponent() {
 					</CardHeader>
 					<CardContent>
 						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								form.handleSubmit();
-							}}
+							noValidate
+							onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
 							className="space-y-6"
 						>
-							{errorMsg && (
-								<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 text-center font-medium animate-shake">
-									{errorMsg}
-								</div>
-							)}
-
-							{/* Campo Email */}
-							<form.Field
-								name="email"
-								validators={{
-									onChange: ({ value }) => {
-										if (!value) return "El correo electrónico es requerido.";
-										if (!/\S+@\S+\.\S+/.test(value)) {
-											return "Introduce un correo electrónico válido.";
-										}
-										return undefined;
-									},
-								}}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Correo Electrónico</Label>
-										<div className="relative">
-											<Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-											<Input
-												id={field.name}
-												aria-invalid={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-												}
-												aria-describedby={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-														? `${field.name}-error`
-														: undefined
-												}
-												name={field.name}
-												type="email"
-												placeholder="correo@ejemplo.com"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
-												className="pl-10 h-11"
-												disabled={isPending}
-											/>
-										</div>
-										{field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0 && (
-												<p
-													id={`${field.name}-error`}
-													className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in"
-												>
-													{field.state.meta.errors.join(", ")}
-												</p>
-											)}
-									</div>
-								)}
-							</form.Field>
-
-							{/* Campo Contraseña */}
-							<form.Field
-								name="password"
-								validators={{
-									onChange: ({ value }) => {
-										if (!value) return "La contraseña es requerida.";
-										return undefined;
-									},
-								}}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<div className="flex items-center justify-between">
-											<Label htmlFor={field.name}>Contraseña</Label>
-										</div>
-										<div className="relative">
-											<Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-											<Input
-												id={field.name}
-												aria-invalid={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-												}
-												aria-describedby={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-														? `${field.name}-error`
-														: undefined
-												}
-												name={field.name}
-												type={showPassword ? "text" : "password"}
-												placeholder="••••••••"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
-												className="pl-10 pr-10 h-11"
-												disabled={isPending}
-											/>
-											<button
-												type="button"
-												onClick={() => setShowPassword(!showPassword)}
-												className="absolute right-3 top-3 h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer"
-												tabIndex={-1}
-											>
-												{showPassword ? (
-													<EyeOff className="h-4 w-4" />
-												) : (
-													<Eye className="h-4 w-4" />
-												)}
-											</button>
-										</div>
-										{field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0 && (
-												<p
-													id={`${field.name}-error`}
-													className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in"
-												>
-													{field.state.meta.errors.join(", ")}
-												</p>
-											)}
-									</div>
-								)}
-							</form.Field>
-
-							{/* Botón de Submit */}
 							<form.Subscribe
-								selector={(state) => ({
-									canSubmit: state.canSubmit,
-								})}
+								selector={(s) =>
+									Object.values(s.fieldMeta).filter(
+										(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+									).length
+								}
 							>
-								{({ canSubmit }) => (
-									<Button
-										type="submit"
-										className="w-full h-11 text-base font-semibold cursor-pointer shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center justify-center"
-										disabled={isPending || !canSubmit}
-									>
-										{isPending ? (
-											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Iniciando sesión...
-											</>
-										) : (
-											"Acceder al Sistema"
-										)}
-									</Button>
-								)}
+								{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
 							</form.Subscribe>
+
+							<form.Field name="email">
+								{(field) => {
+									const msgs = field.state.meta.isTouched
+										? extractErrorMessages(field.state.meta.errors)
+										: [];
+									const invalid = msgs.length > 0;
+									return (
+										<div className="space-y-2">
+											<Label htmlFor={field.name}>Correo Electrónico</Label>
+											<div className="relative">
+												<Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+												<Input
+													id={field.name}
+													name={field.name}
+													type="email"
+													autoComplete="email"
+													aria-invalid={invalid ? "true" : "false"}
+													aria-describedby={
+														invalid ? `${field.name}-error` : undefined
+													}
+													placeholder="correo@ejemplo.com"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													className="pl-10 h-11"
+													disabled={isPending}
+												/>
+											</div>
+											{invalid && (
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-destructive text-left font-medium"
+												>
+													{msgs.join(", ")}
+												</p>
+											)}
+										</div>
+									);
+								}}
+							</form.Field>
+
+							<form.Field name="password">
+								{(field) => {
+									const msgs = field.state.meta.isTouched
+										? extractErrorMessages(field.state.meta.errors)
+										: [];
+									const invalid = msgs.length > 0;
+									return (
+										<div className="space-y-2">
+											<Label htmlFor={field.name}>Contraseña</Label>
+											<div className="relative">
+												<Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+												<Input
+													id={field.name}
+													name={field.name}
+													type={showPassword ? "text" : "password"}
+													autoComplete="current-password"
+													aria-invalid={invalid ? "true" : "false"}
+													aria-describedby={
+														invalid ? `${field.name}-error` : undefined
+													}
+													placeholder="••••••••"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													className="pl-10 pr-10 h-11"
+													disabled={isPending}
+												/>
+												<button
+													type="button"
+													aria-label={
+														showPassword
+															? "Ocultar contraseña"
+															: "Mostrar contraseña"
+													}
+													aria-pressed={showPassword}
+													onClick={() => setShowPassword(!showPassword)}
+													className="absolute right-3 top-3 h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer"
+												>
+													{showPassword ? (
+														<EyeOff className="h-4 w-4" />
+													) : (
+														<Eye className="h-4 w-4" />
+													)}
+												</button>
+											</div>
+											{invalid && (
+												<p
+													id={`${field.name}-error`}
+													className="text-xs text-destructive text-left font-medium"
+												>
+													{msgs.join(", ")}
+												</p>
+											)}
+										</div>
+									);
+								}}
+							</form.Field>
+
+							<Button
+								type="submit"
+								className="w-full h-11 text-base font-semibold cursor-pointer shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center justify-center"
+								disabled={isPending}
+							>
+								{isPending ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Iniciando sesión...
+									</>
+								) : (
+									"Acceder al Sistema"
+								)}
+							</Button>
 						</form>
 
 						{ALLOW_PUBLIC_REGISTER && (

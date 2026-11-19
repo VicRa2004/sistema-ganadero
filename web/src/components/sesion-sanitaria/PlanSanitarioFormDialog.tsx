@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { Loader2 } from "lucide-react";
+import { CalendarClock, Loader2 } from "lucide-react";
+import { CampoSelect } from "@/components/CampoSelect";
+import { CampoTexto } from "@/components/CampoTexto";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -10,37 +11,35 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useListarInsumos } from "@/modules/inventario-insumos/hooks/useListarInsumos";
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
 import { useCrearPlanSanitario } from "@/modules/sesion-sanitaria/hooks/useCalendarioYPlanes";
+import { planSanitarioSchema } from "@/modules/sesion-sanitaria/schemas";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { useListarVeterinarios } from "@/modules/veterinario/hooks/useListarVeterinarios";
-import { formatApiError } from "@/lib/utils";
 
 interface PlanSanitarioFormDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }
 
-const SELECT_CLASS =
-	"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer";
-
 export function PlanSanitarioFormDialog({
 	open,
 	onOpenChange,
 }: PlanSanitarioFormDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
-	const crearPlan = useCrearPlanSanitario();
-
+	const { mutate: crearPlan, isPending } = useCrearPlanSanitario();
 	const { data: vetsData } = useListarVeterinarios(1, 100);
 	const { data: insumosData } = useListarInsumos({ page: 1, limit: 100 });
 	const { data: terrenosData } = useListarTerrenos(1, 100);
-	const { data: razasData = [] } = useListarRazas();
+	const { data: razasData } = useListarRazas();
 
-	const insumosSanitarios = (insumosData?.data ?? []).filter((i) =>
-		["VACUNA", "MEDICAMENTO"].includes(i.tipo),
+	const insumosSanitarios = (insumosData?.data ?? []).filter(
+		(i) => i.tipo === "VACUNA" || i.tipo === "MEDICAMENTO",
 	);
 
 	const form = useForm({
@@ -51,18 +50,14 @@ export function PlanSanitarioFormDialog({
 			dosisPorAnimal: "5",
 			veterinarioId: "",
 			insumoId: "",
+			proximaEjecucion: new Date().toISOString().split("T")[0] ?? "",
 			terrenoId: "",
 			razaId: "",
 			edadMinimaMeses: "",
-			proximaEjecucion: new Date().toISOString().slice(0, 10),
 		},
+		validators: { onChange: planSanitarioSchema },
 		onSubmit: ({ value }) => {
-			setApiError(null);
-			if (!value.veterinarioId || !value.insumoId) {
-				setApiError("Debes seleccionar un veterinario y un insumo.");
-				return;
-			}
-			crearPlan.mutate(
+			crearPlan(
 				{
 					nombre: value.nombre.trim(),
 					descripcion: value.descripcion.trim(),
@@ -70,12 +65,13 @@ export function PlanSanitarioFormDialog({
 					dosisPorAnimal: Number(value.dosisPorAnimal),
 					veterinarioId: Number(value.veterinarioId),
 					insumoId: Number(value.insumoId),
+					proximaEjecucion: value.proximaEjecucion,
 					terrenoId: value.terrenoId ? Number(value.terrenoId) : null,
 					razaId: value.razaId ? Number(value.razaId) : null,
-					edadMinimaMeses: value.edadMinimaMeses
-						? Number(value.edadMinimaMeses)
-						: null,
-					proximaEjecucion: new Date(value.proximaEjecucion).toISOString(),
+					edadMinimaMeses:
+						value.edadMinimaMeses.trim() !== ""
+							? Number(value.edadMinimaMeses)
+							: null,
 					activo: true,
 				},
 				{
@@ -83,243 +79,244 @@ export function PlanSanitarioFormDialog({
 						form.reset();
 						onOpenChange(false);
 					},
-					onError: (err) => setApiError(formatApiError(err)),
 				},
 			);
 		},
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+		<Dialog
+			open={open}
+			onOpenChange={(nextOpen) => {
+				if (!isPending) {
+					if (!nextOpen) form.reset();
+					onOpenChange(nextOpen);
+				}
+			}}
+		>
+			<DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto animate-fade-in">
 				<DialogHeader>
-					<DialogTitle>Nuevo Plan de Vacunación Recurrente</DialogTitle>
+					<DialogTitle className="flex items-center gap-2 text-lg font-bold">
+						<CalendarClock className="size-5 text-primary" />
+						Nuevo Plan Sanitario Preventivo
+					</DialogTitle>
 					<DialogDescription>
-						Programa jornadas sanitarias automáticas según frecuencia, terreno,
-						raza o edad mínima.
+						Programa campañas recurrentes para generar sesiones sanitarias en el
+						calendario.
 					</DialogDescription>
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-xs text-red-700 bg-red-500/10 border border-red-500/30 rounded-lg dark:text-red-400">
-							{apiError}
-						</div>
-					)}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
+					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
 
 					<form.Field name="nombre">
 						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor="plan-nombre">Nombre del plan *</Label>
-								<Input
-									id="plan-nombre"
-									placeholder="Ej: Vacuna Triple Semestral"
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									required
-								/>
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Nombre del Plan *"
+								placeholder="Ej. Vacunación Brucelosis Semestral"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
 					<form.Field name="descripcion">
 						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor="plan-desc">Descripción *</Label>
-								<Input
-									id="plan-desc"
-									placeholder="Ej: Refuerzo preventivo para lote de engorda"
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									required
-								/>
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Descripción / Protocolo *"
+								placeholder="Aplicación preventiva según protocolo oficial"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-						<form.Field name="veterinarioId">
-							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-vet">Veterinario *</Label>
-									<select
-										id="plan-vet"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className={SELECT_CLASS}
-										required
-									>
-										<option value="">Seleccionar...</option>
-										{(vetsData?.data ?? []).map((v) => (
-											<option key={v.id} value={v.id}>
-												{v.nombre}
-											</option>
-										))}
-									</select>
-								</div>
-							)}
-						</form.Field>
-
-						<form.Field name="insumoId">
-							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-insumo">Vacuna / Medicamento *</Label>
-									<select
-										id="plan-insumo"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className={SELECT_CLASS}
-										required
-									>
-										<option value="">Seleccionar...</option>
-										{insumosSanitarios.map((i) => (
-											<option key={i.id} value={i.id}>
-												{i.nombre} ({i.unidadMedida})
-											</option>
-										))}
-									</select>
-								</div>
-							)}
-						</form.Field>
-					</div>
-
-					<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<form.Field name="frecuenciaDias">
 							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-frec">Frecuencia (días) *</Label>
-									<Input
-										id="plan-frec"
-										type="number"
-										allowDecimals={false}
-										min="1"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										required
-									/>
-								</div>
+								<CampoTexto
+									id={field.name}
+									label="Frecuencia (días) *"
+									type="number"
+									allowDecimals={false}
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								/>
 							)}
 						</form.Field>
 
 						<form.Field name="dosisPorAnimal">
 							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-dosis">Dosis / animal *</Label>
-									<Input
-										id="plan-dosis"
-										type="number"
-										allowDecimals
-										min="0.1"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										required
-									/>
-								</div>
-							)}
-						</form.Field>
-
-						<form.Field name="proximaEjecucion">
-							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-prox">Próxima fecha *</Label>
-									<Input
-										id="plan-prox"
-										type="date"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										required
-									/>
-								</div>
+								<CampoTexto
+									id={field.name}
+									label="Dosis por Animal *"
+									type="number"
+									allowDecimals={true}
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								/>
 							)}
 						</form.Field>
 					</div>
 
-					<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-						<form.Field name="terrenoId">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<form.Field name="veterinarioId">
 							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-terreno">Terreno (opcional)</Label>
-									<select
-										id="plan-terreno"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className={SELECT_CLASS}
-									>
-										<option value="">Todos</option>
-										{(terrenosData?.data ?? []).map((t) => (
-											<option key={t.id} value={t.id}>
-												{t.nombre}
-											</option>
-										))}
-									</select>
-								</div>
+								<CampoSelect
+									id={field.name}
+									label="Veterinario *"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								>
+									<option value="">Seleccionar...</option>
+									{(vetsData?.data ?? []).map((vet) => (
+										<option key={vet.id} value={vet.id}>
+											{vet.nombre}
+										</option>
+									))}
+								</CampoSelect>
 							)}
 						</form.Field>
 
-						<form.Field name="razaId">
+						<form.Field name="insumoId">
 							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-raza">Raza (opcional)</Label>
-									<select
-										id="plan-raza"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className={SELECT_CLASS}
-									>
-										<option value="">Todas</option>
-										{razasData.map((r) => (
-											<option key={r.id} value={r.id}>
-												{r.nombre}
-											</option>
-										))}
-									</select>
-								</div>
+								<CampoSelect
+									id={field.name}
+									label="Vacuna o Medicamento *"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								>
+									<option value="">Seleccionar...</option>
+									{insumosSanitarios.map((ins) => (
+										<option key={ins.id} value={ins.id}>
+											[{ins.tipo}] {ins.nombre} ({ins.unidadMedida})
+										</option>
+									))}
+								</CampoSelect>
+							)}
+						</form.Field>
+					</div>
+
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<form.Field name="proximaEjecucion">
+							{(field) => (
+								<CampoTexto
+									id={field.name}
+									label="Próxima Ejecución *"
+									type="date"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								/>
 							)}
 						</form.Field>
 
 						<form.Field name="edadMinimaMeses">
 							{(field) => (
-								<div className="space-y-1.5">
-									<Label htmlFor="plan-edad">Edad mín. (meses)</Label>
-									<Input
-										id="plan-edad"
-										type="number"
-										allowDecimals={false}
-										min="0"
-										placeholder="Opcional"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-									/>
-								</div>
+								<CampoTexto
+									id={field.name}
+									label="Edad mínima (meses)"
+									type="number"
+									allowDecimals={false}
+									placeholder="Opcional"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								/>
 							)}
 						</form.Field>
 					</div>
 
-					<DialogFooter>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<form.Field name="terrenoId">
+							{(field) => (
+								<CampoSelect
+									id={field.name}
+									label="Terreno objetivo (opcional)"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									disabled={isPending}
+								>
+									<option value="">Todos los terrenos</option>
+									{(terrenosData?.data ?? []).map((t) => (
+										<option key={t.id} value={t.id}>
+											{t.nombre}
+										</option>
+									))}
+								</CampoSelect>
+							)}
+						</form.Field>
+
+						<form.Field name="razaId">
+							{(field) => (
+								<CampoSelect
+									id={field.name}
+									label="Raza objetivo (opcional)"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									disabled={isPending}
+								>
+									<option value="">Todas las razas</option>
+									{(razasData ?? []).map((r) => (
+										<option key={r.id} value={r.id}>
+											{r.nombre}
+										</option>
+									))}
+								</CampoSelect>
+							)}
+						</form.Field>
+					</div>
+
+					<DialogFooter className="pt-2">
 						<Button
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}
-							className="cursor-pointer"
+							disabled={isPending}
 						>
 							Cancelar
 						</Button>
-						<Button
-							type="submit"
-							disabled={crearPlan.isPending}
-							className="cursor-pointer gap-1.5"
-						>
-							{crearPlan.isPending && (
-								<Loader2 className="h-4 w-4 animate-spin" />
-							)}
-							Guardar Plan
+						<Button type="submit" disabled={isPending} className="gap-2">
+							{isPending && <Loader2 className="size-4 animate-spin" />}
+							Crear Plan Sanitario
 						</Button>
 					</DialogFooter>
 				</form>

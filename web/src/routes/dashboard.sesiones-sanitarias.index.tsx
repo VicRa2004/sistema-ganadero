@@ -1,16 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
 import { SesionesSanitariasTable } from "@/components/sesion-sanitaria/SesionesSanitariasTable";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
 
 export const Route = createFileRoute("/dashboard/sesiones-sanitarias/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("sesiones-sanitarias:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "sesiones-sanitarias", "read");
 	},
 	component: SesionesSanitariasComponent,
 });

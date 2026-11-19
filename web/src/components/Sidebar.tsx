@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import {
 	Sheet,
 	SheetContent,
@@ -15,8 +15,10 @@ import {
 	Calendar,
 	Database,
 	Dna,
+	DollarSign,
 	Heart,
 	KeyRound,
+	Layers,
 	LayoutDashboard,
 	Lock,
 	Menu,
@@ -26,6 +28,7 @@ import {
 	UserCheck,
 	Users,
 	Warehouse,
+	Wheat,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +70,12 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 				resource: "ganado",
 				href: "/dashboard/ganado",
 				icon: Sprout,
+			},
+			{
+				label: "Lotes",
+				resource: "lotes",
+				href: "/dashboard/lotes",
+				icon: Layers,
 			},
 			{
 				label: "Reproducción",
@@ -125,6 +134,24 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 				resource: "inventario-insumos",
 				href: "/dashboard/insumos",
 				icon: Database,
+			},
+			{
+				label: "Alimentación",
+				resource: "alimentacion",
+				href: "/dashboard/alimentacion",
+				icon: Wheat,
+			},
+		],
+	},
+	{
+		title: "Finanzas",
+		hideIfNoAccess: true,
+		items: [
+			{
+				label: "Comercial y Costos",
+				resource: "comercial",
+				href: "/dashboard/comercial",
+				icon: DollarSign,
 			},
 		],
 	},
@@ -222,11 +249,11 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ onNavigate }: SidebarContentProps) {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
 
 	const hasPermission = (resource: string) => {
 		if (resource === "") return true;
-		return permissions.includes(`${resource}:read`);
+		return can(resource, "read");
 	};
 
 	return (

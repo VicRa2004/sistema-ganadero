@@ -1,19 +1,22 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Loader2, PlusCircle } from "lucide-react";
+import { CampoTexto } from "@/components/CampoTexto";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, PlusCircle, Hash } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useAbastecerInsumo } from "@/modules/inventario-insumos/hooks/useAbastecerInsumo";
+import { abastecerInsumoSchema } from "@/modules/inventario-insumos/schemas";
 import type { InsumoDto } from "@/modules/inventario-insumos/types";
 
 interface AbastecerInsumoDialogProps {
@@ -27,29 +30,31 @@ export function AbastecerInsumoDialog({
 	onOpenChange,
 	insumo,
 }: AbastecerInsumoDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: abastecer, isPending } = useAbastecerInsumo(insumo.id);
 
 	const form = useForm({
 		defaultValues: {
-			cantidad: 10 as number | string,
+			cantidad: "10",
+			costoUnitario: "",
+			motivo: "",
 		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
-			const cantidad = Number(value.cantidad);
-
-			// biome-ignore lint/suspicious/noExplicitAny: error cast for API error extraction
-			const handleError = (error: any) => {
-				setApiError(formatApiError(error));
-			};
-
+		validators: { onChange: abastecerInsumoSchema },
+		onSubmit: ({ value }) => {
 			abastecer(
-				{ cantidad },
+				{
+					cantidad: Number(value.cantidad),
+					...(value.costoUnitario.trim() !== "" && {
+						costoUnitario: Number(value.costoUnitario),
+					}),
+					...(value.motivo.trim() !== "" && {
+						motivo: value.motivo.trim(),
+					}),
+				},
 				{
 					onSuccess: () => {
+						form.reset();
 						onOpenChange(false);
 					},
-					onError: handleError,
 				},
 			);
 		},
@@ -59,10 +64,7 @@ export function AbastecerInsumoDialog({
 		<Dialog
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (!isPending) {
-					setApiError(null);
-					onOpenChange(nextOpen);
-				}
+				if (!isPending) onOpenChange(nextOpen);
 			}}
 		>
 			<DialogContent className="sm:max-w-md">
@@ -79,18 +81,19 @@ export function AbastecerInsumoDialog({
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
+					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
 
 					<div className="p-3 rounded-lg bg-muted/40 text-sm space-y-1">
 						<div className="flex justify-between">
@@ -100,66 +103,59 @@ export function AbastecerInsumoDialog({
 							</span>
 						</div>
 						<div className="flex justify-between">
-							<span className="text-muted-foreground">Stock Mínimo:</span>
-							<span>
-								{insumo.stockMinimo} {insumo.unidadMedida}
-							</span>
+							<span className="text-muted-foreground">Costo Actual:</span>
+							<span>${insumo.costoUnitario.toFixed(2)}</span>
 						</div>
 					</div>
 
-					<form.Field
-						name="cantidad"
-						validators={{
-							onChange: ({ value }) => {
-								const num = Number(value);
-								if (Number.isNaN(num) || num <= 0)
-									return "La cantidad a ingresar debe ser mayor a cero.";
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="cantidad">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>
-									Cantidad a Ingresar ({insumo.unidadMedida}){" "}
-									<span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="number"
-										step="any"
-										min="0.01"
-										placeholder="Ej: 50"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label={`Cantidad a Ingresar (${insumo.unidadMedida}) *`}
+								type="number"
+								step="any"
+								allowDecimals={true}
+								placeholder="Ej: 50"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
+						)}
+					</form.Field>
+
+					<form.Field name="costoUnitario">
+						{(field) => (
+							<CampoTexto
+								id={field.name}
+								label="Costo Unitario de Compra ($ opcional)"
+								type="number"
+								step="0.01"
+								allowDecimals={true}
+								placeholder="Recalcula promedio ponderado"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
+						)}
+					</form.Field>
+
+					<form.Field name="motivo">
+						{(field) => (
+							<CampoTexto
+								id={field.name}
+								label="Motivo / Referencia (opcional)"
+								placeholder="Ej: Compra factura #450"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
@@ -172,26 +168,20 @@ export function AbastecerInsumoDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending}
+							className="min-w-[120px] bg-emerald-600 hover:bg-emerald-700 text-white"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={isPending || !canSubmit}
-									className="min-w-[120px] bg-emerald-600 hover:bg-emerald-700 text-white"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Sumando...
-										</>
-									) : (
-										"Abastecer Stock"
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Sumando...
+								</>
+							) : (
+								"Abastecer Stock"
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

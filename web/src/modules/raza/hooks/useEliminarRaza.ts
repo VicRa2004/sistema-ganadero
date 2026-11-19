@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { razaService } from "../services/razaService";
 
 export function useEliminarRaza() {
@@ -8,7 +9,7 @@ export function useEliminarRaza() {
 		meta: { successMessage: "Raza eliminada" },
 		mutationFn: (id: number) => razaService.eliminar(id),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["razas"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.razas.list() });
 		},
 	});
 }

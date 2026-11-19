@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	Baby,
 	Calendar,
@@ -21,7 +21,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import {
 	useEliminarEventoReproductivo,
 	useIndicadoresReproductivos,
@@ -33,22 +34,16 @@ import {
 } from "@/modules/reproduccion/types";
 
 export const Route = createFileRoute("/dashboard/reproduccion")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("reproduccion:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "reproduccion", "read");
 	},
 	component: ReproduccionPage,
 });
 
 function ReproduccionPage() {
-	const permissions = useAuthStore((s) => s.permissions) ?? [];
-	const canCreate = permissions.includes("reproduccion:create");
-	const canDelete = permissions.includes("reproduccion:delete");
+	const { can } = usePermissions();
+	const canCreate = can("reproduccion", "create");
+	const canDelete = can("reproduccion", "delete");
 
 	const [page, setPage] = useState(1);
 	const [tipoFiltro, setTipoFiltro] = useState<TipoEventoReproductivo | "">("");

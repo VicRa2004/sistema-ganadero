@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { tratamientoMedicoService } from "../services/tratamientoMedicoService";
 
 export function useFinalizarTratamiento() {
@@ -7,8 +8,13 @@ export function useFinalizarTratamiento() {
 	return useMutation({
 		meta: { successMessage: "Tratamiento finalizado" },
 		mutationFn: (id: number) => tratamientoMedicoService.finalizar(id),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["tratamientos-medicos"] });
+		onSuccess: (_data, id) => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.tratamientosMedicos.lists(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.tratamientosMedicos.detail(id),
+			});
 		},
 	});
 }

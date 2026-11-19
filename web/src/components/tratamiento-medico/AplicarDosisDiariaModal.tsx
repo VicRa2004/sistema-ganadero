@@ -1,18 +1,23 @@
 import { useForm } from "@tanstack/react-form";
-import { useEffect, useState } from "react";
+import { CheckCircle2, Loader2, Syringe } from "lucide-react";
+import { CampoTexto } from "@/components/CampoTexto";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { formatApiError } from "@/lib/utils";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useRegistrarAplicacionDiaria } from "@/modules/tratamiento-medico/hooks/useRegistrarAplicacionDiaria";
+import { aplicarDosisDiariaSchema } from "@/modules/tratamiento-medico/schemas";
 import type { TratamientoMedicoDto } from "@/modules/tratamiento-medico/types";
-import { AlertCircle, CheckCircle2, Loader2, Pill } from "lucide-react";
 
 interface AplicarDosisDiariaModalProps {
 	tratamiento: TratamientoMedicoDto | null;
@@ -25,182 +30,125 @@ export function AplicarDosisDiariaModal({
 	open,
 	onOpenChange,
 }: AplicarDosisDiariaModalProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
-	const aplicarMutation = useRegistrarAplicacionDiaria();
+	const { mutate: registrarAplicacion, isPending } =
+		useRegistrarAplicacionDiaria();
 
 	const form = useForm({
 		defaultValues: {
-			cantidadDosis: tratamiento ? String(tratamiento.dosisDiaria) : "",
+			cantidadDosis: tratamiento ? String(tratamiento.dosisDiaria) : "1",
 			observaciones: "",
 		},
-		onSubmit: async ({ value }) => {
+		validators: { onChange: aplicarDosisDiariaSchema },
+		onSubmit: ({ value }) => {
 			if (!tratamiento) return;
-			setApiError(null);
-
-			const cantidadNum = value.cantidadDosis
-				? Number(value.cantidadDosis)
-				: tratamiento.dosisDiaria;
-
-			if (cantidadNum <= 0) {
-				setApiError("La dosis administrada debe ser mayor a 0");
-				return;
-			}
-
-			try {
-				await aplicarMutation.mutateAsync({
+			registrarAplicacion(
+				{
 					tratamientoId: tratamiento.id,
-					cantidadDosis: cantidadNum,
+					cantidadDosis: Number(value.cantidadDosis),
 					observaciones: value.observaciones.trim() || undefined,
-				});
-				onOpenChange(false);
-				form.reset();
-			} catch (error) {
-				setApiError(formatApiError(error));
-			}
+				},
+				{
+					onSuccess: () => {
+						form.reset();
+						onOpenChange(false);
+					},
+				},
+			);
 		},
 	});
-
-	useEffect(() => {
-		if (tratamiento) {
-			form.setFieldValue("cantidadDosis", String(tratamiento.dosisDiaria));
-		}
-	}, [tratamiento, form]);
 
 	if (!tratamiento) return null;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[450px]">
+		<Dialog
+			open={open}
+			onOpenChange={(nextOpen) => {
+				if (!isPending) {
+					if (!nextOpen) form.reset();
+					onOpenChange(nextOpen);
+				}
+			}}
+		>
+			<DialogContent className="sm:max-w-md animate-fade-in">
 				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2 text-foreground text-base font-bold">
-						<Pill className="size-5 text-emerald-600 dark:text-emerald-400" />
-						Registrar Aplicación de Dosis
+					<DialogTitle className="flex items-center gap-2 text-lg font-bold">
+						<Syringe className="size-5 text-emerald-600" />
+						Registrar Dosis Diaria
 					</DialogTitle>
+					<DialogDescription>
+						Animal:{" "}
+						<strong className="text-foreground">
+							{tratamiento.ganadoIdentificador ?? `#${tratamiento.ganadoId}`}
+						</strong>{" "}
+						· {tratamiento.insumoNombre ?? `Insumo #${tratamiento.insumoId}`} (
+						{tratamiento.dosisDiaria} {tratamiento.insumoUnidad ?? "dosis/día"})
+					</DialogDescription>
 				</DialogHeader>
 
-				{apiError && (
-					<div className="flex items-center gap-2 p-3 text-xs rounded-md bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400">
-						<AlertCircle className="size-4 shrink-0" />
-						<span>{apiError}</span>
-					</div>
-				)}
-
-				<div className="bg-muted/50 p-3 rounded-lg border border-border text-xs space-y-1">
-					<p>
-						<span className="font-semibold text-foreground">Paciente:</span>{" "}
-						{tratamiento.ganadoIdentificador ??
-							`Animal #${tratamiento.ganadoId}`}
-					</p>
-					<p>
-						<span className="font-semibold text-foreground">Diagnóstico:</span>{" "}
-						{tratamiento.diagnostico}
-					</p>
-					<p>
-						<span className="font-semibold text-foreground">Medicamento:</span>{" "}
-						{tratamiento.insumoNombre ?? `Insumo #${tratamiento.insumoId}`}
-					</p>
-					<p>
-						<span className="font-semibold text-foreground">
-							Dosis Recomendada:
-						</span>{" "}
-						{tratamiento.dosisDiaria} {tratamiento.insumoUnidad ?? "unidades"}
-					</p>
-				</div>
-
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					<form.Field
-						name="cantidadDosis"
-						validators={{
-							onChange: ({ value }) => {
-								const num = Number(value);
-								if (!value || Number.isNaN(num) || num <= 0) {
-									return "Ingrese una dosis válida";
-								}
-								return undefined;
-							},
-						}}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
 					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
+
+					<form.Field name="cantidadDosis">
 						{(field) => (
-							<div className="space-y-1">
-								<Label htmlFor={field.name}>
-									Cantidad Administrada (
-									{tratamiento.insumoUnidad ?? "unidades"}){" "}
-									<span className="text-red-500">*</span>
-								</Label>
-								<Input
-									id={field.name}
-									aria-invalid={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-									}
-									aria-describedby={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-											? `${field.name}-error`
-											: undefined
-									}
-									type="number"
-									allowDecimals={true}
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400"
-										>
-											{field.state.meta.errors[0]}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label={`Cantidad aplicada (${tratamiento.insumoUnidad ?? "unidades"}) *`}
+								type="number"
+								allowDecimals={true}
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
 					<form.Field name="observaciones">
 						{(field) => (
-							<div className="space-y-1">
-								<Label htmlFor={field.name}>Observaciones (Opcional)</Label>
-								<Input
-									id={field.name}
-									placeholder="Ej. Reacción normal, sin fiebre..."
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Observaciones clínicas (opcional)"
+								placeholder="Ej. Sin reacciones adversas, fiebre controlada"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					<div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border">
+					<DialogFooter className="pt-2">
 						<Button
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}
-							disabled={aplicarMutation.isPending}
-							className="cursor-pointer text-xs w-full sm:w-auto"
+							disabled={isPending}
 						>
 							Cancelar
 						</Button>
-						<Button
-							type="submit"
-							disabled={aplicarMutation.isPending}
-							className="cursor-pointer gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
-						>
-							{aplicarMutation.isPending ? (
+						<Button type="submit" disabled={isPending} className="gap-2">
+							{isPending ? (
 								<Loader2 className="size-4 animate-spin" />
 							) : (
 								<CheckCircle2 className="size-4" />
 							)}
-							Confirmar Aplicación
+							Confirmar aplicación
 						</Button>
-					</div>
+					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>

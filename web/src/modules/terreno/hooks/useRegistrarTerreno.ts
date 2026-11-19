@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { terrenoService } from "../services/terrenoService";
 import type { RegistrarTerrenoInput } from "../types";
 
@@ -10,7 +11,7 @@ export function useRegistrarTerreno() {
 		mutationFn: (input: RegistrarTerrenoInput) =>
 			terrenoService.registrar(input),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["terrenos"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.terrenos.lists() });
 		},
 	});
 }

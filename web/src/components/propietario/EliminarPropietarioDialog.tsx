@@ -9,8 +9,6 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useEliminarPropietario } from "@/modules/propietario/hooks/useEliminarPropietario";
-import { formatApiError } from "@/lib/utils";
-import { useState } from "react";
 
 interface EliminarPropietarioDialogProps {
 	open: boolean;
@@ -26,17 +24,11 @@ export function EliminarPropietarioDialog({
 	propietarioNombre,
 }: EliminarPropietarioDialogProps) {
 	const { mutate: eliminar, isPending } = useEliminarPropietario();
-	const [apiError, setApiError] = useState<string | null>(null);
 
 	function handleConfirm() {
-		setApiError(null);
 		eliminar(propietarioId, {
 			onSuccess: () => {
 				onOpenChange(false);
-			},
-			// biome-ignore lint/suspicious/noExplicitAny: error cast needed for API error extraction
-			onError: (error: any) => {
-				setApiError(formatApiError(error));
 			},
 		});
 	}
@@ -54,12 +46,6 @@ export function EliminarPropietarioDialog({
 						será eliminado permanentemente del sistema.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
-
-				{apiError && (
-					<p className="text-sm text-red-700 bg-red-500/10 border border-red-500/30 rounded-md px-3 py-2 dark:text-red-400 dark:bg-red-500/15">
-						{apiError}
-					</p>
-				)}
 
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>

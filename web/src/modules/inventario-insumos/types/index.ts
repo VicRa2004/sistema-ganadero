@@ -1,6 +1,5 @@
 export type TipoInsumo = "MEDICAMENTO" | "VACUNA" | "ALIMENTO";
-
-// ---- Paginación (shape real del API) ----
+export type TipoMovimientoInsumo = "ENTRADA" | "SALIDA" | "AJUSTE";
 
 export interface PaginatedResponse<T> {
 	data: T[];
@@ -8,8 +7,6 @@ export interface PaginatedResponse<T> {
 	totalItems: number;
 	totalPages: number;
 }
-
-// ---- Output DTOs (respuestas del API) ----
 
 export interface InsumoDto {
 	id: number;
@@ -21,11 +18,37 @@ export interface InsumoDto {
 	lote: string;
 	fechaCaducidad: string;
 	periodoRetiroDias: number;
+	costoUnitario: number;
 	esBajoStock: boolean;
 	usuarioId: number;
 }
 
-// ---- Input DTOs (payloads para el API) ----
+export interface MovimientoInsumoDto {
+	id: number;
+	insumoId: number;
+	tipo: TipoMovimientoInsumo;
+	cantidad: number;
+	delta: number;
+	costoUnitario: number | null;
+	motivo: string;
+	referenciaTipo: string | null;
+	referenciaId: number | null;
+	ganadoId: number | null;
+	terrenoId: number | null;
+	loteId: number | null;
+	usuarioId: number;
+	fecha: string;
+}
+
+export interface KardexInsumoDto {
+	insumoId: number;
+	insumoNombre: string;
+	unidadMedida: string;
+	stockActual: number;
+	sumaKardex: number;
+	consistente: boolean;
+	movimientos: PaginatedResponse<MovimientoInsumoDto>;
+}
 
 export interface RegistrarInsumoInput {
 	nombre: string;
@@ -36,14 +59,27 @@ export interface RegistrarInsumoInput {
 	lote: string;
 	fechaCaducidad: string;
 	periodoRetiroDias?: number;
+	costoUnitario?: number;
 }
 
 export interface AbastecerInsumoInput {
 	cantidad: number;
+	costoUnitario?: number;
+	motivo?: string;
 }
 
 export interface ConsumirInsumoInput {
 	cantidad: number;
+	motivo?: string;
+	ganadoId?: number;
+	terrenoId?: number;
+	loteId?: number;
+}
+
+export interface AjustarStockInput {
+	cantidadDelta: number;
+	motivo: string;
+	costoUnitario?: number;
 }
 
 export interface ActualizarInsumoInput {
@@ -54,4 +90,5 @@ export interface ActualizarInsumoInput {
 	lote?: string;
 	fechaCaducidad?: string;
 	periodoRetiroDias?: number;
+	costoUnitario?: number;
 }

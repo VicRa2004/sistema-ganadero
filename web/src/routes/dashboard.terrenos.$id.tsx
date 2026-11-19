@@ -1,6 +1,7 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useObtenerDetalleTerreno } from "@/modules/terreno/hooks/useObtenerDetalleTerreno";
 import { useObtenerCapacidadTerreno } from "@/modules/terreno/hooks/useObtenerCapacidadTerreno";
 import { TerrenoFormDialog } from "@/components/terreno/TerrenoFormDialog";
@@ -20,14 +21,8 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/terrenos/$id")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("terreno:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "terreno", "read");
 	},
 	component: DetalleTerrenoComponent,
 });
@@ -36,8 +31,8 @@ function DetalleTerrenoComponent() {
 	const { id } = Route.useParams();
 	const terrenoId = Number(id);
 
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canUpdate = permissions.includes("terreno:update");
+	const { can } = usePermissions();
+	const canUpdate = can("terreno", "update");
 
 	const {
 		data: terreno,

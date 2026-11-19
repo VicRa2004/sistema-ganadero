@@ -20,7 +20,7 @@ import {
 	UserCheck,
 	XCircle,
 } from "lucide-react";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarSesionesSanitarias } from "@/modules/sesion-sanitaria/hooks/useListarSesionesSanitarias";
 import { useEliminarSesionSanitaria } from "@/modules/sesion-sanitaria/hooks/useEliminarSesionSanitaria";
 import {
@@ -50,10 +50,10 @@ export function SesionesSanitariasTable() {
 	const [registrarOpen, setRegistrarOpen] = useState(false);
 	const [detalleSesionId, setDetalleSesionId] = useState<number | null>(null);
 
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canCreate = permissions.includes("sesiones-sanitarias:create");
-	const canUpdate = permissions.includes("sesiones-sanitarias:update");
-	const canDelete = permissions.includes("sesiones-sanitarias:delete");
+	const { can } = usePermissions();
+	const canCreate = can("sesiones-sanitarias", "create");
+	const canUpdate = can("sesiones-sanitarias", "update");
+	const canDelete = can("sesiones-sanitarias", "delete");
 
 	const { data: pagination, isLoading } = useListarSesionesSanitarias({
 		page,

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarVeterinarios } from "@/modules/veterinario/hooks/useListarVeterinarios";
 import { VeterinariosTable } from "@/components/veterinario/VeterinariosTable";
 import { VeterinarioFormDialog } from "@/components/veterinario/VeterinarioFormDialog";
@@ -20,14 +21,8 @@ import {
 import type { VeterinarioDto } from "@/modules/veterinario/types";
 
 export const Route = createFileRoute("/dashboard/veterinarios/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("veterinarios:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "veterinarios", "read");
 	},
 	component: VeterinariosComponent,
 });
@@ -35,9 +30,9 @@ export const Route = createFileRoute("/dashboard/veterinarios/")({
 const PAGE_SIZE = 10;
 
 function VeterinariosComponent() {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
 	const hasPermission = (resource: string, action: string) =>
-		permissions.includes(`${resource}:${action}`);
+		can(resource, action);
 
 	const [page, setPage] = useState(1);
 	const [nombreFiltro, setNombreFiltro] = useState("");

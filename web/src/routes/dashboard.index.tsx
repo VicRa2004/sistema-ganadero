@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useDashboardResumen } from "@/modules/dashboard/hooks/useDashboardResumen";
 import { DashboardKpiGrid } from "@/components/dashboard/DashboardKpiGrid";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
@@ -127,11 +128,11 @@ const OPERATIONS_DATA: OperationCard[] = [
 
 function DashboardIndexComponent() {
 	const user = useAuthStore((state) => state.user);
-	const permissions = useAuthStore((state) => state.permissions) || [];
+	const { can } = usePermissions();
 	const { data: resumen, isLoading: isLoadingResumen } = useDashboardResumen();
 
 	const hasPermission = (resource: string, action: string): boolean => {
-		return permissions.includes(`${resource}:${action}`);
+		return can(resource, action);
 	};
 
 	return (

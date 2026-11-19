@@ -12,7 +12,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import type { GanadoDetalleDto } from "@/modules/ganado/types";
 import {
 	useEliminarEventoReproductivo,
@@ -27,9 +27,9 @@ export function ReproduccionGanadoCard({
 	ganado: GanadoDetalleDto;
 }) {
 	const [openDialog, setOpenDialog] = useState(false);
-	const permissions = useAuthStore((s) => s.permissions) ?? [];
-	const canCreate = permissions.includes("reproduccion:create");
-	const canDelete = permissions.includes("reproduccion:delete");
+	const { can } = usePermissions();
+	const canCreate = can("reproduccion", "create");
+	const canDelete = can("reproduccion", "delete");
 
 	const { data, isLoading, isError } = useListarEventosReproductivos({
 		page: 1,

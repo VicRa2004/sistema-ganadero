@@ -1,19 +1,22 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Loader2 } from "lucide-react";
+import { CampoTexto } from "@/components/CampoTexto";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Scale } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useRegistrarPesaje } from "@/modules/ganado/hooks/useRegistrarPesaje";
+import { ganadoPesajeSchema } from "@/modules/ganado/schemas";
 
 interface GanadoPesajeDialogProps {
 	open: boolean;
@@ -30,24 +33,18 @@ export function GanadoPesajeDialog({
 	arete,
 	ultimoPeso,
 }: GanadoPesajeDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: registrarPesaje, isPending } = useRegistrarPesaje(ganadoId);
 
 	const form = useForm({
-		defaultValues: {
-			peso: "" as string | number,
-		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
+		defaultValues: { peso: "" },
+		validators: { onChange: ganadoPesajeSchema },
+		onSubmit: ({ value }) => {
 			registrarPesaje(
 				{ peso: Number(value.peso) },
 				{
 					onSuccess: () => {
 						form.reset();
 						onOpenChange(false);
-					},
-					onError: (error) => {
-						setApiError(formatApiError(error));
 					},
 				},
 			);
@@ -58,10 +55,7 @@ export function GanadoPesajeDialog({
 		<Dialog
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (!isPending) {
-					setApiError(null);
-					onOpenChange(nextOpen);
-				}
+				if (!isPending) onOpenChange(nextOpen);
 			}}
 		>
 			<DialogContent className="sm:max-w-md animate-fade-in">
@@ -76,18 +70,19 @@ export function GanadoPesajeDialog({
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
+					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
 
 					<div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-sm text-left">
 						<span className="text-muted-foreground block text-xs uppercase font-semibold">
@@ -98,66 +93,21 @@ export function GanadoPesajeDialog({
 						</span>
 					</div>
 
-					<form.Field
-						name="peso"
-						validators={{
-							onChange: ({ value }) => {
-								if (
-									value === undefined ||
-									value === null ||
-									String(value).trim() === ""
-								)
-									return "El peso es requerido.";
-								const num = Number(value);
-								if (Number.isNaN(num))
-									return "Debe introducir un número válido.";
-								if (num <= 0) return "El peso debe ser mayor a 0 kg.";
-								if (num > 3000) return "El peso no puede exceder los 3,000 kg.";
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="peso">
 						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Nuevo Peso (kg) <span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<Scale className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="number"
-										step="any"
-										allowDecimals={true}
-										placeholder="Ej: 362.5"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Nuevo Peso (kg) *"
+								type="number"
+								step="any"
+								allowDecimals={true}
+								placeholder="Ej: 362.5"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
@@ -170,26 +120,20 @@ export function GanadoPesajeDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending}
+							className="min-w-[120px]"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={isPending || !canSubmit}
-									className="min-w-[120px]"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Registrando...
-										</>
-									) : (
-										"Guardar peso"
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Registrando...
+								</>
+							) : (
+								"Guardar peso"
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

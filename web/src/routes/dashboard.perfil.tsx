@@ -5,6 +5,11 @@ import { Bell, Loader2, UserCircle } from "lucide-react";
 import { z } from "zod";
 import { CampoTexto } from "@/components/CampoTexto";
 import { Button } from "@/components/ui/button";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useCambiarPassword } from "@/modules/auth/hooks/useCambiarPassword";
 import { passwordSchema } from "@/modules/auth/schemas";
 import { useAuthStore } from "@/modules/auth/store/authStore";
@@ -83,12 +88,19 @@ function PerfilComponent() {
 			</section>
 
 			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					form.handleSubmit();
-				}}
+				noValidate
+				onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
 				className="space-y-4 text-left"
 			>
+				<form.Subscribe
+					selector={(s) =>
+						Object.values(s.fieldMeta).filter(
+							(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+						).length
+					}
+				>
+					{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+				</form.Subscribe>
 				<h2 className="font-semibold">Cambiar contraseña</h2>
 				<p className="text-sm text-muted-foreground">
 					Al cambiarla se cerrarán todas tus sesiones y deberás iniciar sesión
@@ -116,9 +128,7 @@ function PerfilComponent() {
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
-									errors={
-										field.state.meta.isTouched ? field.state.meta.errors : []
-									}
+									errors={getVisibleFieldErrors(field.state.meta)}
 									disabled={isPending}
 								/>
 							)}

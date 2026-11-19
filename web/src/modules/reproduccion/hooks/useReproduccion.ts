@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { reproduccionService } from "../services/reproduccionService";
 import type {
 	EventoReproductivoFilters,
@@ -10,7 +11,7 @@ export function useListarEventosReproductivos(
 	enabled = true,
 ) {
 	return useQuery({
-		queryKey: ["reproduccion", "eventos", filters],
+		queryKey: queryKeys.reproduccion.eventos(filters),
 		queryFn: () => reproduccionService.listar(filters),
 		enabled,
 	});
@@ -21,7 +22,7 @@ export function useIndicadoresReproductivos(params?: {
 	hasta?: string;
 }) {
 	return useQuery({
-		queryKey: ["reproduccion", "indicadores", params],
+		queryKey: queryKeys.reproduccion.indicadores(params),
 		queryFn: () => reproduccionService.obtenerIndicadores(params),
 	});
 }
@@ -33,9 +34,16 @@ export function useRegistrarEventoReproductivo() {
 			reproduccionService.registrar(input),
 		meta: { successMessage: "Evento reproductivo registrado" },
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["reproduccion"] });
-			queryClient.invalidateQueries({ queryKey: ["ganado"] });
-			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.reproduccion.eventosAll(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.reproduccion.indicadoresAll(),
+			});
+			queryClient.invalidateQueries({ queryKey: queryKeys.ganado.lists() });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.dashboard.resumen(),
+			});
 		},
 	});
 }
@@ -46,7 +54,12 @@ export function useEliminarEventoReproductivo() {
 		mutationFn: (id: number) => reproduccionService.eliminar(id),
 		meta: { successMessage: "Evento reproductivo eliminado" },
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["reproduccion"] });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.reproduccion.eventosAll(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.reproduccion.indicadoresAll(),
+			});
 		},
 	});
 }

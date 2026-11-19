@@ -1,33 +1,31 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Loader2 } from "lucide-react";
+import { CampoTexto } from "@/components/CampoTexto";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-	Loader2,
-	Warehouse,
-	MapPin,
-	Maximize2,
-	Users,
-	Image as ImageIcon,
-} from "lucide-react";
-import { formatApiError } from "@/lib/utils";
-import { useRegistrarTerreno } from "@/modules/terreno/hooks/useRegistrarTerreno";
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useActualizarTerreno } from "@/modules/terreno/hooks/useActualizarTerreno";
+import { useRegistrarTerreno } from "@/modules/terreno/hooks/useRegistrarTerreno";
+import { terrenoFormSchema } from "@/modules/terreno/schemas";
 import type { TerrenoDto } from "@/modules/terreno/types";
 
 interface TerrenoFormDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	/** Si se pasa, el formulario funciona en modo edición */
 	terreno?: TerrenoDto;
 }
 
@@ -37,8 +35,6 @@ export function TerrenoFormDialog({
 	terreno,
 }: TerrenoFormDialogProps) {
 	const isEditing = !!terreno;
-	const [apiError, setApiError] = useState<string | null>(null);
-
 	const [imagenTerrenoFile, setImagenTerrenoFile] = useState<File | null>(null);
 	const [eliminarImagenTerreno, setEliminarImagenTerreno] = useState(false);
 
@@ -48,38 +44,32 @@ export function TerrenoFormDialog({
 		terreno?.imagenTerreno ? `${baseApiUrl}${terreno.imagenTerreno}` : null,
 	);
 
-	const handleOpenChange = (nextOpen: boolean) => {
-		if (!isPending) {
-			setApiError(null);
-			if (nextOpen) {
-				setImagenTerrenoFile(null);
-				setEliminarImagenTerreno(false);
-				setPreviewUrl(
-					terreno?.imagenTerreno
-						? `${baseApiUrl}${terreno.imagenTerreno}`
-						: null,
-				);
-			}
-			onOpenChange(nextOpen);
-		}
-	};
-
 	const { mutate: registrar, isPending: isRegistrando } = useRegistrarTerreno();
 	const { mutate: actualizar, isPending: isActualizando } =
 		useActualizarTerreno(terreno?.id ?? 0);
-
 	const isPending = isRegistrando || isActualizando;
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (isPending) return;
+		if (nextOpen) {
+			setImagenTerrenoFile(null);
+			setEliminarImagenTerreno(false);
+			setPreviewUrl(
+				terreno?.imagenTerreno ? `${baseApiUrl}${terreno.imagenTerreno}` : null,
+			);
+		}
+		onOpenChange(nextOpen);
+	};
 
 	const form = useForm({
 		defaultValues: {
 			nombre: terreno?.nombre ?? "",
 			ubicacion: terreno?.ubicacion ?? "",
-			extensionHectareas: terreno?.extensionHectareas ?? "",
-			capacidadMaxima: terreno?.capacidadMaxima ?? "",
+			extensionHectareas: terreno ? String(terreno.extensionHectareas) : "",
+			capacidadMaxima: terreno ? String(terreno.capacidadMaxima) : "",
 		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
-
+		validators: { onChange: terrenoFormSchema },
+		onSubmit: ({ value }) => {
 			const payload = {
 				nombre: value.nombre.trim(),
 				ubicacion: value.ubicacion.trim(),
@@ -90,23 +80,14 @@ export function TerrenoFormDialog({
 					: imagenTerrenoFile || undefined,
 			};
 
-			// biome-ignore lint/suspicious/noExplicitAny: error cast for API error extraction
-			const handleError = (error: any) => {
-				setApiError(formatApiError(error));
-			};
-
 			if (isEditing) {
-				actualizar(payload, {
-					onSuccess: () => handleOpenChange(false),
-					onError: handleError,
-				});
+				actualizar(payload, { onSuccess: () => handleOpenChange(false) });
 			} else {
 				registrar(payload, {
 					onSuccess: () => {
 						form.reset();
 						handleOpenChange(false);
 					},
-					onError: handleError,
 				});
 			}
 		},
@@ -114,7 +95,7 @@ export function TerrenoFormDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-md animate-fade-in">
+			<DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto animate-fade-in">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-bold">
 						{isEditing ? "Editar Terreno" : "Registrar Terreno"}
@@ -127,264 +108,88 @@ export function TerrenoFormDialog({
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
-
-					{/* Campo Nombre */}
-					<form.Field
-						name="nombre"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value || value.trim() === "")
-									return "El nombre es requerido.";
-								if (value.trim().length < 2)
-									return "El nombre debe tener al menos 2 caracteres.";
-								return undefined;
-							},
-						}}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
 					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
+
+					<form.Field name="nombre">
 						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Nombre <span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<Warehouse className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="text"
-										placeholder="Ej: Terreno Las Pampas"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Nombre *"
+								placeholder="Ej: Potrero El Roble"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					{/* Campo Ubicación */}
-					<form.Field
-						name="ubicacion"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value || value.trim() === "")
-									return "La ubicación es requerida.";
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="ubicacion">
 						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Ubicación <span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="text"
-										placeholder="Ej: Km 15 Carretera Central, Sonora"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Ubicación *"
+								placeholder="Ej: Zona Norte km 12"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					{/* Campo Extensión Hectáreas */}
-					<form.Field
-						name="extensionHectareas"
-						validators={{
-							onChange: ({ value }) => {
-								if (
-									value === undefined ||
-									value === null ||
-									String(value).trim() === ""
-								)
-									return "La extensión es requerida.";
-								const num = Number(value);
-								if (Number.isNaN(num))
-									return "Debe introducir un número válido.";
-								if (num <= 0)
-									return "La extensión debe ser mayor a 0 hectáreas.";
-								if (num > 1000000)
-									return "La extensión no puede exceder 1,000,000 de hectáreas.";
-								return undefined;
-							},
-						}}
-					>
-						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Extensión (Hectáreas){" "}
-									<span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<Maximize2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="number"
-										step="any"
-										allowDecimals={true}
-										placeholder="Ej: 150.5"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
-						)}
-					</form.Field>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<form.Field name="extensionHectareas">
+							{(field) => (
+								<CampoTexto
+									id={field.name}
+									label="Extensión (ha) *"
+									type="number"
+									step="any"
+									allowDecimals={true}
+									placeholder="Ej: 45.5"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								/>
+							)}
+						</form.Field>
 
-					{/* Campo Capacidad Máxima */}
-					<form.Field
-						name="capacidadMaxima"
-						validators={{
-							onChange: ({ value }) => {
-								if (
-									value === undefined ||
-									value === null ||
-									String(value).trim() === ""
-								)
-									return "La capacidad máxima es requerida.";
-								const num = Number(value);
-								if (Number.isNaN(num))
-									return "Debe introducir un número válido.";
-								if (!Number.isInteger(num))
-									return "La capacidad debe ser un número entero sin decimales.";
-								if (num <= 0)
-									return "La capacidad máxima debe ser mayor a 0 cabezas.";
-								if (num > 500000)
-									return "La capacidad máxima no puede exceder 500,000 cabezas.";
-								return undefined;
-							},
-						}}
-					>
-						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Capacidad Máxima (Cabezas){" "}
-									<span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="number"
-										step="1"
-										allowDecimals={false}
-										placeholder="Ej: 300"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
-						)}
-					</form.Field>
+						<form.Field name="capacidadMaxima">
+							{(field) => (
+								<CampoTexto
+									id={field.name}
+									label="Capacidad Máxima *"
+									type="number"
+									step="1"
+									allowDecimals={false}
+									placeholder="Ej: 300"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									errors={getVisibleFieldErrors(field.state.meta)}
+									disabled={isPending}
+								/>
+							)}
+						</form.Field>
+					</div>
 
-					{/* Campo Imagen del Terreno */}
 					<div className="space-y-1.5 text-left">
 						<Label htmlFor="imagenTerreno" className="text-sm font-semibold">
 							Imagen del Terreno (Opcional)
@@ -416,26 +221,18 @@ export function TerrenoFormDialog({
 							</div>
 						) : (
 							<div className="space-y-2">
-								<div className="relative">
-									<ImageIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id="imagenTerreno"
-										type="file"
-										accept="image/*"
-										disabled={isPending}
-										onChange={(e) => {
-											const file = e.target.files?.[0] || null;
-											setImagenTerrenoFile(file);
-											setEliminarImagenTerreno(false);
-											if (file) {
-												setPreviewUrl(URL.createObjectURL(file));
-											} else {
-												setPreviewUrl(null);
-											}
-										}}
-										className="pl-9"
-									/>
-								</div>
+								<Input
+									id="imagenTerreno"
+									type="file"
+									accept="image/*"
+									disabled={isPending}
+									onChange={(e) => {
+										const file = e.target.files?.[0] || null;
+										setImagenTerrenoFile(file);
+										setEliminarImagenTerreno(false);
+										setPreviewUrl(file ? URL.createObjectURL(file) : null);
+									}}
+								/>
 								{eliminarImagenTerreno && (
 									<p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
 										Se eliminará la imagen del terreno al guardar.
@@ -454,28 +251,22 @@ export function TerrenoFormDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending}
+							className="min-w-[120px] cursor-pointer"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={isPending || !canSubmit}
-									className="min-w-[120px] cursor-pointer"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											{isEditing ? "Guardando..." : "Registrando..."}
-										</>
-									) : isEditing ? (
-										"Guardar cambios"
-									) : (
-										"Registrar"
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									{isEditing ? "Guardando..." : "Registrando..."}
+								</>
+							) : isEditing ? (
+								"Guardar cambios"
+							) : (
+								"Registrar"
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

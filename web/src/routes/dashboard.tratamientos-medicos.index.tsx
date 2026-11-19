@@ -1,16 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
 import { TratamientoMedicoTable } from "@/components/tratamiento-medico/TratamientoMedicoTable";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
 
 export const Route = createFileRoute("/dashboard/tratamientos-medicos/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("tratamientos-medicos:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "tratamientos-medicos", "read");
 	},
 	component: TratamientosMedicosComponent,
 });

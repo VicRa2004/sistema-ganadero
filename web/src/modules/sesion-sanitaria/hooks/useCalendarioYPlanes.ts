@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { sesionSanitariaService } from "../services/sesionSanitariaService";
 import type { CrearPlanSanitarioInput } from "../types";
 
-export const CALENDARIO_SANITARIO_KEY = ["calendario-sanitario"] as const;
-export const PLANES_SANITARIOS_KEY = ["planes-sanitarios"] as const;
+export const CALENDARIO_SANITARIO_KEY =
+	queryKeys.sesionesSanitarias.calendarioAll();
+export const PLANES_SANITARIOS_KEY = queryKeys.sesionesSanitarias.planes();
 
 export function useObtenerCalendarioSanitario(params: {
 	desde: string;
@@ -12,13 +14,7 @@ export function useObtenerCalendarioSanitario(params: {
 	ganadoId?: number;
 }) {
 	return useQuery({
-		queryKey: [
-			...CALENDARIO_SANITARIO_KEY,
-			params.desde,
-			params.hasta,
-			params.terrenoId ?? "",
-			params.ganadoId ?? "",
-		],
+		queryKey: queryKeys.sesionesSanitarias.calendario(params),
 		queryFn: () => sesionSanitariaService.obtenerCalendario(params),
 	});
 }
@@ -28,11 +24,18 @@ export function useRealizarSesionSanitaria() {
 	return useMutation({
 		mutationFn: (id: number) => sesionSanitariaService.realizar(id),
 		meta: { successMessage: "Sesión marcada como realizada" },
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["sesiones-sanitarias"] });
+		onSuccess: (_data, id) => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.lists(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.detail(id),
+			});
 			queryClient.invalidateQueries({ queryKey: CALENDARIO_SANITARIO_KEY });
-			queryClient.invalidateQueries({ queryKey: ["insumos"] });
-			queryClient.invalidateQueries({ queryKey: ["notificaciones"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.insumos.all });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.notificaciones.lists(),
+			});
 		},
 	});
 }
@@ -42,8 +45,13 @@ export function useCancelarSesionSanitaria() {
 	return useMutation({
 		mutationFn: (id: number) => sesionSanitariaService.cancelar(id),
 		meta: { successMessage: "Sesión cancelada" },
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["sesiones-sanitarias"] });
+		onSuccess: (_data, id) => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.lists(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.detail(id),
+			});
 			queryClient.invalidateQueries({ queryKey: CALENDARIO_SANITARIO_KEY });
 		},
 	});
@@ -103,9 +111,13 @@ export function useGenerarSesionesPlanes() {
 		meta: { successMessage: "Sesiones generadas desde planes activos" },
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: PLANES_SANITARIOS_KEY });
-			queryClient.invalidateQueries({ queryKey: ["sesiones-sanitarias"] });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.lists(),
+			});
 			queryClient.invalidateQueries({ queryKey: CALENDARIO_SANITARIO_KEY });
-			queryClient.invalidateQueries({ queryKey: ["notificaciones"] });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.notificaciones.lists(),
+			});
 		},
 	});
 }

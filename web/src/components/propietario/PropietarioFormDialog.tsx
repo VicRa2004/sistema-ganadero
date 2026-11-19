@@ -1,26 +1,31 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Loader2 } from "lucide-react";
+import { CampoTexto } from "@/components/CampoTexto";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User, Phone, Mail } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
-import { useRegistrarPropietario } from "@/modules/propietario/hooks/useRegistrarPropietario";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useActualizarPropietario } from "@/modules/propietario/hooks/useActualizarPropietario";
+import { useRegistrarPropietario } from "@/modules/propietario/hooks/useRegistrarPropietario";
+import { propietarioFormSchema } from "@/modules/propietario/schemas";
 import type { PropietarioDto } from "@/modules/propietario/types";
 
 interface PropietarioFormDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	/** Si se pasa, el formulario funciona en modo edición */
 	propietario?: PropietarioDto;
 }
 
@@ -30,8 +35,6 @@ export function PropietarioFormDialog({
 	propietario,
 }: PropietarioFormDialogProps) {
 	const isEditing = !!propietario;
-	const [apiError, setApiError] = useState<string | null>(null);
-
 	const [imagenMarcaFile, setImagenMarcaFile] = useState<File | null>(null);
 	const [eliminarImagenMarca, setEliminarImagenMarca] = useState(false);
 
@@ -41,28 +44,25 @@ export function PropietarioFormDialog({
 		propietario?.imagenMarca ? `${baseApiUrl}${propietario.imagenMarca}` : null,
 	);
 
-	const handleOpenChange = (nextOpen: boolean) => {
-		if (!isPending) {
-			setApiError(null);
-			if (nextOpen) {
-				setImagenMarcaFile(null);
-				setEliminarImagenMarca(false);
-				setPreviewUrl(
-					propietario?.imagenMarca
-						? `${baseApiUrl}${propietario.imagenMarca}`
-						: null,
-				);
-			}
-			onOpenChange(nextOpen);
-		}
-	};
-
 	const { mutate: registrar, isPending: isRegistrando } =
 		useRegistrarPropietario();
 	const { mutate: actualizar, isPending: isActualizando } =
 		useActualizarPropietario(propietario?.id ?? 0);
-
 	const isPending = isRegistrando || isActualizando;
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (isPending) return;
+		if (nextOpen) {
+			setImagenMarcaFile(null);
+			setEliminarImagenMarca(false);
+			setPreviewUrl(
+				propietario?.imagenMarca
+					? `${baseApiUrl}${propietario.imagenMarca}`
+					: null,
+			);
+		}
+		onOpenChange(nextOpen);
+	};
 
 	const form = useForm({
 		defaultValues: {
@@ -70,33 +70,23 @@ export function PropietarioFormDialog({
 			telefono: propietario?.telefono ?? "",
 			correo: propietario?.correo ?? "",
 		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
-			// Normalizar campos opcionales vacíos a null
+		validators: { onChange: propietarioFormSchema },
+		onSubmit: ({ value }) => {
 			const payload = {
 				nombre: value.nombre.trim(),
-				telefono: value.telefono?.trim() || null,
-				correo: value.correo?.trim() || null,
+				telefono: value.telefono.trim() || null,
+				correo: value.correo.trim() || null,
 				imagenMarca: eliminarImagenMarca ? null : imagenMarcaFile || undefined,
 			};
 
-			// biome-ignore lint/suspicious/noExplicitAny: error cast for API error extraction
-			const handleError = (error: any) => {
-				setApiError(formatApiError(error));
-			};
-
 			if (isEditing) {
-				actualizar(payload, {
-					onSuccess: () => handleOpenChange(false),
-					onError: handleError,
-				});
+				actualizar(payload, { onSuccess: () => handleOpenChange(false) });
 			} else {
 				registrar(payload, {
 					onSuccess: () => {
 						form.reset();
 						handleOpenChange(false);
 					},
-					onError: handleError,
 				});
 			}
 		},
@@ -104,7 +94,7 @@ export function PropietarioFormDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-md">
+			<DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-bold">
 						{isEditing ? "Editar Propietario" : "Registrar Propietario"}
@@ -117,179 +107,66 @@ export function PropietarioFormDialog({
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
-
-					{/* Campo Nombre */}
-					<form.Field
-						name="nombre"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value || value.trim() === "")
-									return "El nombre es requerido.";
-								if (value.trim().length < 2)
-									return "El nombre debe tener al menos 2 caracteres.";
-								return undefined;
-							},
-						}}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
 					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
+
+					<form.Field name="nombre">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>
-									Nombre <span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="text"
-										placeholder="Ej: Juan Pérez García"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Nombre *"
+								placeholder="Ej: Juan Pérez"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					{/* Campo Teléfono */}
-					<form.Field
-						name="telefono"
-						validators={{
-							onChange: ({ value }) => {
-								if (value && !/^[+\d\s\-()]{7,20}$/.test(value)) {
-									return "Introduce un número de teléfono válido.";
-								}
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="telefono">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>Teléfono</Label>
-								<div className="relative">
-									<Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="tel"
-										placeholder="Ej: +52 555 123 4567"
-										value={field.state.value ?? ""}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Teléfono (opcional)"
+								placeholder="Ej: 5512345678"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					{/* Campo Correo */}
-					<form.Field
-						name="correo"
-						validators={{
-							onChange: ({ value }) => {
-								if (value && !/\S+@\S+\.\S+/.test(value)) {
-									return "Introduce un correo electrónico válido.";
-								}
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="correo">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>Correo electrónico</Label>
-								<div className="relative">
-									<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="email"
-										placeholder="Ej: juan@ejemplo.com"
-										value={field.state.value ?? ""}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Correo Electrónico (opcional)"
+								type="email"
+								placeholder="Ej: juan@ejemplo.com"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					{/* Campo Imagen de Marca (Fierro) */}
 					<div className="space-y-1.5 text-left">
 						<Label htmlFor="imagenMarca" className="text-sm font-semibold">
 							Fierro para marcar ganado (Imagen)
@@ -330,11 +207,7 @@ export function PropietarioFormDialog({
 										const file = e.target.files?.[0] || null;
 										setImagenMarcaFile(file);
 										setEliminarImagenMarca(false);
-										if (file) {
-											setPreviewUrl(URL.createObjectURL(file));
-										} else {
-											setPreviewUrl(null);
-										}
+										setPreviewUrl(file ? URL.createObjectURL(file) : null);
 									}}
 								/>
 								{eliminarImagenMarca && (
@@ -355,28 +228,22 @@ export function PropietarioFormDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending}
+							className="min-w-[120px]"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={isPending || !canSubmit}
-									className="min-w-[120px]"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											{isEditing ? "Guardando..." : "Registrando..."}
-										</>
-									) : isEditing ? (
-										"Guardar cambios"
-									) : (
-										"Registrar"
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									{isEditing ? "Guardando..." : "Registrando..."}
+								</>
+							) : isEditing ? (
+								"Guardar cambios"
+							) : (
+								"Registrar"
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

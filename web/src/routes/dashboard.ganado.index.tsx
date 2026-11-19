@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarGanado } from "@/modules/ganado/hooks/useListarGanado";
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
@@ -31,14 +32,8 @@ import {
 import type { GanadoDto } from "@/modules/ganado/types";
 
 export const Route = createFileRoute("/dashboard/ganado/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("ganado:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "ganado", "read");
 	},
 	validateSearch: (
 		search: Record<string, unknown>,
@@ -57,9 +52,9 @@ const SELECT_CLASS =
 	"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
 
 function GanadosComponent() {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
 	const hasPermission = (resource: string, action: string) =>
-		permissions.includes(`${resource}:${action}`);
+		can(resource, action);
 
 	const [page, setPage] = useState(1);
 

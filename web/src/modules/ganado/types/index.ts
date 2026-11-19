@@ -21,6 +21,7 @@ export interface GanadoDto {
 	madreId: number | null;
 	fechaBaja: string | null;
 	motivoBajaId: number | null;
+	procedencia?: string | null;
 }
 
 export interface GanadoDetalleDto {
@@ -59,6 +60,7 @@ export interface GanadoDetalleDto {
 	enPeriodoRetiro?: boolean;
 	retiroHasta?: string | null;
 	retiroMotivo?: string | null;
+	procedencia?: string | null;
 }
 
 export interface FilaImportacionGanadoDto {
@@ -103,6 +105,7 @@ export interface RegistrarGanadoInput {
 	propietarioId: number;
 	padreId?: number | null;
 	madreId?: number | null;
+	procedencia?: string | null;
 }
 
 export interface ActualizarGanadoInput {
@@ -118,6 +121,7 @@ export interface ActualizarGanadoInput {
 	madreId?: number | null;
 	fechaBaja?: string | null;
 	motivoBajaId?: number | null;
+	procedencia?: string | null;
 }
 
 export interface RegistrarPesajeInput {

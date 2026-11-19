@@ -4,7 +4,8 @@ export type TipoNotificacion =
 	| "TRATAMIENTO_POR_VENCER"
 	| "SESION_PROGRAMADA"
 	| "VACUNA_PENDIENTE"
-	| "PARTO_PROXIMO";
+	| "PARTO_PROXIMO"
+	| "AUTONOMIA_ALIMENTO";
 
 export interface NotificacionDto {
 	id: number;
@@ -63,5 +64,10 @@ export const TIPO_NOTIFICACION_LABELS: Record<
 		label: "Partos próximos estimados",
 		descripcion:
 			"Aviso de hembras con fecha probable de parto dentro de los próximos 14 días.",
+	},
+	AUTONOMIA_ALIMENTO: {
+		label: "Autonomía baja de alimento",
+		descripcion:
+			"Aviso cuando los días de autonomía estimados de un alimento bajan del umbral configurado.",
 	},
 };

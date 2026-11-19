@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
 	Activity,
 	AlertTriangle,
@@ -19,7 +19,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlanSanitarioFormDialog } from "@/components/sesion-sanitaria/PlanSanitarioFormDialog";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarGanado } from "@/modules/ganado/hooks/useListarGanado";
 import {
 	useCancelarSesionSanitaria,
@@ -34,14 +35,8 @@ import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/calendario-sanitario/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("sesiones-sanitarias:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "sesiones-sanitarias", "read");
 	},
 	component: CalendarioSanitarioPage,
 });
@@ -59,10 +54,10 @@ function CalendarioSanitarioPage() {
 	const [ganadoId, setGanadoId] = useState<number | undefined>(undefined);
 	const [planDialogOpen, setPlanDialogOpen] = useState(false);
 
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canCreate = permissions.includes("sesiones-sanitarias:create");
-	const canUpdate = permissions.includes("sesiones-sanitarias:update");
-	const canDelete = permissions.includes("sesiones-sanitarias:delete");
+	const { can } = usePermissions();
+	const canCreate = can("sesiones-sanitarias", "create");
+	const canUpdate = can("sesiones-sanitarias", "update");
+	const canDelete = can("sesiones-sanitarias", "delete");
 
 	const desde = useMemo(
 		() =>

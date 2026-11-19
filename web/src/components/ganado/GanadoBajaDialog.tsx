@@ -1,23 +1,24 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { CampoSelect } from "@/components/CampoSelect";
+import { CampoTexto } from "@/components/CampoTexto";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useDarDeBajaGanado } from "@/modules/ganado/hooks/useDarDeBajaGanado";
 import { useListarMotivosBaja } from "@/modules/ganado/hooks/useListarMotivosBaja";
-
-const SELECT_CLASS =
-	"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
+import { ganadoBajaSchema } from "@/modules/ganado/schemas";
 
 interface GanadoBajaDialogProps {
 	open: boolean;
@@ -32,7 +33,6 @@ export function GanadoBajaDialog({
 	ganadoId,
 	ganadoIdentificador,
 }: GanadoBajaDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: darDeBaja, isPending } = useDarDeBajaGanado(ganadoId);
 	const { data: motivosBaja = [], isLoading: isCargandoMotivos } =
 		useListarMotivosBaja();
@@ -40,10 +40,10 @@ export function GanadoBajaDialog({
 	const form = useForm({
 		defaultValues: {
 			fechaBaja: new Date().toISOString().split("T")[0] ?? "",
-			motivoBajaId: "" as number | "",
+			motivoBajaId: "",
 		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
+		validators: { onChange: ganadoBajaSchema },
+		onSubmit: ({ value }) => {
 			darDeBaja(
 				{
 					fechaBaja: value.fechaBaja,
@@ -53,10 +53,6 @@ export function GanadoBajaDialog({
 					onSuccess: () => {
 						form.reset();
 						onOpenChange(false);
-					},
-					// biome-ignore lint/suspicious/noExplicitAny: error cast
-					onError: (error: any) => {
-						setApiError(formatApiError(error));
 					},
 				},
 			);
@@ -68,7 +64,6 @@ export function GanadoBajaDialog({
 			open={open}
 			onOpenChange={(nextOpen) => {
 				if (!isPending) {
-					setApiError(null);
 					form.reset();
 					onOpenChange(nextOpen);
 				}
@@ -90,126 +85,58 @@ export function GanadoBajaDialog({
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
-
-					{/* Fecha de Baja */}
-					<form.Field
-						name="fechaBaja"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value) return "La fecha de baja es requerida.";
-								return undefined;
-							},
-						}}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
 					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
+
+					<form.Field name="fechaBaja">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>
-									Fecha de Baja <span className="text-destructive">*</span>
-								</Label>
-								<Input
-									id={field.name}
-									aria-invalid={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-									}
-									aria-describedby={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-											? `${field.name}-error`
-											: undefined
-									}
-									name={field.name}
-									type="date"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									disabled={isPending}
-									max={new Date().toISOString().split("T")[0]}
-								/>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label="Fecha de Baja *"
+								type="date"
+								max={new Date().toISOString().split("T")[0]}
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
-					{/* Motivo de Baja */}
-					<form.Field
-						name="motivoBajaId"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value) return "El motivo de baja es requerido.";
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="motivoBajaId">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>
-									Motivo de Baja <span className="text-destructive">*</span>
-								</Label>
-								<select
-									id={field.name}
-									aria-invalid={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-									}
-									aria-describedby={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-											? `${field.name}-error`
-											: undefined
-									}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) =>
-										field.handleChange(
-											e.target.value === "" ? "" : Number(e.target.value),
-										)
-									}
-									className={SELECT_CLASS}
-									disabled={isPending || isCargandoMotivos}
-								>
-									<option value="">
-										{isCargandoMotivos
-											? "Cargando motivos..."
-											: "Seleccione un motivo..."}
+							<CampoSelect
+								id={field.name}
+								label="Motivo de Baja *"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending || isCargandoMotivos}
+							>
+								<option value="">
+									{isCargandoMotivos
+										? "Cargando motivos..."
+										: "Seleccione un motivo..."}
+								</option>
+								{motivosBaja.map((m) => (
+									<option key={m.id} value={m.id}>
+										{m.nombre}
 									</option>
-									{motivosBaja.map((m) => (
-										<option key={m.id} value={m.id}>
-											{m.nombre}
-										</option>
-									))}
-								</select>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+								))}
+							</CampoSelect>
 						)}
 					</form.Field>
 
@@ -222,30 +149,24 @@ export function GanadoBajaDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending}
+							variant="destructive"
+							className="min-w-[130px] gap-1 cursor-pointer"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={isPending || !canSubmit}
-									variant="destructive"
-									className="min-w-[130px] gap-1 cursor-pointer"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="h-4 w-4 animate-spin" />
-											Registrando baja...
-										</>
-									) : (
-										<>
-											<AlertTriangle className="size-4" />
-											Confirmar baja
-										</>
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="h-4 w-4 animate-spin" />
+									Registrando baja...
+								</>
+							) : (
+								<>
+									<AlertTriangle className="size-4" />
+									Confirmar baja
+								</>
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

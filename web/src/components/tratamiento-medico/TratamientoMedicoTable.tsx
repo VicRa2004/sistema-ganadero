@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarInsumos } from "@/modules/inventario-insumos/hooks/useListarInsumos";
 import { useEliminarTratamiento } from "@/modules/tratamiento-medico/hooks/useEliminarTratamiento";
 import { useFinalizarTratamiento } from "@/modules/tratamiento-medico/hooks/useFinalizarTratamiento";
@@ -44,10 +44,10 @@ export function TratamientoMedicoTable() {
 		useState<TratamientoMedicoDto | null>(null);
 	const [detalleTargetId, setDetalleTargetId] = useState<number | null>(null);
 
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canCreate = permissions.includes("tratamientos-medicos:create");
-	const canUpdate = permissions.includes("tratamientos-medicos:update");
-	const canDelete = permissions.includes("tratamientos-medicos:delete");
+	const { can } = usePermissions();
+	const canCreate = can("tratamientos-medicos", "create");
+	const canUpdate = can("tratamientos-medicos", "update");
+	const canDelete = can("tratamientos-medicos", "delete");
 
 	const activoParam =
 		activoFilter === "active"

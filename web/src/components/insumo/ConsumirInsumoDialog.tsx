@@ -1,19 +1,22 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Loader2, MinusCircle } from "lucide-react";
+import { CampoTexto } from "@/components/CampoTexto";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, MinusCircle, Hash } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useConsumirInsumo } from "@/modules/inventario-insumos/hooks/useConsumirInsumo";
+import { consumirInsumoSchema } from "@/modules/inventario-insumos/schemas";
 import type { InsumoDto } from "@/modules/inventario-insumos/types";
 
 interface ConsumirInsumoDialogProps {
@@ -27,29 +30,26 @@ export function ConsumirInsumoDialog({
 	onOpenChange,
 	insumo,
 }: ConsumirInsumoDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: consumir, isPending } = useConsumirInsumo(insumo.id);
+	const schema = consumirInsumoSchema(insumo.stock);
 
 	const form = useForm({
 		defaultValues: {
-			cantidad: 1 as number | string,
+			cantidad: "1",
+			motivo: "",
 		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
-			const cantidad = Number(value.cantidad);
-
-			// biome-ignore lint/suspicious/noExplicitAny: error cast for API error extraction
-			const handleError = (error: any) => {
-				setApiError(formatApiError(error));
-			};
-
+		validators: { onChange: schema },
+		onSubmit: ({ value }) => {
 			consumir(
-				{ cantidad },
+				{
+					cantidad: Number(value.cantidad),
+					...(value.motivo.trim() !== "" && { motivo: value.motivo.trim() }),
+				},
 				{
 					onSuccess: () => {
+						form.reset();
 						onOpenChange(false);
 					},
-					onError: handleError,
 				},
 			);
 		},
@@ -59,43 +59,41 @@ export function ConsumirInsumoDialog({
 		<Dialog
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (!isPending) {
-					setApiError(null);
-					onOpenChange(nextOpen);
-				}
+				if (!isPending) onOpenChange(nextOpen);
 			}}
 		>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-bold flex items-center gap-2 text-amber-600 dark:text-amber-400">
 						<MinusCircle className="h-5 w-5" />
-						Registrar Consumo de Insumo
+						Consumir Insumo
 					</DialogTitle>
 					<DialogDescription>
-						Ingresa la cantidad consumida de{" "}
+						Registra la salida o gasto de{" "}
 						<strong className="text-foreground">{insumo.nombre}</strong> (Lote:{" "}
 						{insumo.lote}).
 					</DialogDescription>
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
+					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
 
 					<div className="p-3 rounded-lg bg-muted/40 text-sm space-y-1">
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">Stock Disponible:</span>
-							<span className="font-semibold text-emerald-600 dark:text-emerald-400">
+							<span className="font-semibold">
 								{insumo.stock} {insumo.unidadMedida}
 							</span>
 						</div>
@@ -107,62 +105,36 @@ export function ConsumirInsumoDialog({
 						</div>
 					</div>
 
-					<form.Field
-						name="cantidad"
-						validators={{
-							onChange: ({ value }) => {
-								const num = Number(value);
-								if (Number.isNaN(num) || num <= 0)
-									return "La cantidad a consumir debe ser mayor a cero.";
-								if (num > insumo.stock)
-									return `La cantidad a consumir (${num}) supera el stock disponible (${insumo.stock}).`;
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="cantidad">
 						{(field) => (
-							<div className="space-y-1.5">
-								<Label htmlFor={field.name}>
-									Cantidad a Descontar ({insumo.unidadMedida}){" "}
-									<span className="text-destructive">*</span>
-								</Label>
-								<div className="relative">
-									<Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Input
-										id={field.name}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-										aria-describedby={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-												? `${field.name}-error`
-												: undefined
-										}
-										name={field.name}
-										type="number"
-										step="any"
-										min="0.01"
-										max={insumo.stock}
-										placeholder="Ej: 5"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="pl-9"
-										disabled={isPending}
-									/>
-								</div>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoTexto
+								id={field.name}
+								label={`Cantidad a Consumir (${insumo.unidadMedida}) *`}
+								type="number"
+								step="any"
+								allowDecimals={true}
+								placeholder="Ej: 10"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
+						)}
+					</form.Field>
+
+					<form.Field name="motivo">
+						{(field) => (
+							<CampoTexto
+								id={field.name}
+								label="Motivo de Consumo (opcional)"
+								placeholder="Ej: Aplicación manual en corral"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							/>
 						)}
 					</form.Field>
 
@@ -175,26 +147,20 @@ export function ConsumirInsumoDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending}
+							className="min-w-[120px] bg-amber-600 hover:bg-amber-700 text-white"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={isPending || !canSubmit}
-									className="min-w-[120px] bg-amber-600 hover:bg-amber-700 text-white"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Descontando...
-										</>
-									) : (
-										"Descontar Stock"
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Descontando...
+								</>
+							) : (
+								"Confirmar Consumo"
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

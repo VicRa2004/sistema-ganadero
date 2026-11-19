@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
 import { MobileSidebarTrigger } from "@/components/Sidebar";
 import { NotificacionesBell } from "@/components/notificacion/NotificacionesBell";
@@ -24,7 +25,8 @@ export function Navbar() {
 	const isAuthenticated = !!accessToken;
 
 	const navigate = useNavigate();
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
+	const canReadGanado = can("ganado", "read");
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 	const [showMobileSearch, setShowMobileSearch] = useState(false);
 
@@ -123,7 +125,7 @@ export function Navbar() {
 						{/* Lado derecho — Búsqueda, Dashboard, Tema y Auth */}
 						<div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 							{/* Botón de búsqueda para móvil */}
-							{isAuthenticated && permissions.includes("ganado:read") && (
+							{isAuthenticated && canReadGanado && (
 								<Button
 									type="button"
 									variant="ghost"
@@ -138,7 +140,7 @@ export function Navbar() {
 							)}
 
 							{/* Buscador de escritorio/tablet */}
-							{isAuthenticated && permissions.includes("ganado:read") && (
+							{isAuthenticated && canReadGanado && (
 								<search className="hidden sm:block">
 									<form
 										className="relative"

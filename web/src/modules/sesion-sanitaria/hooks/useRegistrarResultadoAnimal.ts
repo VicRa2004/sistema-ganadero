@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { sesionSanitariaService } from "../services/sesionSanitariaService";
 import type { RegistrarResultadoAnimalInput } from "../types";
 
@@ -10,11 +11,18 @@ export function useRegistrarResultadoAnimal() {
 		mutationFn: (input: RegistrarResultadoAnimalInput) =>
 			sesionSanitariaService.registrarResultadoAnimal(input),
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({ queryKey: ["sesiones-sanitarias"] });
 			queryClient.invalidateQueries({
-				queryKey: ["sesiones-sanitarias", variables.sesionId],
+				queryKey: queryKeys.sesionesSanitarias.lists(),
 			});
-			queryClient.invalidateQueries({ queryKey: ["insumos"] });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.detail(variables.sesionId),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.sesionesSanitarias.historialGanado(
+					variables.ganadoId,
+				),
+			});
+			queryClient.invalidateQueries({ queryKey: queryKeys.insumos.all });
 		},
 	});
 }

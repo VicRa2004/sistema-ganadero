@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { tratamientoMedicoService } from "../services/tratamientoMedicoService";
 import type { TratamientoMedicoFilters } from "../types";
 
@@ -7,7 +8,7 @@ export function useListarTratamientosMedicos(
 ) {
 	return useQuery({
 		placeholderData: keepPreviousData,
-		queryKey: ["tratamientos-medicos", filters],
+		queryKey: queryKeys.tratamientosMedicos.list(filters),
 		queryFn: () => tratamientoMedicoService.listar(filters),
 	});
 }

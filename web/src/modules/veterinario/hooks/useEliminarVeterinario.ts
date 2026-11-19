@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { veterinarioService } from "../services/veterinarioService";
 
 export function useEliminarVeterinario() {
@@ -8,7 +9,9 @@ export function useEliminarVeterinario() {
 		meta: { successMessage: "Veterinario eliminado" },
 		mutationFn: (id: number) => veterinarioService.eliminar(id),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["veterinarios"] });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.veterinarios.lists(),
+			});
 		},
 	});
 }

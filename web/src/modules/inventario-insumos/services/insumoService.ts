@@ -3,8 +3,10 @@ import { descargarArchivoApi } from "@/lib/descargarArchivo";
 import type {
 	AbastecerInsumoInput,
 	ActualizarInsumoInput,
+	AjustarStockInput,
 	ConsumirInsumoInput,
 	InsumoDto,
+	KardexInsumoDto,
 	PaginatedResponse,
 	RegistrarInsumoInput,
 } from "../types";
@@ -58,6 +60,21 @@ export const insumoService = {
 			`/insumos/${id}/consumir`,
 			input,
 		);
+		return data;
+	},
+
+	async ajustar(id: number, input: AjustarStockInput): Promise<InsumoDto> {
+		const { data } = await api.post<InsumoDto>(`/insumos/${id}/ajustar`, input);
+		return data;
+	},
+
+	async listarKardex(
+		id: number,
+		params?: { page?: number; limit?: number; tipo?: string },
+	): Promise<KardexInsumoDto> {
+		const { data } = await api.get<KardexInsumoDto>(`/insumos/${id}/kardex`, {
+			params,
+		});
 		return data;
 	},
 

@@ -23,7 +23,6 @@ import {
 	usePrevisualizarImportacionGanado,
 } from "@/modules/ganado/hooks/useImportarGanado";
 import type { PrevisualizacionImportacionGanadoDto } from "@/modules/ganado/types";
-import { formatApiError } from "@/lib/utils";
 
 interface ImportarGanadoDialogProps {
 	open: boolean;
@@ -38,7 +37,6 @@ export function ImportarGanadoDialog({
 	const [fileName, setFileName] = useState<string | null>(null);
 	const [preview, setPreview] =
 		useState<PrevisualizacionImportacionGanadoDto | null>(null);
-	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const previsualizarMutation = usePrevisualizarImportacionGanado();
 	const confirmarMutation = useConfirmarImportacionGanado();
@@ -46,20 +44,17 @@ export function ImportarGanadoDialog({
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		setErrorMsg(null);
 		setPreview(null);
 		setFileName(file.name);
 		const text = await file.text();
 		setCsvContent(text);
 		previsualizarMutation.mutate(text, {
 			onSuccess: (data) => setPreview(data),
-			onError: (err) => setErrorMsg(formatApiError(err)),
 		});
 	};
 
 	const handleConfirmar = () => {
 		if (!csvContent) return;
-		setErrorMsg(null);
 		confirmarMutation.mutate(csvContent, {
 			onSuccess: () => {
 				setCsvContent("");
@@ -67,14 +62,12 @@ export function ImportarGanadoDialog({
 				setPreview(null);
 				onOpenChange(false);
 			},
-			onError: (err) => setErrorMsg(formatApiError(err)),
 		});
 	};
 
 	const resetAndClose = (next: boolean) => {
 		if (!confirmarMutation.isPending && !previsualizarMutation.isPending) {
 			if (!next) {
-				setErrorMsg(null);
 				setPreview(null);
 				setFileName(null);
 				setCsvContent("");
@@ -135,12 +128,6 @@ export function ImportarGanadoDialog({
 							className="hidden"
 						/>
 					</label>
-
-					{errorMsg && (
-						<div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400 text-xs font-medium">
-							{errorMsg}
-						</div>
-					)}
 
 					{previsualizarMutation.isPending && (
 						<div className="flex items-center justify-center py-6 gap-2 text-sm text-muted-foreground">

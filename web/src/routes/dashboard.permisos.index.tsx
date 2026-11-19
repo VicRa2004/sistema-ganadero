@@ -1,19 +1,13 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { KeyRound } from "lucide-react";
 import { ListaEstado } from "@/components/ListaEstado";
 import { Badge } from "@/components/ui/badge";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
 import { useListarPermisos } from "@/modules/permiso/hooks/useListarPermisos";
 
 export const Route = createFileRoute("/dashboard/permisos/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("permissions:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "permissions", "read");
 	},
 	component: PermisosComponent,
 });

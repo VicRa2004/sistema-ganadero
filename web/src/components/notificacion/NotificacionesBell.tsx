@@ -11,6 +11,7 @@ import {
 	RefreshCw,
 	Stethoscope,
 	Syringe,
+	Wheat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,8 @@ function iconForTipo(tipo: TipoNotificacion) {
 			return Syringe;
 		case "PARTO_PROXIMO":
 			return Baby;
+		case "AUTONOMIA_ALIMENTO":
+			return Wheat;
 	}
 }
 
@@ -64,6 +67,8 @@ function rutaParaNotificacion(n: NotificacionDto): string {
 			return n.referenciaId
 				? `/dashboard/ganado/${n.referenciaId}`
 				: "/dashboard/reproduccion";
+		case "AUTONOMIA_ALIMENTO":
+			return "/dashboard/alimentacion";
 	}
 }
 

@@ -1,15 +1,13 @@
-import { useState } from "react";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
 import { useEliminarGanado } from "@/modules/ganado/hooks/useEliminarGanado";
 
 interface EliminarGanadoDialogProps {
@@ -27,20 +25,13 @@ export function EliminarGanadoDialog({
 	arete,
 	onDeleted,
 }: EliminarGanadoDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: eliminar, isPending } = useEliminarGanado();
 
 	const handleEliminar = () => {
-		setApiError(null);
 		eliminar(ganadoId, {
 			onSuccess: () => {
 				onOpenChange(false);
-				if (onDeleted) {
-					onDeleted();
-				}
-			},
-			onError: (error) => {
-				setApiError(formatApiError(error));
+				onDeleted?.();
 			},
 		});
 	};
@@ -49,10 +40,7 @@ export function EliminarGanadoDialog({
 		<Dialog
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (!isPending) {
-					setApiError(null);
-					onOpenChange(nextOpen);
-				}
+				if (!isPending) onOpenChange(nextOpen);
 			}}
 		>
 			<DialogContent className="sm:max-w-md animate-fade-in">
@@ -69,12 +57,6 @@ export function EliminarGanadoDialog({
 						? Esta acción no se puede deshacer.
 					</DialogDescription>
 				</DialogHeader>
-
-				{apiError && (
-					<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-						{apiError}
-					</div>
-				)}
 
 				<DialogFooter className="sm:justify-center gap-2 pt-2">
 					<Button

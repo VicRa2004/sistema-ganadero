@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { terrenoService } from "../services/terrenoService";
 import type { ActualizarTerrenoInput } from "../types";
 
@@ -10,9 +11,13 @@ export function useActualizarTerreno(id: number) {
 		mutationFn: (input: ActualizarTerrenoInput) =>
 			terrenoService.actualizar(id, input),
 		onSuccess: (_data) => {
-			queryClient.invalidateQueries({ queryKey: ["terrenos"] });
-			queryClient.invalidateQueries({ queryKey: ["terreno", id] });
-			queryClient.invalidateQueries({ queryKey: ["terreno", id, "capacidad"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.terrenos.lists() });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.terrenos.detail(id),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.terrenos.capacidad(id),
+			});
 		},
 	});
 }

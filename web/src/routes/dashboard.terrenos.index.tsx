@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
 import { TerrenosTable } from "@/components/terreno/TerrenosTable";
 import { TerrenoFormDialog } from "@/components/terreno/TerrenoFormDialog";
@@ -11,14 +12,8 @@ import { Plus, Warehouse, ChevronLeft, ChevronRight } from "lucide-react";
 import type { TerrenoDto } from "@/modules/terreno/types";
 
 export const Route = createFileRoute("/dashboard/terrenos/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("terreno:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "terreno", "read");
 	},
 	component: TerrenosComponent,
 });
@@ -26,9 +21,9 @@ export const Route = createFileRoute("/dashboard/terrenos/")({
 const PAGE_SIZE = 10;
 
 function TerrenosComponent() {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
 	const hasPermission = (resource: string, action: string) =>
-		permissions.includes(`${resource}:${action}`);
+		can(resource, action);
 
 	const [page, setPage] = useState(1);
 	const [isFormOpen, setIsFormOpen] = useState(false);

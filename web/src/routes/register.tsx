@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
+import { Eye, EyeOff, Loader2, Lock, Mail, User, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-	Card,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-	CardContent,
-} from "@/components/ui/card";
+	extractErrorMessages,
+	FormErrorAnnouncer,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useRegister } from "@/modules/auth/hooks/useRegister";
-import { formatApiError } from "@/lib/utils";
-import { Eye, EyeOff, Loader2, UserPlus, Mail, Lock, User } from "lucide-react";
+import { registerSchema } from "@/modules/auth/schemas";
 
 export const Route = createFileRoute("/register")({
 	beforeLoad: ({ context }) => {
@@ -26,24 +31,20 @@ export const Route = createFileRoute("/register")({
 
 function RegisterComponent() {
 	const [showPassword, setShowPassword] = useState(false);
-	const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
 	const { mutate: register, isPending } = useRegister();
 
-	// Configuración del formulario con TanStack Form
 	const form = useForm({
 		defaultValues: {
 			name: "",
 			email: "",
 			password: "",
 		},
-		onSubmit: async ({ value }) => {
-			setErrorMsg(null);
-			register(value, {
-				// biome-ignore lint/suspicious/noExplicitAny: error from react-query onError callback
-				onError: (error: any) => {
-					setErrorMsg(formatApiError(error));
-				},
+		validators: { onChange: registerSchema },
+		onSubmit: ({ value }) => {
+			register({
+				name: value.name.trim(),
+				email: value.email.trim(),
+				password: value.password,
 			});
 		},
 	});
@@ -65,229 +66,183 @@ function RegisterComponent() {
 					</CardHeader>
 					<CardContent>
 						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								form.handleSubmit();
-							}}
+							noValidate
+							onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
 							className="space-y-5"
 						>
-							{errorMsg && (
-								<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 text-center font-medium animate-shake">
-									{errorMsg}
-								</div>
-							)}
-
-							{/* Campo Nombre */}
-							<form.Field
-								name="name"
-								validators={{
-									onChange: ({ value }) => {
-										if (!value) return "El nombre completo es requerido.";
-										if (value.trim().length < 2) {
-											return "El nombre debe tener al menos 2 caracteres.";
-										}
-										return undefined;
-									},
-								}}
+							<form.Subscribe
+								selector={(s) =>
+									Object.values(s.fieldMeta).filter(
+										(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+									).length
+								}
 							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Nombre Completo</Label>
-										<div className="relative">
-											<User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-											<Input
-												id={field.name}
-												aria-invalid={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-												}
-												aria-describedby={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-														? `${field.name}-error`
-														: undefined
-												}
-												name={field.name}
-												type="text"
-												placeholder="Juan Pérez"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
-												className="pl-10 h-11"
-												disabled={isPending}
-											/>
-										</div>
-										{field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0 && (
+								{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+							</form.Subscribe>
+
+							<form.Field name="name">
+								{(field) => {
+									const msgs = field.state.meta.isTouched
+										? extractErrorMessages(field.state.meta.errors)
+										: [];
+									const invalid = msgs.length > 0;
+									return (
+										<div className="space-y-2">
+											<Label htmlFor={field.name}>Nombre Completo</Label>
+											<div className="relative">
+												<User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+												<Input
+													id={field.name}
+													name={field.name}
+													type="text"
+													autoComplete="name"
+													aria-invalid={invalid ? "true" : "false"}
+													aria-describedby={
+														invalid ? `${field.name}-error` : undefined
+													}
+													placeholder="Juan Pérez"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													className="pl-10 h-11"
+													disabled={isPending}
+												/>
+											</div>
+											{invalid && (
 												<p
 													id={`${field.name}-error`}
-													className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in"
+													className="text-xs text-destructive text-left font-medium"
 												>
-													{field.state.meta.errors.join(", ")}
+													{msgs.join(", ")}
 												</p>
 											)}
-									</div>
-								)}
+										</div>
+									);
+								}}
 							</form.Field>
 
-							{/* Campo Email */}
-							<form.Field
-								name="email"
-								validators={{
-									onChange: ({ value }) => {
-										if (!value) return "El correo electrónico es requerido.";
-										if (!/\S+@\S+\.\S+/.test(value)) {
-											return "Introduce un correo electrónico válido.";
-										}
-										return undefined;
-									},
-								}}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Correo Electrónico</Label>
-										<div className="relative">
-											<Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-											<Input
-												id={field.name}
-												aria-invalid={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-												}
-												aria-describedby={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-														? `${field.name}-error`
-														: undefined
-												}
-												name={field.name}
-												type="email"
-												placeholder="correo@ejemplo.com"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
-												className="pl-10 h-11"
-												disabled={isPending}
-											/>
-										</div>
-										{field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0 && (
+							<form.Field name="email">
+								{(field) => {
+									const msgs = field.state.meta.isTouched
+										? extractErrorMessages(field.state.meta.errors)
+										: [];
+									const invalid = msgs.length > 0;
+									return (
+										<div className="space-y-2">
+											<Label htmlFor={field.name}>Correo Electrónico</Label>
+											<div className="relative">
+												<Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+												<Input
+													id={field.name}
+													name={field.name}
+													type="email"
+													autoComplete="email"
+													aria-invalid={invalid ? "true" : "false"}
+													aria-describedby={
+														invalid ? `${field.name}-error` : undefined
+													}
+													placeholder="correo@ejemplo.com"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													className="pl-10 h-11"
+													disabled={isPending}
+												/>
+											</div>
+											{invalid && (
 												<p
 													id={`${field.name}-error`}
-													className="text-xs text-red-600 dark:text-red-400 text-left font-medium animate-fade-in"
+													className="text-xs text-destructive text-left font-medium"
 												>
-													{field.state.meta.errors.join(", ")}
+													{msgs.join(", ")}
 												</p>
 											)}
-									</div>
-								)}
+										</div>
+									);
+								}}
 							</form.Field>
 
-							{/* Campo Contraseña */}
-							<form.Field
-								name="password"
-								validators={{
-									onChange: ({ value }) => {
-										if (!value) return "La contraseña es requerida.";
-										if (value.length < 12) {
-											return "La contraseña debe tener al menos 12 caracteres.";
-										}
-										if (!/[A-Z]/.test(value)) {
-											return "La contraseña debe incluir al menos una mayúscula.";
-										}
-										if (!/[a-z]/.test(value)) {
-											return "La contraseña debe incluir al menos una minúscula.";
-										}
-										if (!/[0-9]/.test(value)) {
-											return "La contraseña debe incluir al menos un número.";
-										}
-										if (!/[^A-Za-z0-9]/.test(value)) {
-											return "La contraseña debe incluir al menos un carácter especial.";
-										}
-										return undefined;
-									},
-								}}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Contraseña</Label>
-										<div className="relative">
-											<Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-											<Input
-												id={field.name}
-												aria-invalid={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-												}
-												aria-describedby={
-													field.state.meta.isTouched &&
-													field.state.meta.errors.length > 0
-														? `${field.name}-error`
-														: undefined
-												}
-												name={field.name}
-												type={showPassword ? "text" : "password"}
-												placeholder="Ej: ContrasenaSegura2026!"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
-												className="pl-10 pr-10 h-11"
-												disabled={isPending}
-											/>
-											<p className="text-[10px] text-muted-foreground mt-1 text-left leading-normal">
-												Min. 12 car., incluir mayúscula, minúscula, número y
+							<form.Field name="password">
+								{(field) => {
+									const msgs = field.state.meta.isTouched
+										? extractErrorMessages(field.state.meta.errors)
+										: [];
+									const invalid = msgs.length > 0;
+									return (
+										<div className="space-y-2">
+											<Label htmlFor={field.name}>Contraseña</Label>
+											<div className="relative">
+												<Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+												<Input
+													id={field.name}
+													name={field.name}
+													type={showPassword ? "text" : "password"}
+													autoComplete="new-password"
+													aria-invalid={invalid ? "true" : "false"}
+													aria-describedby={
+														invalid
+															? `${field.name}-hint ${field.name}-error`
+															: `${field.name}-hint`
+													}
+													placeholder="Ej: ContrasenaSegura2026!"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													className="pl-10 pr-10 h-11"
+													disabled={isPending}
+												/>
+												<button
+													type="button"
+													aria-label={
+														showPassword
+															? "Ocultar contraseña"
+															: "Mostrar contraseña"
+													}
+													aria-pressed={showPassword}
+													onClick={() => setShowPassword(!showPassword)}
+													className="absolute right-3 top-3.5 h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer"
+												>
+													{showPassword ? (
+														<EyeOff className="h-4 w-4" />
+													) : (
+														<Eye className="h-4 w-4" />
+													)}
+												</button>
+											</div>
+											<p
+												id={`${field.name}-hint`}
+												className="text-[11px] text-muted-foreground text-left leading-normal"
+											>
+												Mín. 12 caracteres, con mayúscula, minúscula, número y
 												carácter especial.
 											</p>
-											<button
-												type="button"
-												onClick={() => setShowPassword(!showPassword)}
-												className="absolute right-3 top-3.5 h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer"
-												tabIndex={-1}
-											>
-												{showPassword ? (
-													<EyeOff className="h-4 w-4" />
-												) : (
-													<Eye className="h-4 w-4" />
-												)}
-											</button>
-										</div>
-										{field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0 && (
+											{invalid && (
 												<p
 													id={`${field.name}-error`}
-													className="text-xs text-red-600 dark:text-red-400 text-left font-medium mt-1 animate-fade-in"
+													className="text-xs text-destructive text-left font-medium"
 												>
-													{field.state.meta.errors.join(", ")}
+													{msgs.join(", ")}
 												</p>
 											)}
-									</div>
-								)}
+										</div>
+									);
+								}}
 							</form.Field>
 
-							{/* Botón de Submit */}
-							<form.Subscribe
-								selector={(state) => ({
-									canSubmit: state.canSubmit,
-								})}
+							<Button
+								type="submit"
+								className="w-full h-11 text-base font-semibold cursor-pointer shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center justify-center mt-2"
+								disabled={isPending}
 							>
-								{({ canSubmit }) => (
-									<Button
-										type="submit"
-										className="w-full h-11 text-base font-semibold cursor-pointer shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center justify-center mt-2"
-										disabled={isPending || !canSubmit}
-									>
-										{isPending ? (
-											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Creando cuenta...
-											</>
-										) : (
-											"Registrarse"
-										)}
-									</Button>
+								{isPending ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Creando cuenta...
+									</>
+								) : (
+									"Registrarse"
 								)}
-							</form.Subscribe>
+							</Button>
 						</form>
 
 						<div className="mt-6 text-center text-sm">

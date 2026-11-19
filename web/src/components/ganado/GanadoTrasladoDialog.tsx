@@ -1,18 +1,22 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Loader2 } from "lucide-react";
+import { CampoSelect } from "@/components/CampoSelect";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
-import { formatApiError } from "@/lib/utils";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
 import { useTrasladarGanado } from "@/modules/ganado/hooks/useTrasladarGanado";
+import { ganadoTrasladoSchema } from "@/modules/ganado/schemas";
 import type { TerrenoDto } from "@/modules/terreno/types";
 
 interface GanadoTrasladoDialogProps {
@@ -32,28 +36,20 @@ export function GanadoTrasladoDialog({
 	terrenoActualId,
 	terrenos,
 }: GanadoTrasladoDialogProps) {
-	const [apiError, setApiError] = useState<string | null>(null);
 	const { mutate: trasladar, isPending } = useTrasladarGanado(ganadoId);
-
-	// Filtrar terrenos disponibles para no incluir el terreno actual
 	const terrenosDisponibles = terrenos.filter((r) => r.id !== terrenoActualId);
 	const terrenoActual = terrenos.find((r) => r.id === terrenoActualId);
 
 	const form = useForm({
-		defaultValues: {
-			terrenoId: "" as string | number,
-		},
-		onSubmit: async ({ value }) => {
-			setApiError(null);
+		defaultValues: { terrenoId: "" },
+		validators: { onChange: ganadoTrasladoSchema },
+		onSubmit: ({ value }) => {
 			trasladar(
 				{ terrenoId: Number(value.terrenoId) },
 				{
 					onSuccess: () => {
 						form.reset();
 						onOpenChange(false);
-					},
-					onError: (error) => {
-						setApiError(formatApiError(error));
 					},
 				},
 			);
@@ -64,10 +60,7 @@ export function GanadoTrasladoDialog({
 		<Dialog
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (!isPending) {
-					setApiError(null);
-					onOpenChange(nextOpen);
-				}
+				if (!isPending) onOpenChange(nextOpen);
 			}}
 		>
 			<DialogContent className="sm:max-w-md animate-fade-in">
@@ -83,18 +76,19 @@ export function GanadoTrasladoDialog({
 				</DialogHeader>
 
 				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						form.handleSubmit();
-					}}
-					className="space-y-4 py-2"
+					noValidate
+					onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
+					className="space-y-4 py-2 text-left"
 				>
-					{apiError && (
-						<div className="p-3 text-sm text-red-700 bg-red-500/10 dark:text-red-400 dark:bg-red-500/15 rounded-lg border border-red-500/30 font-medium">
-							{apiError}
-						</div>
-					)}
+					<form.Subscribe
+						selector={(s) =>
+							Object.values(s.fieldMeta).filter(
+								(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+							).length
+						}
+					>
+						{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+					</form.Subscribe>
 
 					<div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-sm text-left">
 						<span className="text-muted-foreground block text-xs uppercase font-semibold">
@@ -107,60 +101,24 @@ export function GanadoTrasladoDialog({
 						</span>
 					</div>
 
-					<form.Field
-						name="terrenoId"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value) return "El terreno destino es requerido.";
-								return undefined;
-							},
-						}}
-					>
+					<form.Field name="terrenoId">
 						{(field) => (
-							<div className="space-y-1.5 text-left">
-								<Label htmlFor={field.name}>
-									Terreno Destino <span className="text-destructive">*</span>
-								</Label>
-								<select
-									id={field.name}
-									aria-invalid={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-									}
-									aria-describedby={
-										field.state.meta.isTouched &&
-										field.state.meta.errors.length > 0
-											? `${field.name}-error`
-											: undefined
-									}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) =>
-										field.handleChange(
-											e.target.value === "" ? "" : Number(e.target.value),
-										)
-									}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-									disabled={isPending}
-								>
-									<option value="">Seleccione el terreno destino...</option>
-									{terrenosDisponibles.map((r) => (
-										<option key={r.id} value={r.id}>
-											{r.nombre} ({r.ubicacion})
-										</option>
-									))}
-								</select>
-								{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 && (
-										<p
-											id={`${field.name}-error`}
-											className="text-xs text-red-600 dark:text-red-400 font-medium"
-										>
-											{field.state.meta.errors.join(", ")}
-										</p>
-									)}
-							</div>
+							<CampoSelect
+								id={field.name}
+								label="Terreno Destino *"
+								value={field.state.value}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								errors={getVisibleFieldErrors(field.state.meta)}
+								disabled={isPending}
+							>
+								<option value="">Seleccione el terreno destino...</option>
+								{terrenosDisponibles.map((r) => (
+									<option key={r.id} value={r.id}>
+										{r.nombre} ({r.ubicacion})
+									</option>
+								))}
+							</CampoSelect>
 						)}
 					</form.Field>
 
@@ -173,28 +131,20 @@ export function GanadoTrasladoDialog({
 						>
 							Cancelar
 						</Button>
-						<form.Subscribe
-							selector={(state) => ({ canSubmit: state.canSubmit })}
+						<Button
+							type="submit"
+							disabled={isPending || terrenosDisponibles.length === 0}
+							className="min-w-[120px] cursor-pointer"
 						>
-							{({ canSubmit }) => (
-								<Button
-									type="submit"
-									disabled={
-										isPending || !canSubmit || terrenosDisponibles.length === 0
-									}
-									className="min-w-[120px] cursor-pointer"
-								>
-									{isPending ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Trasladando...
-										</>
-									) : (
-										"Confirmar traslado"
-									)}
-								</Button>
+							{isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Trasladando...
+								</>
+							) : (
+								"Confirmar traslado"
 							)}
-						</form.Subscribe>
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

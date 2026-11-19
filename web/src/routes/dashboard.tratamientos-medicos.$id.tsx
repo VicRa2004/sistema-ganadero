@@ -1,5 +1,5 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
 import { useObtenerDetalleTratamiento } from "@/modules/tratamiento-medico/hooks/useObtenerDetalleTratamiento";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,14 +16,8 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/tratamientos-medicos/$id")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("tratamientos-medicos:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "tratamientos-medicos", "read");
 	},
 	component: TratamientoDetalleRouteComponent,
 });

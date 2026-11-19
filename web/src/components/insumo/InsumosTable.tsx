@@ -1,35 +1,41 @@
 import { useState } from "react";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import type { InsumoDto } from "@/modules/inventario-insumos/types";
 import { Button } from "@/components/ui/button";
 import {
 	AlertTriangle,
-	PlusCircle,
-	MinusCircle,
-	Pencil,
-	Trash2,
 	Calendar,
+	ClipboardList,
+	MinusCircle,
 	Package,
+	Pencil,
+	PlusCircle,
+	SlidersHorizontal,
+	Trash2,
 } from "lucide-react";
 import { AbastecerInsumoDialog } from "./AbastecerInsumoDialog";
+import { AjustarStockDialog } from "./AjustarStockDialog";
 import { ConsumirInsumoDialog } from "./ConsumirInsumoDialog";
 import { EliminarInsumoDialog } from "./EliminarInsumoDialog";
 import { InsumoFormDialog } from "./InsumoFormDialog";
+import { KardexInsumoDialog } from "./KardexInsumoDialog";
 
 interface InsumosTableProps {
 	insumos: InsumoDto[];
 }
 
 export function InsumosTable({ insumos }: InsumosTableProps) {
-	const permissions = useAuthStore((state) => state.permissions) || [];
-	const canUpdate = permissions.includes("inventario-insumos:update");
-	const canDelete = permissions.includes("inventario-insumos:delete");
+	const { can } = usePermissions();
+	const canUpdate = can("inventario-insumos", "update");
+	const canDelete = can("inventario-insumos", "delete");
 
 	const [editarInsumo, setEditarInsumo] = useState<InsumoDto | null>(null);
 	const [abastecerInsumo, setAbastecerInsumo] = useState<InsumoDto | null>(
 		null,
 	);
 	const [consumirInsumo, setConsumirInsumo] = useState<InsumoDto | null>(null);
+	const [ajustarInsumo, setAjustarInsumo] = useState<InsumoDto | null>(null);
+	const [kardexInsumo, setKardexInsumo] = useState<InsumoDto | null>(null);
 	const [eliminarInsumo, setEliminarInsumo] = useState<InsumoDto | null>(null);
 
 	const getTipoBadgeClass = (tipo: string) => {
@@ -79,6 +85,9 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 							</th>
 							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Stock Mínimo
+							</th>
+							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
+								Costo Unit.
 							</th>
 							<th scope="col" className="px-4 py-3 sm:px-6 sm:py-4">
 								Fecha Caducidad
@@ -148,6 +157,11 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 									{insumo.stockMinimo} {insumo.unidadMedida}
 								</td>
 
+								{/* Costo Unitario */}
+								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap font-medium tabular-nums">
+									${insumo.costoUnitario.toFixed(2)}
+								</td>
+
 								{/* Fecha Caducidad */}
 								<td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
 									<div className="flex items-center gap-1.5 text-muted-foreground text-xs">
@@ -168,6 +182,16 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 								{/* Acciones */}
 								<td className="px-4 py-3 sm:px-6 sm:py-4 text-right whitespace-nowrap">
 									<div className="flex items-center justify-end gap-1">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setKardexInsumo(insumo)}
+											title="Ver Kardex de movimientos"
+											className="cursor-pointer hover:bg-muted"
+										>
+											<ClipboardList className="h-4 w-4 mr-1" />
+											Kardex
+										</Button>
 										{canUpdate && (
 											<>
 												<Button
@@ -190,6 +214,17 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 												>
 													<MinusCircle className="h-4 w-4 mr-1" />
 													Consumir
+												</Button>
+
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => setAjustarInsumo(insumo)}
+													title="Ajustar stock"
+													className="cursor-pointer text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-500/10"
+												>
+													<SlidersHorizontal className="h-4 w-4 mr-1" />
+													Ajustar
 												</Button>
 
 												<Button
@@ -249,6 +284,20 @@ export function InsumosTable({ insumos }: InsumosTableProps) {
 					insumo={consumirInsumo}
 				/>
 			)}
+
+			{ajustarInsumo && (
+				<AjustarStockDialog
+					open={!!ajustarInsumo}
+					onOpenChange={(open) => !open && setAjustarInsumo(null)}
+					insumo={ajustarInsumo}
+				/>
+			)}
+
+			<KardexInsumoDialog
+				open={!!kardexInsumo}
+				onOpenChange={(open) => !open && setKardexInsumo(null)}
+				insumo={kardexInsumo}
+			/>
 
 			{eliminarInsumo && (
 				<EliminarInsumoDialog

@@ -9,8 +9,6 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useEliminarVeterinario } from "@/modules/veterinario/hooks/useEliminarVeterinario";
-import { formatApiError } from "@/lib/utils";
-import { useState } from "react";
 
 interface EliminarVeterinarioDialogProps {
 	open: boolean;
@@ -26,17 +24,11 @@ export function EliminarVeterinarioDialog({
 	veterinarioNombre,
 }: EliminarVeterinarioDialogProps) {
 	const { mutate: eliminar, isPending } = useEliminarVeterinario();
-	const [apiError, setApiError] = useState<string | null>(null);
 
 	function handleConfirm() {
-		setApiError(null);
 		eliminar(veterinarioId, {
 			onSuccess: () => {
 				onOpenChange(false);
-			},
-			// biome-ignore lint/suspicious/noExplicitAny: error cast needed for API error extraction
-			onError: (error: any) => {
-				setApiError(formatApiError(error));
 			},
 		});
 	}
@@ -54,12 +46,6 @@ export function EliminarVeterinarioDialog({
 						como inactivo en el sistema (Soft Delete).
 					</AlertDialogDescription>
 				</AlertDialogHeader>
-
-				{apiError && (
-					<p className="text-sm text-red-700 bg-red-500/10 border border-red-500/30 rounded-md px-3 py-2 dark:text-red-400 dark:bg-red-500/15">
-						{apiError}
-					</p>
-				)}
 
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>

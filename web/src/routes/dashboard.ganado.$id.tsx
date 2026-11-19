@@ -1,11 +1,7 @@
 import { useState } from "react";
-import {
-	createFileRoute,
-	redirect,
-	Link,
-	useNavigate,
-} from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useObtenerFichaGanado } from "@/modules/ganado/hooks/useObtenerFichaGanado";
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
 import { useListarTerrenos } from "@/modules/terreno/hooks/useListarTerrenos";
@@ -20,6 +16,7 @@ import { HistorialPesajesCard } from "@/components/ganado/HistorialPesajesCard";
 import { HistorialSanitarioCard } from "@/components/ganado/HistorialSanitarioCard";
 import { HistorialTratamientosCard } from "@/components/ganado/HistorialTratamientosCard";
 import { GenealogiaCard } from "@/components/ganado/GenealogiaCard";
+import { RentabilidadGanadoCard } from "@/components/comercial/RentabilidadGanadoCard";
 import { ReproduccionGanadoCard } from "@/components/reproduccion/ReproduccionGanadoCard";
 import { GanadoBajaDialog } from "@/components/ganado/GanadoBajaDialog";
 import { ganadoService } from "@/modules/ganado/services/ganadoService";
@@ -47,14 +44,8 @@ import {
 import type { GanadoDto } from "@/modules/ganado/types";
 
 export const Route = createFileRoute("/dashboard/ganado/$id")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("ganado:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "ganado", "read");
 	},
 	component: DetalleGanadoComponent,
 });
@@ -80,9 +71,9 @@ function DetalleGanadoComponent() {
 	const { id } = Route.useParams();
 	const navigate = useNavigate();
 
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canUpdate = permissions.includes("ganado:update");
-	const canDelete = permissions.includes("ganado:delete");
+	const { can } = usePermissions();
+	const canUpdate = can("ganado", "update");
+	const canDelete = can("ganado", "delete");
 
 	const { data: ganado, isLoading, isError } = useObtenerFichaGanado(id);
 	const ganadoNumericId = ganado?.id ?? (Number(id) || 0);
@@ -154,6 +145,7 @@ function DetalleGanadoComponent() {
 		madreId: ganado.madre?.id ?? null,
 		fechaBaja: ganado.fechaBaja,
 		motivoBajaId: ganado.motivoBaja?.id ?? null,
+		procedencia: ganado.procedencia ?? null,
 	};
 
 	return (
@@ -333,6 +325,11 @@ function DetalleGanadoComponent() {
 								Nacimiento:{" "}
 								{new Date(ganado.fechaNacimiento).toLocaleDateString("es-MX")}
 							</Badge>
+							{ganado.procedencia && (
+								<Badge variant="outline" className="gap-1.5">
+									Procedencia: {ganado.procedencia}
+								</Badge>
+							)}
 						</div>
 					</div>
 				</CardHeader>
@@ -402,6 +399,8 @@ function DetalleGanadoComponent() {
 			<ReproduccionGanadoCard ganado={ganado} />
 
 			<GenealogiaCard ganadoId={ganado.id} />
+
+			<RentabilidadGanadoCard ganadoId={ganado.id} />
 
 			{/* Diálogos */}
 			<GanadoFormDialog

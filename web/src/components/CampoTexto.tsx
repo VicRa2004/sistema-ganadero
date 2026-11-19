@@ -1,5 +1,6 @@
 import { Input, type InputProps } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { extractErrorMessages } from "@/lib/formAccessibility";
 
 interface CampoTextoProps extends Omit<InputProps, "id"> {
 	id: string;
@@ -8,18 +9,15 @@ interface CampoTextoProps extends Omit<InputProps, "id"> {
 	errors?: unknown[];
 }
 
-/** Etiqueta + input + mensajes de validación, con aria-invalid para lectores de pantalla */
+/** Etiqueta + input + mensajes de validación, con aria-invalid explícito para lectores de pantalla */
 export function CampoTexto({
 	id,
 	label,
 	errors = [],
 	...props
 }: CampoTextoProps) {
-	const mensajes = errors
-		.map((e) =>
-			typeof e === "string" ? e : (e as { message?: string })?.message,
-		)
-		.filter(Boolean);
+	const mensajes = extractErrorMessages(errors);
+	const esInvalido = mensajes.length > 0;
 
 	return (
 		<div className="space-y-1.5">
@@ -27,11 +25,11 @@ export function CampoTexto({
 			<Input
 				id={id}
 				name={id}
-				aria-invalid={mensajes.length > 0}
-				aria-describedby={mensajes.length ? `${id}-error` : undefined}
+				aria-invalid={esInvalido ? "true" : "false"}
+				aria-describedby={esInvalido ? `${id}-error` : undefined}
 				{...props}
 			/>
-			{mensajes.length > 0 && (
+			{esInvalido && (
 				<p id={`${id}-error`} className="text-xs font-medium text-destructive">
 					{mensajes.join(", ")}
 				</p>

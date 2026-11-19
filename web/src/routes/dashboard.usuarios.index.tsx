@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
 	ChevronLeft,
 	ChevronRight,
+	KeyRound,
 	Pencil,
 	Plus,
 	Search,
@@ -14,6 +15,7 @@ import { z } from "zod";
 import { CampoTexto } from "@/components/CampoTexto";
 import { ConfirmarDialog } from "@/components/ConfirmarDialog";
 import { ListaEstado } from "@/components/ListaEstado";
+import { UsuarioAccesoDialog } from "@/components/usuario/UsuarioAccesoDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +35,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { passwordSchema } from "@/modules/auth/schemas";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useActualizarUsuario } from "@/modules/usuario/hooks/useActualizarUsuario";
@@ -42,14 +51,8 @@ import { useListarUsuarios } from "@/modules/usuario/hooks/useListarUsuarios";
 import type { UserDto } from "@/modules/usuario/types";
 
 export const Route = createFileRoute("/dashboard/usuarios/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("users:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "users", "read");
 	},
 	component: UsuariosComponent,
 });
@@ -113,12 +116,19 @@ function UsuarioFormDialog({
 
 	return (
 		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				form.handleSubmit();
-			}}
+			noValidate
+			onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
 			className="space-y-4 py-2"
 		>
+			<form.Subscribe
+				selector={(s) =>
+					Object.values(s.fieldMeta).filter(
+						(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+					).length
+				}
+			>
+				{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+			</form.Subscribe>
 			<form.Field name="name">
 				{(field) => (
 					<CampoTexto
@@ -127,7 +137,7 @@ function UsuarioFormDialog({
 						value={field.state.value}
 						onBlur={field.handleBlur}
 						onChange={(e) => field.handleChange(e.target.value)}
-						errors={field.state.meta.isTouched ? field.state.meta.errors : []}
+						errors={getVisibleFieldErrors(field.state.meta)}
 						disabled={isPending}
 					/>
 				)}
@@ -141,7 +151,7 @@ function UsuarioFormDialog({
 						value={field.state.value}
 						onBlur={field.handleBlur}
 						onChange={(e) => field.handleChange(e.target.value)}
-						errors={field.state.meta.isTouched ? field.state.meta.errors : []}
+						errors={getVisibleFieldErrors(field.state.meta)}
 						disabled={isPending}
 					/>
 				)}
@@ -174,7 +184,7 @@ function UsuarioFormDialog({
 							value={field.state.value}
 							onBlur={field.handleBlur}
 							onChange={(e) => field.handleChange(e.target.value)}
-							errors={field.state.meta.isTouched ? field.state.meta.errors : []}
+							errors={getVisibleFieldErrors(field.state.meta)}
 							disabled={isPending}
 						/>
 					)}
@@ -193,17 +203,19 @@ function UsuarioFormDialog({
 }
 
 function UsuariosComponent() {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
 	const miId = useAuthStore((state) => state.user?.id);
-	const canCreate = permissions.includes("users:create");
-	const canUpdate = permissions.includes("users:update");
-	const canDelete = permissions.includes("users:delete");
+	const canCreate = can("users", "create");
+	const canUpdate = can("users", "update");
+	const canDelete = can("users", "delete");
+	const canManageAccess = can("permissions", "update");
 
 	const [page, setPage] = useState(1);
 	const [emailFiltro, setEmailFiltro] = useState("");
 	const [formOpen, setFormOpen] = useState(false);
 	const [editar, setEditar] = useState<UserDto | null>(null);
 	const [eliminar, setEliminar] = useState<UserDto | null>(null);
+	const [accesoUsuario, setAccesoUsuario] = useState<UserDto | null>(null);
 
 	const {
 		data: listado,
@@ -298,6 +310,17 @@ function UsuariosComponent() {
 									</TableCell>
 									<TableCell className="text-right">
 										<div className="flex justify-end gap-1">
+											{canManageAccess && (
+												<Button
+													variant="ghost"
+													size="icon"
+													title="Roles y permisos"
+													aria-label={`Roles y permisos de ${u.name}`}
+													onClick={() => setAccesoUsuario(u)}
+												>
+													<KeyRound className="size-4" />
+												</Button>
+											)}
 											{canUpdate && (
 												<Button
 													variant="ghost"
@@ -385,6 +408,11 @@ function UsuariosComponent() {
 					)}
 				</DialogContent>
 			</Dialog>
+
+			<UsuarioAccesoDialog
+				usuario={accesoUsuario}
+				onClose={() => setAccesoUsuario(null)}
+			/>
 
 			<ConfirmarDialog
 				open={!!eliminar}

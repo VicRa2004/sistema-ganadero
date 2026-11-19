@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { tratamientoMedicoService } from "../services/tratamientoMedicoService";
 import type { RegistrarAplicacionDiariaInput } from "../types";
 
@@ -9,9 +10,14 @@ export function useRegistrarAplicacionDiaria() {
 		meta: { successMessage: "Aplicación registrada" },
 		mutationFn: (input: RegistrarAplicacionDiariaInput) =>
 			tratamientoMedicoService.registrarAplicacion(input),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["tratamientos-medicos"] });
-			queryClient.invalidateQueries({ queryKey: ["insumos"] });
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.tratamientosMedicos.lists(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.tratamientosMedicos.detail(variables.tratamientoId),
+			});
+			queryClient.invalidateQueries({ queryKey: queryKeys.insumos.all });
 		},
 	});
 }

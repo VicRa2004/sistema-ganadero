@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { createFileRoute } from "@tanstack/react-router";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useListarPropietarios } from "@/modules/propietario/hooks/useListarPropietarios";
 import { PropietariosTable } from "@/components/propietario/PropietariosTable";
 import { PropietarioFormDialog } from "@/components/propietario/PropietarioFormDialog";
@@ -11,15 +12,8 @@ import { Plus, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import type { PropietarioDto } from "@/modules/propietario/types";
 
 export const Route = createFileRoute("/dashboard/propietarios/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		// Los permisos se leen del store de Zustand directamente (getState es seguro fuera de React)
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("propietario:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "propietario", "read");
 	},
 	component: PropietariosComponent,
 });
@@ -27,9 +21,9 @@ export const Route = createFileRoute("/dashboard/propietarios/")({
 const PAGE_SIZE = 10;
 
 function PropietariosComponent() {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
+	const { can } = usePermissions();
 	const hasPermission = (resource: string, action: string) =>
-		permissions.includes(`${resource}:${action}`);
+		can(resource, action);
 
 	const [page, setPage] = useState(1);
 	const [isFormOpen, setIsFormOpen] = useState(false);

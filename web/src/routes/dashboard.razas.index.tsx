@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Dna, Pencil, Plus, Trash2 } from "lucide-react";
 import { z } from "zod";
 import { CampoTexto } from "@/components/CampoTexto";
@@ -22,7 +22,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import {
+	FormErrorAnnouncer,
+	getVisibleFieldErrors,
+	handleFormSubmitWithFocus,
+} from "@/lib/formAccessibility";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useActualizarRaza } from "@/modules/raza/hooks/useActualizarRaza";
 import { useEliminarRaza } from "@/modules/raza/hooks/useEliminarRaza";
 import { useListarRazas } from "@/modules/raza/hooks/useListarRazas";
@@ -30,14 +36,8 @@ import { useRegistrarRaza } from "@/modules/raza/hooks/useRegistrarRaza";
 import type { RazaDto } from "@/modules/raza/types";
 
 export const Route = createFileRoute("/dashboard/razas/")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("razas:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "razas", "read");
 	},
 	component: RazasComponent,
 });
@@ -80,12 +80,19 @@ function RazaFormDialog({
 
 	return (
 		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				form.handleSubmit();
-			}}
+			noValidate
+			onSubmit={(e) => handleFormSubmitWithFocus(e, form.handleSubmit)}
 			className="space-y-4 py-2"
 		>
+			<form.Subscribe
+				selector={(s) =>
+					Object.values(s.fieldMeta).filter(
+						(m) => m?.isTouched && (m.errors?.length ?? 0) > 0,
+					).length
+				}
+			>
+				{(errorCount) => <FormErrorAnnouncer errorCount={errorCount} />}
+			</form.Subscribe>
 			<form.Field name="nombre">
 				{(field) => (
 					<CampoTexto
@@ -94,7 +101,7 @@ function RazaFormDialog({
 						value={field.state.value}
 						onBlur={field.handleBlur}
 						onChange={(e) => field.handleChange(e.target.value)}
-						errors={field.state.meta.isTouched ? field.state.meta.errors : []}
+						errors={getVisibleFieldErrors(field.state.meta)}
 						disabled={isPending}
 					/>
 				)}
@@ -107,7 +114,7 @@ function RazaFormDialog({
 						value={field.state.value}
 						onBlur={field.handleBlur}
 						onChange={(e) => field.handleChange(e.target.value)}
-						errors={field.state.meta.isTouched ? field.state.meta.errors : []}
+						errors={getVisibleFieldErrors(field.state.meta)}
 						disabled={isPending}
 					/>
 				)}
@@ -125,10 +132,10 @@ function RazaFormDialog({
 }
 
 function RazasComponent() {
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canCreate = permissions.includes("razas:create");
-	const canUpdate = permissions.includes("razas:update");
-	const canDelete = permissions.includes("razas:delete");
+	const { can } = usePermissions();
+	const canCreate = can("razas", "create");
+	const canUpdate = can("razas", "update");
+	const canDelete = can("razas", "delete");
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editar, setEditar] = useState<RazaDto | null>(null);

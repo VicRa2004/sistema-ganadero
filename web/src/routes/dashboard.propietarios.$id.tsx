@@ -1,6 +1,7 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import { requireAuthAndPermission } from "@/modules/auth/guards/permissionGuard";
+import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useObtenerDetallePropietario } from "@/modules/propietario/hooks/useObtenerDetallePropietario";
 import { PropietarioFormDialog } from "@/components/propietario/PropietarioFormDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -27,14 +28,8 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/propietarios/$id")({
-	beforeLoad: ({ context }) => {
-		if (!context.auth.isAuthenticated) {
-			throw redirect({ to: "/login" });
-		}
-		const permissions: string[] = useAuthStore.getState().permissions ?? [];
-		if (!permissions.includes("propietario:read")) {
-			throw redirect({ to: "/dashboard" });
-		}
+	beforeLoad: async ({ context }) => {
+		await requireAuthAndPermission(context, "propietario", "read");
 	},
 	component: DetallePropietarioComponent,
 });
@@ -43,8 +38,8 @@ function DetallePropietarioComponent() {
 	const { id } = Route.useParams();
 	const propietarioId = Number(id);
 
-	const permissions = useAuthStore((state) => state.permissions) ?? [];
-	const canUpdate = permissions.includes("propietario:update");
+	const { can } = usePermissions();
+	const canUpdate = can("propietario", "update");
 
 	const {
 		data: propietario,

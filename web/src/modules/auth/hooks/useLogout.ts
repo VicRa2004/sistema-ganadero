@@ -1,10 +1,11 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { authService } from "../services/authService";
 import { useAuthStore } from "../store/authStore";
 
 export function useLogout() {
 	const logoutStore = useAuthStore((state) => state.logout);
+	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
 	return useMutation({
@@ -16,13 +17,12 @@ export function useLogout() {
 			}
 		},
 		onSuccess: () => {
-			// Limpiar Zustand store
+			queryClient.clear();
 			logoutStore();
-			// Redireccionar a login
 			navigate({ to: "/login" });
 		},
 		onError: () => {
-			// En caso de error, igualmente limpiamos el frontend por seguridad
+			queryClient.clear();
 			logoutStore();
 			navigate({ to: "/login" });
 		},

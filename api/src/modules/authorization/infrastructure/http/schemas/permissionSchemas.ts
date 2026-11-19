@@ -39,3 +39,18 @@ export const userIdParamSchema = z.object({
 		.regex(/^\d+$/, "El userId debe ser un número válido")
 		.transform(Number),
 });
+
+export const assignUserRolesSchema = z.object({
+	roleIds: z
+		.array(z.number().int().positive())
+		.min(1, "Debe asignar al menos un rol"),
+});
+
+export const assignUserDirectPermissionsSchema = z.object({
+	overrides: z.array(
+		z.object({
+			permissionId: z.number().int().positive(),
+			granted: z.boolean(),
+		}),
+	),
+});

@@ -27,6 +27,7 @@ export const registrarGanadoSchema = z.object({
 	propietarioId: z.number().int().positive("El propietario es requerido"),
 	padreId: z.number().int().positive().nullable().optional(),
 	madreId: z.number().int().positive().nullable().optional(),
+	procedencia: z.string().trim().max(200).nullable().optional(),
 });
 
 export const actualizarGanadoSchema = z.object({
@@ -55,6 +56,7 @@ export const actualizarGanadoSchema = z.object({
 		.nullable()
 		.optional(),
 	motivoBajaId: z.number().int().positive().nullable().optional(),
+	procedencia: z.string().trim().max(200).nullable().optional(),
 });
 
 export const darDeBajaSchema = z.object({

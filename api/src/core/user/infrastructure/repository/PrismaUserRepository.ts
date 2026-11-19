@@ -27,10 +27,11 @@ export class PrismaUserRepository implements UserRepository {
 	 * Se utiliza `reconstitute` porque el usuario ya existe en la base de datos.
 	 */
 	private toDomain(raw: PrismaUserRecord): User {
-		// Con el esquema N-a-N un usuario puede tener varios roles.
-		// Tomamos el primero como "rol principal" para mantener compatibilidad
-		// con la entidad de dominio User que actualmente modela un único rol.
-		const primaryRole = raw.roles[0]?.role.name ?? "USER";
+		// Priorizar ADMIN si el usuario posee varios roles asignados
+		const primaryRole =
+			raw.roles.find((r) => r.role.name === "ADMIN")?.role.name ??
+			raw.roles[0]?.role.name ??
+			"USER";
 
 		return User.reconstitute(
 			raw.name,

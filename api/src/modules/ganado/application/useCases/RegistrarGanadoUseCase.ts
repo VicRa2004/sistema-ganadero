@@ -91,6 +91,7 @@ export class RegistrarGanadoUseCase {
 			dto.propietarioId,
 			dto.padreId ?? null,
 			dto.madreId ?? null,
+			dto.procedencia ?? null,
 		);
 
 		const saved = await this.ganadoRepository.save(ganado);

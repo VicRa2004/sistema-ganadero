@@ -65,6 +65,7 @@ describe("RegistrarInsumoUseCase", () => {
 			lote: "LOT-999",
 			fechaCaducidad: new Date("2028-01-01T00:00:00.000Z").toISOString(),
 			periodoRetiroDias: 0,
+			costoUnitario: 0,
 			esBajoStock: false,
 			usuarioId: 1,
 		});

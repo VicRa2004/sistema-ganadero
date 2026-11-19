@@ -17,6 +17,7 @@ export class Ganado extends Entity {
 	private madreId: number | null;
 	private fechaBaja: Date | null;
 	private motivoBajaId: number | null;
+	private procedencia: string | null;
 
 	private constructor(
 		id: EntityId,
@@ -32,6 +33,7 @@ export class Ganado extends Entity {
 		madreId: number | null,
 		fechaBaja: Date | null,
 		motivoBajaId: number | null,
+		procedencia: string | null = null,
 	) {
 		super(id);
 		this.identificador = identificador;
@@ -46,6 +48,7 @@ export class Ganado extends Entity {
 		this.madreId = madreId;
 		this.fechaBaja = fechaBaja;
 		this.motivoBajaId = motivoBajaId;
+		this.procedencia = procedencia;
 	}
 
 	public static create(
@@ -59,6 +62,7 @@ export class Ganado extends Entity {
 		propietarioId: number,
 		padreId: number | null,
 		madreId: number | null,
+		procedencia: string | null = null,
 	): Ganado {
 		if (!identificador || identificador.trim() === "") {
 			throw new ValidationError(
@@ -104,6 +108,7 @@ export class Ganado extends Entity {
 			madreId,
 			null,
 			null,
+			procedencia?.trim() ? procedencia.trim() : null,
 		);
 	}
 
@@ -121,6 +126,7 @@ export class Ganado extends Entity {
 		madreId: number | null,
 		fechaBaja: Date | null,
 		motivoBajaId: number | null,
+		procedencia: string | null = null,
 	): Ganado {
 		return new Ganado(
 			new EntityId(id),
@@ -136,6 +142,7 @@ export class Ganado extends Entity {
 			madreId,
 			fechaBaja,
 			motivoBajaId,
+			procedencia,
 		);
 	}
 
@@ -185,6 +192,10 @@ export class Ganado extends Entity {
 
 	public getMotivoBajaId(): number | null {
 		return this.motivoBajaId;
+	}
+
+	public getProcedencia(): string | null {
+		return this.procedencia;
 	}
 
 	public estaActivo(): boolean {
@@ -250,6 +261,7 @@ export class Ganado extends Entity {
 		propietarioId: number,
 		padreId: number | null,
 		madreId: number | null,
+		procedencia?: string | null,
 	): void {
 		if (!identificador || identificador.trim() === "") {
 			throw new ValidationError(
@@ -300,5 +312,8 @@ export class Ganado extends Entity {
 		this.propietarioId = propietarioId;
 		this.padreId = padreId;
 		this.madreId = madreId;
+		if (procedencia !== undefined) {
+			this.procedencia = procedencia?.trim() ? procedencia.trim() : null;
+		}
 	}
 }

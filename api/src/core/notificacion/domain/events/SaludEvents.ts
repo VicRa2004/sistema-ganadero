@@ -21,7 +21,8 @@ export class AlertaNotificacionDomainEvent implements DomainEvent {
 			| "tratamiento.por-vencer"
 			| "sesion.programada"
 			| "ganado.vacuna-pendiente"
-			| "reproduccion.parto-proximo",
+			| "reproduccion.parto-proximo"
+			| "alimentacion.autonomia-baja",
 		public readonly data: AlertaNotificacionPayload,
 	) {
 		this.occurredOn = new Date();

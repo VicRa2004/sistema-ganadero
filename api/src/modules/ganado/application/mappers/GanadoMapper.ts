@@ -21,6 +21,7 @@ export class GanadoMapper {
 			madreId: ganado.getMadreId(),
 			fechaBaja: ganado.getFechaBaja()?.toISOString() ?? null,
 			motivoBajaId: ganado.getMotivoBajaId(),
+			procedencia: ganado.getProcedencia(),
 		};
 	}
 

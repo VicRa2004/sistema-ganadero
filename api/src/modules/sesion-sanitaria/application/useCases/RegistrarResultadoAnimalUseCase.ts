@@ -3,6 +3,8 @@ import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import { InsumoNotFoundError } from "@/modules/inventario-insumos/domain/error/InsumoNotFoundError";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
+import { MovimientoInsumo } from "@/modules/inventario-insumos/domain/MovimientoInsumo";
+import type { MovimientoInsumoRepository } from "@/modules/inventario-insumos/domain/repository/MovimientoInsumoRepository";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
 import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
@@ -29,6 +31,8 @@ export class RegistrarResultadoAnimalUseCase {
 		private readonly ganadoAccessService: GanadoAccessService,
 		@inject("SesionSanitariaMapper")
 		private readonly mapper: SesionSanitariaMapper,
+		@inject("MovimientoInsumoRepository")
+		private readonly movimientoRepository?: MovimientoInsumoRepository,
 	) {}
 
 	public async run(
@@ -78,10 +82,32 @@ export class RegistrarResultadoAnimalUseCase {
 				);
 			}
 
-			return this.sesionSanitariaRepository.addAplicacion(
+			const savedApp = await this.sesionSanitariaRepository.addAplicacion(
 				dto.sesionId,
 				aplicacion,
 			);
+
+			if (this.movimientoRepository && dto.dosisAplicada > 0) {
+				const costoUnit =
+					typeof insumo.getCostoUnitario === "function"
+						? insumo.getCostoUnitario()
+						: 0;
+				await this.movimientoRepository.registrar(
+					MovimientoInsumo.create({
+						insumoId: insumo.getId(),
+						tipo: "SALIDA",
+						cantidad: dto.dosisAplicada,
+						costoUnitario: costoUnit,
+						motivo: `Aplicación sanitaria (Sesión #${dto.sesionId})`,
+						referenciaTipo: "SESION_SANITARIA",
+						referenciaId: dto.sesionId,
+						ganadoId: dto.ganadoId,
+						usuarioId: actor.id,
+					}),
+				);
+			}
+
+			return savedApp;
 		});
 
 		return this.mapper.toAplicacionDto(result, animal.getIdentificador());

@@ -15,6 +15,9 @@ export const RECURSOS = [
 	"tratamientos-medicos",
 	"veterinarios",
 	"reproduccion",
+	"comercial",
+	"lotes",
+	"alimentacion",
 ] as const;
 
 export type Recurso = (typeof RECURSOS)[number];

@@ -5,6 +5,7 @@ export const TIPOS_NOTIFICACION = [
 	"SESION_PROGRAMADA",
 	"VACUNA_PENDIENTE",
 	"PARTO_PROXIMO",
+	"AUTONOMIA_ALIMENTO",
 ] as const;
 
 export type TipoNotificacion = (typeof TIPOS_NOTIFICACION)[number];

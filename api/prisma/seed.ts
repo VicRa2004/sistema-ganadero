@@ -99,6 +99,18 @@ async function main() {
 			"reproduccion:create",
 			"reproduccion:update",
 			"reproduccion:delete",
+			"comercial:read",
+			"comercial:create",
+			"comercial:update",
+			"comercial:delete",
+			"lotes:read",
+			"lotes:create",
+			"lotes:update",
+			"lotes:delete",
+			"alimentacion:read",
+			"alimentacion:create",
+			"alimentacion:update",
+			"alimentacion:delete",
 		],
 	};
 
@@ -353,6 +365,7 @@ async function main() {
 				unidadMedida: "ml",
 				lote: "LOT-2026-001",
 				fechaCaducidad: new Date("2027-12-31"),
+				costoUnitario: 18.5,
 				usuarioId: adminUserForInsumo.id,
 			},
 			{
@@ -363,6 +376,7 @@ async function main() {
 				unidadMedida: "dosis",
 				lote: "LOT-2026-002",
 				fechaCaducidad: new Date("2026-11-30"),
+				costoUnitario: 45.0,
 				usuarioId: adminUserForInsumo.id,
 			},
 			{
@@ -373,6 +387,7 @@ async function main() {
 				unidadMedida: "kg",
 				lote: "LOT-2026-003",
 				fechaCaducidad: new Date("2027-06-30"),
+				costoUnitario: 8.2,
 				usuarioId: adminUserForInsumo.id,
 			},
 		];
@@ -381,8 +396,34 @@ async function main() {
 			const existing = await prisma.insumo.findFirst({
 				where: { nombre: insumo.nombre, lote: insumo.lote, deletedAt: null },
 			});
-			if (!existing) {
-				await prisma.insumo.create({ data: insumo });
+			const record = existing
+				? await prisma.insumo.update({
+						where: { id: existing.id },
+						data: {
+							costoUnitario:
+								existing.costoUnitario.toNumber() > 0
+									? existing.costoUnitario
+									: insumo.costoUnitario,
+						},
+					})
+				: await prisma.insumo.create({ data: insumo });
+
+			const tieneMovimientos = await prisma.movimientoInsumo.count({
+				where: { insumoId: record.id },
+			});
+			if (tieneMovimientos === 0 && record.stock.toNumber() > 0) {
+				await prisma.movimientoInsumo.create({
+					data: {
+						insumoId: record.id,
+						tipo: "ENTRADA",
+						cantidad: record.stock,
+						delta: record.stock,
+						costoUnitario: record.costoUnitario,
+						motivo: "Saldo inicial (seed)",
+						referenciaTipo: "INICIAL",
+						usuarioId: adminUserForInsumo.id,
+					},
+				});
 			}
 		}
 	}

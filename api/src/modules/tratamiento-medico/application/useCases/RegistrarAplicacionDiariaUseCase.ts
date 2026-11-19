@@ -3,6 +3,8 @@ import type { Actor } from "@/core/shared/domain/Actor";
 import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 import type { TransactionRunner } from "@/core/shared/domain/services/TransactionRunner";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
+import { MovimientoInsumo } from "@/modules/inventario-insumos/domain/MovimientoInsumo";
+import type { MovimientoInsumoRepository } from "@/modules/inventario-insumos/domain/repository/MovimientoInsumoRepository";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
 import type { TratamientoMedicoRepository } from "../../domain/repository/TratamientoMedicoRepository";
 import type {
@@ -31,6 +33,8 @@ export class RegistrarAplicacionDiariaUseCase {
 		private readonly mapper: TratamientoMedicoMapper,
 		@inject("OutboxEventPublisher")
 		private readonly outbox?: OutboxEventPublisher,
+		@inject("MovimientoInsumoRepository")
+		private readonly movimientoRepository?: MovimientoInsumoRepository,
 	) {}
 
 	public async run(
@@ -93,7 +97,29 @@ export class RegistrarAplicacionDiariaUseCase {
 				stockFinal = actualizado.getStock();
 			}
 
-			return this.tratamientoRepository.save(tratamiento);
+			const savedTrat = await this.tratamientoRepository.save(tratamiento);
+
+			if (this.movimientoRepository) {
+				const costoUnit =
+					typeof insumo.getCostoUnitario === "function"
+						? insumo.getCostoUnitario()
+						: 0;
+				await this.movimientoRepository.registrar(
+					MovimientoInsumo.create({
+						insumoId: insumo.getId(),
+						tipo: "SALIDA",
+						cantidad: dosisAplicada,
+						costoUnitario: costoUnit,
+						motivo: `Aplicación tratamiento médico: ${tratamiento.getDiagnostico()}`,
+						referenciaTipo: "TRATAMIENTO_MEDICO",
+						referenciaId: tratamiento.getId(),
+						ganadoId: tratamiento.getGanadoId(),
+						usuarioId: actor.id,
+					}),
+				);
+			}
+
+			return savedTrat;
 		});
 
 		if (insumoBajoStock && this.outbox) {

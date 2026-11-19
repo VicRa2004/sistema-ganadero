@@ -5,6 +5,8 @@ import { PrismaTransactionRunner } from "@/core/shared/infrastructure/libs/Prism
 import { S3ImageStorageService } from "@/core/shared/infrastructure/libs/S3ImageStorageService";
 import { env } from "@/core/config/env";
 import { LocalImageStorageService } from "@/core/shared/infrastructure/libs/LocalImageStorageService";
+import { LocalDocumentStorageService } from "@/core/shared/infrastructure/libs/LocalDocumentStorageService";
+import { S3DocumentStorageService } from "@/core/shared/infrastructure/libs/S3DocumentStorageService";
 import { PrismaUserRepository } from "@/core/user/infrastructure/repository/PrismaUserRepository";
 import { CreateUserUseCase } from "@/core/user/application/useCases/CreateUserUseCase";
 import { GetAllUsersUseCase } from "@/core/user/application/useCases/GetAllUsersUseCase";
@@ -36,12 +38,20 @@ import { GetAllPermissionsUseCase } from "@/modules/authorization/application/us
 import { GetPermissionUseCase } from "@/modules/authorization/application/useCases/GetPermissionUseCase";
 import { GetUserPermissionsUseCase } from "@/modules/authorization/application/useCases/GetUserPermissionsUseCase";
 import { UpdatePermissionUseCase } from "@/modules/authorization/application/useCases/UpdatePermissionUseCase";
+import { GetAllRolesUseCase } from "@/modules/authorization/application/useCases/GetAllRolesUseCase";
+import { GetUserAccessUseCase } from "@/modules/authorization/application/useCases/GetUserAccessUseCase";
+import { AssignUserRolesUseCase } from "@/modules/authorization/application/useCases/AssignUserRolesUseCase";
+import { AssignUserDirectPermissionsUseCase } from "@/modules/authorization/application/useCases/AssignUserDirectPermissionsUseCase";
 import { CreatePermissionController } from "@/modules/authorization/infrastructure/http/controllers/CreatePermissionController";
 import { DeletePermissionController } from "@/modules/authorization/infrastructure/http/controllers/DeletePermissionController";
 import { GetAllPermissionsController } from "@/modules/authorization/infrastructure/http/controllers/GetAllPermissionsController";
 import { GetPermissionController } from "@/modules/authorization/infrastructure/http/controllers/GetPermissionController";
 import { GetUserPermissionsController } from "@/modules/authorization/infrastructure/http/controllers/GetUserPermissionsController";
 import { UpdatePermissionController } from "@/modules/authorization/infrastructure/http/controllers/UpdatePermissionController";
+import { GetAllRolesController } from "@/modules/authorization/infrastructure/http/controllers/GetAllRolesController";
+import { GetUserAccessController } from "@/modules/authorization/infrastructure/http/controllers/GetUserAccessController";
+import { AssignUserRolesController } from "@/modules/authorization/infrastructure/http/controllers/AssignUserRolesController";
+import { AssignUserDirectPermissionsController } from "@/modules/authorization/infrastructure/http/controllers/AssignUserDirectPermissionsController";
 import { IssueSessionService } from "@/modules/auth/application/services/IssueSessionService";
 import { LoginUseCase } from "@/modules/auth/application/useCases/LoginUseCase";
 import { ChangePasswordUseCase } from "@/modules/auth/application/useCases/ChangePasswordUseCase";
@@ -75,11 +85,15 @@ import { EliminarPropietarioController } from "@/modules/propietario/infrastruct
 
 // Insumos
 import { PrismaInsumoRepository } from "@/modules/inventario-insumos/infrastructure/repository/PrismaInsumoRepository";
+import { PrismaMovimientoInsumoRepository } from "@/modules/inventario-insumos/infrastructure/repository/PrismaMovimientoInsumoRepository";
 import { InsumoMapper } from "@/modules/inventario-insumos/application/mappers/InsumoMapper";
+import { MovimientoInsumoMapper } from "@/modules/inventario-insumos/application/mappers/MovimientoInsumoMapper";
 import { RegistrarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/RegistrarInsumoUseCase";
 import { ActualizarInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ActualizarInsumoUseCase";
 import { AbastecerInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/AbastecerInsumoUseCase";
 import { ConsumirInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ConsumirInsumoUseCase";
+import { AjustarStockInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/AjustarStockInsumoUseCase";
+import { ListarKardexInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ListarKardexInsumoUseCase";
 import { ObtenerInsumosCriticosUseCase } from "@/modules/inventario-insumos/application/useCases/ObtenerInsumosCriticosUseCase";
 import { ListarInsumosUseCase } from "@/modules/inventario-insumos/application/useCases/ListarInsumosUseCase";
 import { ObtenerDetalleInsumoUseCase } from "@/modules/inventario-insumos/application/useCases/ObtenerDetalleInsumoUseCase";
@@ -88,6 +102,8 @@ import { RegistrarInsumoController } from "@/modules/inventario-insumos/infrastr
 import { ActualizarInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ActualizarInsumoController";
 import { AbastecerInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/AbastecerInsumoController";
 import { ConsumirInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ConsumirInsumoController";
+import { AjustarStockInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/AjustarStockInsumoController";
+import { ListarKardexInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ListarKardexInsumoController";
 import { ObtenerInsumosCriticosController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerInsumosCriticosController";
 import { ListarInsumosController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ListarInsumosController";
 import { ObtenerDetalleInsumoController } from "@/modules/inventario-insumos/infrastructure/http/controllers/ObtenerDetalleInsumoController";
@@ -332,6 +348,14 @@ container.register("GetUserPermissionsUseCase", {
 container.register("UpdatePermissionUseCase", {
 	useClass: UpdatePermissionUseCase,
 });
+container.register("GetAllRolesUseCase", { useClass: GetAllRolesUseCase });
+container.register("GetUserAccessUseCase", { useClass: GetUserAccessUseCase });
+container.register("AssignUserRolesUseCase", {
+	useClass: AssignUserRolesUseCase,
+});
+container.register("AssignUserDirectPermissionsUseCase", {
+	useClass: AssignUserDirectPermissionsUseCase,
+});
 
 // Módulo Authorization - Controladores
 container.register("CreatePermissionController", {
@@ -351,6 +375,18 @@ container.register("GetUserPermissionsController", {
 });
 container.register("UpdatePermissionController", {
 	useClass: UpdatePermissionController,
+});
+container.register("GetAllRolesController", {
+	useClass: GetAllRolesController,
+});
+container.register("GetUserAccessController", {
+	useClass: GetUserAccessController,
+});
+container.register("AssignUserRolesController", {
+	useClass: AssignUserRolesController,
+});
+container.register("AssignUserDirectPermissionsController", {
+	useClass: AssignUserDirectPermissionsController,
 });
 
 // Módulo Auth - Use Cases
@@ -439,7 +475,13 @@ container.register("EliminarPropietarioController", {
 
 // Módulo Insumos - Repositorio & Mappers
 container.register("InsumoRepository", { useClass: PrismaInsumoRepository });
+container.register("MovimientoInsumoRepository", {
+	useClass: PrismaMovimientoInsumoRepository,
+});
 container.register("InsumoMapper", { useClass: InsumoMapper });
+container.register("MovimientoInsumoMapper", {
+	useClass: MovimientoInsumoMapper,
+});
 
 // Módulo Insumos - Use Cases
 container.register("RegistrarInsumoUseCase", {
@@ -453,6 +495,12 @@ container.register("AbastecerInsumoUseCase", {
 });
 container.register("ConsumirInsumoUseCase", {
 	useClass: ConsumirInsumoUseCase,
+});
+container.register("AjustarStockInsumoUseCase", {
+	useClass: AjustarStockInsumoUseCase,
+});
+container.register("ListarKardexInsumoUseCase", {
+	useClass: ListarKardexInsumoUseCase,
 });
 container.register("ObtenerInsumosCriticosUseCase", {
 	useClass: ObtenerInsumosCriticosUseCase,
@@ -477,6 +525,12 @@ container.register("AbastecerInsumoController", {
 });
 container.register("ConsumirInsumoController", {
 	useClass: ConsumirInsumoController,
+});
+container.register("AjustarStockInsumoController", {
+	useClass: AjustarStockInsumoController,
+});
+container.register("ListarKardexInsumoController", {
+	useClass: ListarKardexInsumoController,
 });
 container.register("ObtenerInsumosCriticosController", {
 	useClass: ObtenerInsumosCriticosController,
@@ -799,9 +853,15 @@ if (env.STORAGE_DRIVER === "s3") {
 	container.register("ImageStorageService", {
 		useClass: S3ImageStorageService,
 	});
+	container.register("DocumentStorageService", {
+		useClass: S3DocumentStorageService,
+	});
 } else {
 	container.register("ImageStorageService", {
 		useClass: LocalImageStorageService,
+	});
+	container.register("DocumentStorageService", {
+		useClass: LocalDocumentStorageService,
 	});
 }
 container.register("TransactionRunner", {
@@ -1029,5 +1089,13 @@ container.register("ObtenerIndicadoresReproductivosController", {
 	useClass: ObtenerIndicadoresReproductivosController,
 });
 container.register("ReproduccionRouter", { useClass: ReproduccionRouter });
+
+import { registerAlimentacionModule } from "@/modules/alimentacion/infrastructure/di/registerAlimentacionModule";
+import { registerComercialModule } from "@/modules/comercial/infrastructure/di/registerComercialModule";
+import { registerLoteModule } from "@/modules/lote/infrastructure/di/registerLoteModule";
+
+registerLoteModule(container);
+registerAlimentacionModule(container);
+registerComercialModule(container);
 
 export { container };

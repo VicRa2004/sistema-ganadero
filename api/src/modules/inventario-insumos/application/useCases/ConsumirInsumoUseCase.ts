@@ -1,18 +1,27 @@
 import { inject, injectable } from "tsyringe";
-import { assertPuedeAcceder } from "@/core/shared/domain/Actor";
+import { db } from "@/core/config/transaction";
+import { logger } from "@/core/config/logger";
 import {
 	AlertaNotificacionDomainEvent,
 	type OutboxEventPublisher,
 } from "@/core/notificacion/domain/events/SaludEvents";
-import { InsumoStockInsuficienteError } from "../../domain/error/InsumoStockInsuficienteError";
+import {
+	type Actor,
+	assertPuedeAcceder,
+	esAdmin,
+} from "@/core/shared/domain/Actor";
+import { BaseError } from "@/core/shared/domain/error/BaseError";
+import type { TransactionRunner } from "@/core/shared/domain/services/TransactionRunner";
 import { InsumoNotFoundError } from "../../domain/error/InsumoNotFoundError";
+import { InsumoStockInsuficienteError } from "../../domain/error/InsumoStockInsuficienteError";
+import { MovimientoInsumo } from "../../domain/MovimientoInsumo";
 import type { InsumoRepository } from "../../domain/repository/InsumoRepository";
+import type { MovimientoInsumoRepository } from "../../domain/repository/MovimientoInsumoRepository";
 import type {
 	ConsumirInsumoInputDto,
 	InsumoOutputDto,
 } from "../dtos/InsumoDto";
 import type { InsumoMapper } from "../mappers/InsumoMapper";
-import { logger } from "@/core/config/logger";
 
 @injectable()
 export class ConsumirInsumoUseCase {
@@ -23,7 +32,54 @@ export class ConsumirInsumoUseCase {
 		private readonly mapper: InsumoMapper,
 		@inject("OutboxEventPublisher")
 		private readonly outbox?: OutboxEventPublisher,
+		@inject("MovimientoInsumoRepository")
+		private readonly movimientoRepository?: MovimientoInsumoRepository,
+		@inject("TransactionRunner")
+		private readonly transactionRunner?: TransactionRunner,
 	) {}
+
+	private async validarReferencias(
+		dto: ConsumirInsumoInputDto,
+		actor: Actor,
+	): Promise<void> {
+		const usuarioFilter = esAdmin(actor) ? {} : { usuarioId: actor.id };
+		if (dto.ganadoId !== undefined) {
+			const ganado = await db().ganado.findFirst({
+				where: {
+					id: dto.ganadoId,
+					...(!esAdmin(actor) && { terreno: { usuarioId: actor.id } }),
+				},
+				select: { id: true },
+			});
+			if (!ganado) {
+				throw new BaseError(
+					`Ganado con ID ${dto.ganadoId} no fue encontrado`,
+					404,
+				);
+			}
+		}
+		if (dto.terrenoId !== undefined) {
+			const terreno = await db().terreno.findFirst({
+				where: { id: dto.terrenoId, ...usuarioFilter },
+				select: { id: true },
+			});
+			if (!terreno) {
+				throw new BaseError(
+					`Terreno con ID ${dto.terrenoId} no fue encontrado`,
+					404,
+				);
+			}
+		}
+		if (dto.loteId !== undefined) {
+			const lote = await db().lote.findFirst({
+				where: { id: dto.loteId, ...usuarioFilter },
+				select: { id: true },
+			});
+			if (!lote) {
+				throw new BaseError(`Lote con ID ${dto.loteId} no fue encontrado`, 404);
+			}
+		}
+	}
 
 	public async run(
 		id: number,
@@ -36,22 +92,56 @@ export class ConsumirInsumoUseCase {
 			throw new InsumoNotFoundError(id);
 		}
 
+		const actor: Actor = { id: usuarioId, role: rol };
 		assertPuedeAcceder(
-			{ id: usuarioId, role: rol },
+			actor,
 			insumo.getUsuarioId(),
 			"No tienes permiso para consumir este insumo",
 		);
 
-		// Validación temprana con el stock leído (cantidad válida y stock suficiente)
 		insumo.validarDescuento(dto.cantidad);
-
-		// Descuento atómico: si otra petición consumió stock entretanto, no se aplica
-		const saved = await this.insumoRepository.descontarStock(id, dto.cantidad);
-		if (!saved) {
-			throw new InsumoStockInsuficienteError(
-				`Stock insuficiente para descontar ${dto.cantidad} ${insumo.getUnidadMedida()}`,
-			);
+		if (
+			dto.ganadoId !== undefined ||
+			dto.terrenoId !== undefined ||
+			dto.loteId !== undefined
+		) {
+			await this.validarReferencias(dto, actor);
 		}
+
+		const runTx = this.transactionRunner
+			? this.transactionRunner.run.bind(this.transactionRunner)
+			: <T>(fn: () => Promise<T>) => fn();
+
+		const saved = await runTx(async () => {
+			const updated = await this.insumoRepository.descontarStock(
+				id,
+				dto.cantidad,
+			);
+			if (!updated) {
+				throw new InsumoStockInsuficienteError(
+					`Stock insuficiente para descontar ${dto.cantidad} ${insumo.getUnidadMedida()}`,
+				);
+			}
+
+			if (this.movimientoRepository) {
+				await this.movimientoRepository.registrar(
+					MovimientoInsumo.create({
+						insumoId: id,
+						tipo: "SALIDA",
+						cantidad: dto.cantidad,
+						costoUnitario: insumo.getCostoUnitario(),
+						motivo: dto.motivo?.trim() || "Consumo manual de inventario",
+						referenciaTipo: "CONSUMO_MANUAL",
+						ganadoId: dto.ganadoId ?? null,
+						terrenoId: dto.terrenoId ?? null,
+						loteId: dto.loteId ?? null,
+						usuarioId,
+					}),
+				);
+			}
+
+			return updated;
+		});
 
 		if (saved.esBajoStock()) {
 			logger.warn(

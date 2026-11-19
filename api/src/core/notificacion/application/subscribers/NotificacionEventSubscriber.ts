@@ -12,6 +12,7 @@ const EVENTOS_SALUD = [
 	"sesion.programada",
 	"ganado.vacuna-pendiente",
 	"reproduccion.parto-proximo",
+	"alimentacion.autonomia-baja",
 ] as const;
 
 @injectable()

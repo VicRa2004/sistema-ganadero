@@ -1,16 +1,17 @@
 import { Hono } from "hono";
-import { injectable, inject } from "tsyringe";
-
+import { inject, injectable } from "tsyringe";
 import type { AuthMiddleware } from "@/modules/auth/infrastructure/http/middlewares/authMiddleware";
 import type { RequirePermissionMiddleware } from "@/modules/authorization/infrastructure/http/middlewares/RequirePermissionMiddleware";
-
-// Controladores CRUD de permisos
-import type { GetAllPermissionsController } from "../controllers/GetAllPermissionsController";
-import type { GetPermissionController } from "../controllers/GetPermissionController";
+import type { AssignUserDirectPermissionsController } from "../controllers/AssignUserDirectPermissionsController";
+import type { AssignUserRolesController } from "../controllers/AssignUserRolesController";
 import type { CreatePermissionController } from "../controllers/CreatePermissionController";
-import type { UpdatePermissionController } from "../controllers/UpdatePermissionController";
 import type { DeletePermissionController } from "../controllers/DeletePermissionController";
+import type { GetAllPermissionsController } from "../controllers/GetAllPermissionsController";
+import type { GetAllRolesController } from "../controllers/GetAllRolesController";
+import type { GetPermissionController } from "../controllers/GetPermissionController";
+import type { GetUserAccessController } from "../controllers/GetUserAccessController";
 import type { GetUserPermissionsController } from "../controllers/GetUserPermissionsController";
+import type { UpdatePermissionController } from "../controllers/UpdatePermissionController";
 
 @injectable()
 export class PermissionRouter {
@@ -33,6 +34,14 @@ export class PermissionRouter {
 		private readonly deletePermissionController: DeletePermissionController,
 		@inject("GetUserPermissionsController")
 		private readonly getUserPermissionsController: GetUserPermissionsController,
+		@inject("GetAllRolesController")
+		private readonly getAllRolesController: GetAllRolesController,
+		@inject("GetUserAccessController")
+		private readonly getUserAccessController: GetUserAccessController,
+		@inject("AssignUserRolesController")
+		private readonly assignUserRolesController: AssignUserRolesController,
+		@inject("AssignUserDirectPermissionsController")
+		private readonly assignUserDirectPermissionsController: AssignUserDirectPermissionsController,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -40,6 +49,31 @@ export class PermissionRouter {
 
 	private initRoutes(): void {
 		this.router.use(this.authMiddleware.handle);
+
+		// Rutas específicas ANTES de /:id para evitar colisiones
+		this.router.get(
+			"/roles",
+			this.requirePermissionMiddleware.handle("permissions", "read"),
+			this.getAllRolesController.run,
+		);
+
+		this.router.get(
+			"/users/:userId/access",
+			this.requirePermissionMiddleware.handle("permissions", "read"),
+			this.getUserAccessController.run,
+		);
+
+		this.router.put(
+			"/users/:userId/roles",
+			this.requirePermissionMiddleware.handle("permissions", "update"),
+			this.assignUserRolesController.run,
+		);
+
+		this.router.put(
+			"/users/:userId/direct",
+			this.requirePermissionMiddleware.handle("permissions", "update"),
+			this.assignUserDirectPermissionsController.run,
+		);
 
 		this.router.get("/users/:userId", this.getUserPermissionsController.run);
 

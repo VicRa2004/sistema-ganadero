@@ -40,6 +40,9 @@ import { NotificacionRouter } from "@/core/notificacion/infrastructure/http/rout
 import { SaludRouter } from "@/modules/salud/infrastructure/http/routes/SaludRouter";
 import { DashboardRouter } from "@/modules/dashboard/infrastructure/http/routes/DashboardRouter";
 import { ReproduccionRouter } from "@/modules/reproduccion/infrastructure/http/routes/ReproduccionRouter";
+import { LoteRouter } from "@/modules/lote/infrastructure/http/routes/LoteRouter";
+import { AlimentacionRouter } from "@/modules/alimentacion/infrastructure/http/routes/AlimentacionRouter";
+import { ComercialRouter } from "@/modules/comercial/infrastructure/http/routes/ComercialRouter";
 
 const app = new Hono();
 
@@ -81,7 +84,7 @@ app.use("/uploads/*", async (c, next) => {
 	c.header("X-Content-Type-Options", "nosniff");
 	c.header(
 		"Content-Security-Policy",
-		"default-src 'none'; img-src 'self'; sandbox",
+		"default-src 'none'; img-src 'self'; object-src 'self'; sandbox",
 	);
 });
 if (env.STORAGE_DRIVER === "s3") {
@@ -137,6 +140,9 @@ const notificacionRouter = container.resolve(NotificacionRouter);
 const saludRouter = container.resolve(SaludRouter);
 const dashboardRouter = container.resolve(DashboardRouter);
 const reproduccionRouter = container.resolve(ReproduccionRouter);
+const loteRouter = container.resolve(LoteRouter);
+const alimentacionRouter = container.resolve(AlimentacionRouter);
+const comercialRouter = container.resolve(ComercialRouter);
 
 // 4. Registro de rutas
 // En Hono se usa .route() en lugar de .use() para anidar otros routers
@@ -155,6 +161,9 @@ app.route("/api/notificaciones", notificacionRouter.router);
 app.route("/api/salud", saludRouter.router);
 app.route("/api/dashboard", dashboardRouter.router);
 app.route("/api/reproduccion", reproduccionRouter.router);
+app.route("/api/lotes", loteRouter.router);
+app.route("/api/alimentacion", alimentacionRouter.router);
+app.route("/api/comercial", comercialRouter.router);
 
 // 5. Servir Frontend (Vite SPA) en producción
 const distPath = existsSync(path.resolve(process.cwd(), "web/dist"))

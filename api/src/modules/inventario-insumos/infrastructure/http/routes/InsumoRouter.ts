@@ -2,16 +2,18 @@ import { Hono } from "hono";
 import { inject, injectable } from "tsyringe";
 import type { AuthMiddleware } from "@/modules/auth/infrastructure/http/middlewares/authMiddleware";
 import type { RequirePermissionMiddleware } from "@/modules/authorization/infrastructure/http/middlewares/RequirePermissionMiddleware";
-import type { RegistrarInsumoController } from "../controllers/RegistrarInsumoController";
 import type { AbastecerInsumoController } from "../controllers/AbastecerInsumoController";
-import type { ConsumirInsumoController } from "../controllers/ConsumirInsumoController";
-import type { ObtenerInsumosCriticosController } from "../controllers/ObtenerInsumosCriticosController";
-import type { ListarInsumosController } from "../controllers/ListarInsumosController";
-import type { ObtenerDetalleInsumoController } from "../controllers/ObtenerDetalleInsumoController";
-import type { EliminarInsumoController } from "../controllers/EliminarInsumoController";
 import type { ActualizarInsumoController } from "../controllers/ActualizarInsumoController";
+import type { AjustarStockInsumoController } from "../controllers/AjustarStockInsumoController";
+import type { ConsumirInsumoController } from "../controllers/ConsumirInsumoController";
+import type { EliminarInsumoController } from "../controllers/EliminarInsumoController";
 import type { ExportarInsumosCsvController } from "../controllers/ExportarInsumosCsvController";
 import type { ExportarInsumosPdfController } from "../controllers/ExportarInsumosPdfController";
+import type { ListarInsumosController } from "../controllers/ListarInsumosController";
+import type { ListarKardexInsumoController } from "../controllers/ListarKardexInsumoController";
+import type { ObtenerDetalleInsumoController } from "../controllers/ObtenerDetalleInsumoController";
+import type { ObtenerInsumosCriticosController } from "../controllers/ObtenerInsumosCriticosController";
+import type { RegistrarInsumoController } from "../controllers/RegistrarInsumoController";
 
 @injectable()
 export class InsumoRouter {
@@ -30,6 +32,10 @@ export class InsumoRouter {
 		private readonly abastecerController: AbastecerInsumoController,
 		@inject("ConsumirInsumoController")
 		private readonly consumirController: ConsumirInsumoController,
+		@inject("AjustarStockInsumoController")
+		private readonly ajustarStockController: AjustarStockInsumoController,
+		@inject("ListarKardexInsumoController")
+		private readonly listarKardexController: ListarKardexInsumoController,
 		@inject("ObtenerInsumosCriticosController")
 		private readonly obtenerCriticosController: ObtenerInsumosCriticosController,
 		@inject("ListarInsumosController")
@@ -48,10 +54,8 @@ export class InsumoRouter {
 	}
 
 	private initRoutes() {
-		// Todas las rutas requieren token JWT válido
 		this.router.use(this.authMiddleware.handle);
 
-		// Endpoints protegidos con autenticación y permisos de insumos
 		this.router.get(
 			"/",
 			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
@@ -74,6 +78,12 @@ export class InsumoRouter {
 			"/exportar/pdf",
 			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
 			this.exportarPdfController.run.bind(this.exportarPdfController),
+		);
+
+		this.router.get(
+			"/:id/kardex",
+			this.requirePermissionMiddleware.handle("inventario-insumos", "read"),
+			this.listarKardexController.run.bind(this.listarKardexController),
 		);
 
 		this.router.get(
@@ -104,6 +114,12 @@ export class InsumoRouter {
 			"/:id/consumir",
 			this.requirePermissionMiddleware.handle("inventario-insumos", "update"),
 			this.consumirController.run.bind(this.consumirController),
+		);
+
+		this.router.post(
+			"/:id/ajustar",
+			this.requirePermissionMiddleware.handle("inventario-insumos", "update"),
+			this.ajustarStockController.run.bind(this.ajustarStockController),
 		);
 
 		this.router.delete(

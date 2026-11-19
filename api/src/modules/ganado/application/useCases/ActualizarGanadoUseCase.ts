@@ -172,6 +172,7 @@ export class ActualizarGanadoUseCase {
 			nuevoPropietarioId,
 			nuevoPadreId,
 			nuevaMadreId,
+			dto.procedencia,
 		);
 
 		// 11. Guardar cambios

@@ -31,6 +31,7 @@ describe("InsumoMapper", () => {
 			lote: "LOT-ABC",
 			fechaCaducidad: fecha.toISOString(),
 			periodoRetiroDias: 0,
+			costoUnitario: 0,
 			esBajoStock: true,
 			usuarioId: 1,
 		});

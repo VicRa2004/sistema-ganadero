@@ -44,6 +44,12 @@ export class ActualizarGanadoController extends BaseController {
 			if (body.madreId !== undefined)
 				dataToValidate.madreId =
 					body.madreId === "" ? null : Number(body.madreId);
+			if (
+				body.procedencia !== undefined &&
+				typeof body.procedencia === "string"
+			)
+				dataToValidate.procedencia =
+					body.procedencia.trim() === "" ? null : body.procedencia;
 
 			const dto = validate(actualizarGanadoSchema, dataToValidate);
 			const result = await this.actualizarGanadoUseCase.run(

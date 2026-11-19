@@ -20,6 +20,7 @@ interface PrismaGanadoDetalleRecord {
 	sexo: "MACHO" | "HEMBRA";
 	imagenGanado: string | null;
 	fechaBaja: Date | null;
+	procedencia: string | null;
 	raza: { id: number; nombre: string };
 	terreno: { id: number; nombre: string; ubicacion: string };
 	propietario: { id: number; nombre: string };
@@ -75,6 +76,7 @@ export class PrismaGanadoDetalleQuery implements GanadoDetalleQuery {
 				? (retiro.hasta.toISOString().split("T")[0] ?? null)
 				: null,
 			retiroMotivo: retiro.motivo,
+			procedencia: record.procedencia ?? null,
 		};
 	}
 

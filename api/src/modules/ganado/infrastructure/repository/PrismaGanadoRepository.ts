@@ -28,6 +28,7 @@ interface PrismaGanadoRecord {
 	madreId: number | null;
 	fechaBaja: Date | null;
 	motivoBajaId: number | null;
+	procedencia: string | null;
 	deletedAt: Date | null;
 }
 
@@ -48,6 +49,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			record.madreId,
 			record.fechaBaja,
 			record.motivoBajaId,
+			record.procedencia ?? null,
 		);
 	}
 
@@ -148,6 +150,7 @@ export class PrismaGanadoRepository implements GanadoRepository {
 			madreId: ganado.getMadreId(),
 			fechaBaja: ganado.getFechaBaja(),
 			motivoBajaId: ganado.getMotivoBajaId(),
+			procedencia: ganado.getProcedencia(),
 		};
 
 		if (ganado.esNuevo()) {

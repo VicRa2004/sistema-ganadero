@@ -7,6 +7,8 @@ import type { Actor } from "@/core/shared/domain/Actor";
 import { ValidationError } from "@/core/shared/domain/error/ValidationError";
 import type { TransactionRunner } from "@/core/shared/domain/services/TransactionRunner";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
+import { MovimientoInsumo } from "@/modules/inventario-insumos/domain/MovimientoInsumo";
+import type { MovimientoInsumoRepository } from "@/modules/inventario-insumos/domain/repository/MovimientoInsumoRepository";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
 import type { SesionSanitariaRepository } from "../../domain/repository/SesionSanitariaRepository";
 import type { SesionSanitariaOutputDto } from "../dtos/SesionSanitariaDto";
@@ -28,6 +30,8 @@ export class RealizarSesionSanitariaUseCase {
 		private readonly mapper: SesionSanitariaMapper,
 		@inject("OutboxEventPublisher")
 		private readonly outbox?: OutboxEventPublisher,
+		@inject("MovimientoInsumoRepository")
+		private readonly movimientoRepository?: MovimientoInsumoRepository,
 	) {}
 
 	public async run(
@@ -79,7 +83,32 @@ export class RealizarSesionSanitariaUseCase {
 					stockFinal = actualizado.getStock();
 				}
 			}
-			return this.sesionRepository.save(sesion);
+			const savedSesion = await this.sesionRepository.save(sesion);
+
+			if (this.movimientoRepository && totalDosis > 0) {
+				const costoUnit =
+					typeof insumo.getCostoUnitario === "function"
+						? insumo.getCostoUnitario()
+						: 0;
+				const movs = aplicaciones
+					.filter((app) => app.getDosisAplicada() > 0)
+					.map((app) =>
+						MovimientoInsumo.create({
+							insumoId: insumo.getId(),
+							tipo: "SALIDA",
+							cantidad: app.getDosisAplicada(),
+							costoUnitario: costoUnit,
+							motivo: `Realización sesión sanitaria: ${sesion.getDescripcion()}`,
+							referenciaTipo: "SESION_SANITARIA",
+							referenciaId: savedSesion.getId(),
+							ganadoId: app.getGanadoId(),
+							usuarioId: actor.id,
+						}),
+					);
+				await this.movimientoRepository.registrarMuchos(movs);
+			}
+
+			return savedSesion;
 		});
 
 		if (insumoBajoStock && this.outbox) {

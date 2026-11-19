@@ -153,4 +153,45 @@ describe("Entidad de Dominio: Insumo", () => {
 			InsumoStockInsuficienteError,
 		);
 	});
+
+	it("debe manejar costoUnitario por defecto en 0, rechazar negativos y actualizarlo", () => {
+		const insumo = Insumo.create(
+			"Sal mineral",
+			"ALIMENTO",
+			100,
+			20,
+			"kg",
+			"LOT-005",
+			fechaCaducidad,
+			usuarioId,
+		);
+		expect(insumo.getCostoUnitario()).toBe(0);
+
+		expect(() =>
+			Insumo.create(
+				"Sal mineral",
+				"ALIMENTO",
+				100,
+				20,
+				"kg",
+				"LOT-005",
+				fechaCaducidad,
+				usuarioId,
+				0,
+				-10,
+			),
+		).toThrow("El costo unitario no puede ser negativo");
+
+		insumo.actualizarDatos(
+			"Sal mineral",
+			"ALIMENTO",
+			20,
+			"kg",
+			"LOT-005",
+			fechaCaducidad,
+			0,
+			12.5,
+		);
+		expect(insumo.getCostoUnitario()).toBe(12.5);
+	});
 });

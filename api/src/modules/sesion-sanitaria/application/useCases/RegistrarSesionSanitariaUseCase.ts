@@ -2,6 +2,8 @@ import { inject, injectable } from "tsyringe";
 import type { Actor } from "@/core/shared/domain/Actor";
 import type { GanadoAccessService } from "@/modules/ganado/application/services/GanadoAccessService";
 import type { InsumoRepository } from "@/modules/inventario-insumos/domain/repository/InsumoRepository";
+import { MovimientoInsumo } from "@/modules/inventario-insumos/domain/MovimientoInsumo";
+import type { MovimientoInsumoRepository } from "@/modules/inventario-insumos/domain/repository/MovimientoInsumoRepository";
 import { AplicacionSanitaria } from "../../domain/AplicacionSanitaria";
 import { SesionSanitaria } from "../../domain/SesionSanitaria";
 import { InsuficienteStockInsumoError } from "../../domain/error/InsuficienteStockInsumoError";
@@ -36,6 +38,8 @@ export class RegistrarSesionSanitariaUseCase {
 		private readonly mapper: SesionSanitariaMapper,
 		@inject("OutboxEventPublisher")
 		private readonly outbox?: OutboxEventPublisher,
+		@inject("MovimientoInsumoRepository")
+		private readonly movimientoRepository?: MovimientoInsumoRepository,
 	) {}
 
 	public async run(
@@ -137,7 +141,30 @@ export class RegistrarSesionSanitariaUseCase {
 				stockFinal = actualizado.getStock();
 			}
 
-			return this.sesionSanitariaRepository.save(sesion);
+			const savedSesion = await this.sesionSanitariaRepository.save(sesion);
+
+			if (this.movimientoRepository && aplicaciones.length > 0) {
+				const costoUnit =
+					typeof insumo.getCostoUnitario === "function"
+						? insumo.getCostoUnitario()
+						: 0;
+				const movs = aplicaciones.map((app) =>
+					MovimientoInsumo.create({
+						insumoId: insumo.getId(),
+						tipo: "SALIDA",
+						cantidad: app.getDosisAplicada(),
+						costoUnitario: costoUnit,
+						motivo: `Sesión sanitaria: ${dto.descripcion}`,
+						referenciaTipo: "SESION_SANITARIA",
+						referenciaId: savedSesion.getId(),
+						ganadoId: app.getGanadoId(),
+						usuarioId: actor.id,
+					}),
+				);
+				await this.movimientoRepository.registrarMuchos(movs);
+			}
+
+			return savedSesion;
 		});
 
 		if (insumoActualizadoBajoStock && this.outbox) {

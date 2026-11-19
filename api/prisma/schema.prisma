@@ -31,6 +31,12 @@ model User {
   planesSanitarios  PlanSanitario[]
   notificaciones    Notificacion[]
   preferenciasNotificacion PreferenciaNotificacion[]
+  transacciones     Transaccion[]
+  gastos            Gasto[]
+  movimientosInsumo MovimientoInsumo[]
+  lotes             Lote[]
+  racionesAlimentacion RacionAlimentacion[]
+  suministrosRacion SuministroRacion[]
 
   @@map("user")
 }
@@ -158,6 +164,36 @@ enum TipoNotificacion {
   SESION_PROGRAMADA
   VACUNA_PENDIENTE
   PARTO_PROXIMO
+  AUTONOMIA_ALIMENTO
+}
+
+enum TipoTransaccion {
+  COMPRA
+  VENTA
+}
+
+enum CategoriaGasto {
+  ALIMENTO
+  MEDICINA
+  VETERINARIO
+  MANO_OBRA
+  MANTENIMIENTO
+  OTRO
+}
+
+enum TipoMovimientoInsumo {
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
+
+enum PropositoLote {
+  ENGORDA
+  DESTETE
+  VIENTRES
+  RECRIA
+  LECHE
+  OTRO
 }
 
 enum TipoEventoReproductivo {
@@ -225,6 +261,11 @@ model Terreno {
   usuario            User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   ganados            Ganado[]
   planesSanitarios   PlanSanitario[]
+  gastos             Gasto[]
+  lotes              Lote[]
+  racionesAlimentacion RacionAlimentacion[]
+  suministrosRacion  SuministroRacion[]
+  movimientosInsumo  MovimientoInsumo[]
 
   @@index([usuarioId])
   @@map("terreno")
@@ -257,6 +298,7 @@ model Ganado {
   partoEventoId   Int?       @map("gan_fkparto_evento")
   fechaBaja       DateTime?  @map("gan_fecha_baja")
   motivoBajaId    Int?       @map("gan_fkmotivo_baja")
+  procedencia     String?    @map("gan_procedencia") @db.VarChar(200)
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime?  @updatedAt @map("updated_at")
   deletedAt       DateTime?  @map("deleted_at")
@@ -275,6 +317,10 @@ model Ganado {
   aplicacionesSanitarias AplicacionSanitaria[]
   tratamientosMedicos    TratamientoMedico[]
   pesajes                Pesaje[]
+  transacciones          TransaccionGanado[]
+  gastos                 Gasto[]
+  lotes                  LoteGanado[]
+  movimientosInsumo      MovimientoInsumo[]
 
   @@index([terrenoId])
   @@index([razaId])
@@ -308,15 +354,19 @@ model Insumo {
   lote              String     @map("ins_lote") @db.VarChar(50)
   fechaCaducidad    DateTime   @map("ins_fecha_caducidad")
   periodoRetiroDias Int        @default(0) @map("ins_periodo_retiro_dias")
+  costoUnitario     Decimal    @default(0) @map("ins_costo_unitario") @db.Decimal(12, 2)
   usuarioId         Int        @map("ins_fkusuario")
   createdAt         DateTime   @default(now()) @map("created_at")
   updatedAt         DateTime?  @updatedAt @map("updated_at")
   deletedAt         DateTime?  @map("deleted_at")
 
-  usuario             User                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario             User                 @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   sesionesSanitarias  SesionSanitaria[]
   tratamientosMedicos TratamientoMedico[]
   planesSanitarios    PlanSanitario[]
+  movimientos         MovimientoInsumo[]
+  raciones            RacionAlimentacion[]
+  suministros         SuministroRacion[]
 
   @@index([usuarioId])
   @@index([tipo])
@@ -513,4 +563,206 @@ model EventoOutbox {
 
   @@index([procesadoAt])
   @@map("evento_outbox")
+}
+
+// ─────────────────────────────────────────────
+//  7. Comercial, Costos, Kardex, Lotes y Alimentación
+// ─────────────────────────────────────────────
+
+model Transaccion {
+  id               Int             @id @default(autoincrement()) @map("trn_id")
+  tipo             TipoTransaccion @map("trn_tipo")
+  fecha            DateTime        @map("trn_fecha")
+  contraparte      String          @map("trn_contraparte") @db.VarChar(200)
+  total            Decimal         @map("trn_total") @db.Decimal(14, 2)
+  moneda           String          @default("MXN") @map("trn_moneda") @db.VarChar(10)
+  documento        String?         @map("trn_documento") @db.VarChar(150)
+  documentoAdjunto String?         @map("trn_documento_adjunto") @db.VarChar(255)
+  observaciones    String?         @map("trn_observaciones") @db.Text
+  usuarioId        Int             @map("trn_fkusuario")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime?       @updatedAt @map("updated_at")
+  deletedAt        DateTime?       @map("deleted_at")
+
+  usuario  User                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  detalles TransaccionGanado[]
+
+  @@index([usuarioId, fecha])
+  @@index([tipo])
+  @@index([deletedAt])
+  @@map("transaccion")
+}
+
+model TransaccionGanado {
+  id            Int     @id @default(autoincrement()) @map("trg_id")
+  transaccionId Int     @map("trg_fktransaccion")
+  ganadoId      Int     @map("trg_fkganado")
+  precio        Decimal @map("trg_precio") @db.Decimal(14, 2)
+  pesoRegistro  Float   @map("trg_peso_registro")
+  procedencia   String? @map("trg_procedencia") @db.VarChar(200)
+
+  transaccion Transaccion @relation(fields: [transaccionId], references: [id], onDelete: Cascade)
+  ganado      Ganado      @relation(fields: [ganadoId], references: [id], onDelete: Restrict)
+
+  @@unique([transaccionId, ganadoId])
+  @@index([ganadoId])
+  @@map("transaccion_ganado")
+}
+
+model Gasto {
+  id            Int            @id @default(autoincrement()) @map("gas_id")
+  categoria     CategoriaGasto @map("gas_categoria")
+  concepto      String         @map("gas_concepto") @db.VarChar(200)
+  monto         Decimal        @map("gas_monto") @db.Decimal(14, 2)
+  fecha         DateTime       @map("gas_fecha")
+  terrenoId     Int?           @map("gas_fkterreno")
+  ganadoId      Int?           @map("gas_fkganado")
+  loteId        Int?           @map("gas_fklote")
+  observaciones String?        @map("gas_observaciones") @db.Text
+  usuarioId     Int            @map("gas_fkusuario")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
+
+  usuario User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  terreno Terreno? @relation(fields: [terrenoId], references: [id], onDelete: SetNull)
+  ganado  Ganado?  @relation(fields: [ganadoId], references: [id], onDelete: Restrict)
+  lote    Lote?    @relation(fields: [loteId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, fecha])
+  @@index([categoria])
+  @@index([terrenoId])
+  @@index([ganadoId])
+  @@index([loteId])
+  @@index([deletedAt])
+  @@map("gasto")
+}
+
+model MovimientoInsumo {
+  id             Int                  @id @default(autoincrement()) @map("mov_id")
+  insumoId       Int                  @map("mov_fkinsumo")
+  tipo           TipoMovimientoInsumo @map("mov_tipo")
+  cantidad       Decimal              @map("mov_cantidad") @db.Decimal(12, 3)
+  delta          Decimal              @map("mov_delta") @db.Decimal(12, 3)
+  costoUnitario  Decimal?             @map("mov_costo_unitario") @db.Decimal(12, 2)
+  motivo         String               @map("mov_motivo") @db.VarChar(255)
+  referenciaTipo String?              @map("mov_ref_tipo") @db.VarChar(50)
+  referenciaId   Int?                 @map("mov_ref_id")
+  ganadoId       Int?                 @map("mov_fkganado")
+  terrenoId      Int?                 @map("mov_fkterreno")
+  loteId         Int?                 @map("mov_fklote")
+  usuarioId      Int                  @map("mov_fkusuario")
+  fecha          DateTime             @default(now()) @map("mov_fecha")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  insumo  Insumo   @relation(fields: [insumoId], references: [id], onDelete: Cascade)
+  ganado  Ganado?  @relation(fields: [ganadoId], references: [id], onDelete: SetNull)
+  terreno Terreno? @relation(fields: [terrenoId], references: [id], onDelete: SetNull)
+  lote    Lote?    @relation(fields: [loteId], references: [id], onDelete: SetNull)
+  usuario User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([insumoId, fecha])
+  @@index([ganadoId])
+  @@index([terrenoId])
+  @@index([loteId])
+  @@index([referenciaTipo, referenciaId])
+  @@map("movimiento_insumo")
+}
+
+model Lote {
+  id          Int           @id @default(autoincrement()) @map("lot_id")
+  nombre      String        @map("lot_nombre") @db.VarChar(150)
+  proposito   PropositoLote @default(ENGORDA) @map("lot_proposito")
+  descripcion String?       @map("lot_descripcion") @db.Text
+  terrenoId   Int?          @map("lot_fkterreno")
+  activo      Boolean       @default(true) @map("lot_activo")
+  usuarioId   Int           @map("lot_fkusuario")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime?     @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+
+  usuario           User                 @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  terreno           Terreno?             @relation(fields: [terrenoId], references: [id], onDelete: SetNull)
+  miembros          LoteGanado[]
+  gastos            Gasto[]
+  raciones          RacionAlimentacion[]
+  suministros       SuministroRacion[]
+  movimientosInsumo MovimientoInsumo[]
+
+  @@index([usuarioId])
+  @@index([terrenoId])
+  @@index([proposito])
+  @@index([deletedAt])
+  @@map("lote")
+}
+
+model LoteGanado {
+  loteId       Int      @map("lgn_fklote")
+  ganadoId     Int      @map("lgn_fkganado")
+  fechaIngreso DateTime @default(now()) @map("lgn_fecha_ingreso")
+
+  lote   Lote   @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  ganado Ganado @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+
+  @@id([loteId, ganadoId])
+  @@index([ganadoId])
+  @@map("lote_ganado")
+}
+
+model RacionAlimentacion {
+  id                      Int       @id @default(autoincrement()) @map("rac_id")
+  nombre                  String    @map("rac_nombre") @db.VarChar(150)
+  insumoId                Int       @map("rac_fkinsumo")
+  terrenoId               Int?      @map("rac_fkterreno")
+  loteId                  Int?      @map("rac_fklote")
+  cantidadDiariaPorAnimal Decimal   @map("rac_cantidad_diaria_animal") @db.Decimal(12, 3)
+  diasAlertaAutonomia     Int       @default(7) @map("rac_dias_alerta_autonomia")
+  activo                  Boolean   @default(true) @map("rac_activo")
+  observaciones           String?   @map("rac_observaciones") @db.Text
+  usuarioId               Int       @map("rac_fkusuario")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime? @updatedAt @map("updated_at")
+  deletedAt               DateTime? @map("deleted_at")
+
+  usuario     User               @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  insumo      Insumo             @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  terreno     Terreno?           @relation(fields: [terrenoId], references: [id], onDelete: SetNull)
+  lote        Lote?              @relation(fields: [loteId], references: [id], onDelete: SetNull)
+  suministros SuministroRacion[]
+
+  @@index([usuarioId])
+  @@index([insumoId])
+  @@index([terrenoId])
+  @@index([loteId])
+  @@index([activo])
+  @@index([deletedAt])
+  @@map("racion_alimentacion")
+}
+
+model SuministroRacion {
+  id               Int      @id @default(autoincrement()) @map("sum_id")
+  racionId         Int      @map("sum_fkracion")
+  insumoId         Int      @map("sum_fkinsumo")
+  terrenoId        Int?     @map("sum_fkterreno")
+  loteId           Int?     @map("sum_fklote")
+  fecha            DateTime @map("sum_fecha")
+  cantidadAnimales Int      @map("sum_cantidad_animales")
+  cantidadTotal    Decimal  @map("sum_cantidad_total") @db.Decimal(12, 3)
+  costoTotal       Decimal  @map("sum_costo_total") @db.Decimal(14, 2)
+  observaciones    String?  @map("sum_observaciones") @db.Text
+  usuarioId        Int      @map("sum_fkusuario")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  racion  RacionAlimentacion @relation(fields: [racionId], references: [id], onDelete: Restrict)
+  insumo  Insumo             @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+  terreno Terreno?           @relation(fields: [terrenoId], references: [id], onDelete: SetNull)
+  lote    Lote?              @relation(fields: [loteId], references: [id], onDelete: SetNull)
+  usuario User               @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([racionId, fecha])
+  @@index([insumoId])
+  @@index([terrenoId])
+  @@index([loteId])
+  @@index([usuarioId])
+  @@map("suministro_racion")
 }

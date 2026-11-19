@@ -6,6 +6,7 @@ import {
 	type OutboxEventPublisher,
 } from "@/core/notificacion/domain/events/SaludEvents";
 import type { GenerarSesionesPlanesUseCase } from "@/modules/sesion-sanitaria/application/useCases/GenerarSesionesPlanesUseCase";
+import type { AutonomiaAlimentoQuery } from "@/modules/alimentacion/application/queries/AutonomiaAlimentoQuery";
 
 export interface EvaluacionAlertasResumenDto {
 	eventosEmitidos: number;
@@ -20,6 +21,8 @@ export class EvaluarAlertasSanitariasUseCase {
 		private readonly outbox: OutboxEventPublisher,
 		@inject("GenerarSesionesPlanesUseCase")
 		private readonly generarSesionesPlanesUseCase: GenerarSesionesPlanesUseCase,
+		@inject("AutonomiaAlimentoQuery")
+		private readonly autonomiaAlimentoQuery?: AutonomiaAlimentoQuery,
 	) {}
 
 	public async run(actor?: Actor): Promise<EvaluacionAlertasResumenDto> {
@@ -244,8 +247,6 @@ export class EvaluarAlertasSanitariasUseCase {
 			eventosEmitidos++;
 		}
 
-		const outboxReprocesados = await this.outbox.reprocesarPendientes();
-
 		// 6. Partos próximos estimados (próximos 14 días) sin parto ni aborto posterior
 		const limitePartos = new Date(hoyInicio);
 		limitePartos.setDate(limitePartos.getDate() + 14);
@@ -303,6 +304,30 @@ export class EvaluarAlertasSanitariasUseCase {
 			);
 			eventosEmitidos++;
 		}
+
+		// 7. Autonomía baja de alimento (días restantes <= umbral configurado en raciones activas)
+		if (this.autonomiaAlimentoQuery) {
+			const autonomias =
+				await this.autonomiaAlimentoQuery.obtenerAutonomia(actor);
+			const hoyKey = hoyInicio.toISOString().slice(0, 10);
+			for (const item of autonomias) {
+				if (!item.enAlerta || item.diasAutonomia === null) continue;
+				await this.outbox.publish(
+					new AlertaNotificacionDomainEvent("alimentacion.autonomia-baja", {
+						usuarioId: item.usuarioId,
+						tipo: "AUTONOMIA_ALIMENTO",
+						titulo: `Autonomía baja de alimento: ${item.insumoNombre}`,
+						cuerpo: `Quedan aprox. ${item.diasAutonomia} día(s) de "${item.insumoNombre}" (${item.stock} ${item.unidadMedida} / consumo ${item.consumoDiarioEsperado} ${item.unidadMedida}/día).`,
+						claveDeduplicacion: `autonomia-alimento:${item.insumoId}:${hoyKey}`,
+						referenciaTipo: "INSUMO",
+						referenciaId: item.insumoId,
+					}),
+				);
+				eventosEmitidos++;
+			}
+		}
+
+		const outboxReprocesados = await this.outbox.reprocesarPendientes();
 
 		return {
 			eventosEmitidos,

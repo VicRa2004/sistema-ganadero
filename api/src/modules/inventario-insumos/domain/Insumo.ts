@@ -15,6 +15,7 @@ export class Insumo extends Entity {
 	private fechaCaducidad: Date;
 	private usuarioId: number;
 	private periodoRetiroDias: number;
+	private costoUnitario: number;
 
 	private constructor(
 		id: EntityId,
@@ -27,6 +28,7 @@ export class Insumo extends Entity {
 		fechaCaducidad: Date,
 		usuarioId: number,
 		periodoRetiroDias = 0,
+		costoUnitario = 0,
 	) {
 		super(id);
 		this.nombre = nombre;
@@ -38,6 +40,7 @@ export class Insumo extends Entity {
 		this.fechaCaducidad = fechaCaducidad;
 		this.usuarioId = usuarioId;
 		this.periodoRetiroDias = periodoRetiroDias;
+		this.costoUnitario = costoUnitario;
 	}
 
 	public static create(
@@ -50,6 +53,7 @@ export class Insumo extends Entity {
 		fechaCaducidad: Date,
 		usuarioId: number,
 		periodoRetiroDias = 0,
+		costoUnitario = 0,
 	): Insumo {
 		if (!nombre || nombre.trim() === "") {
 			throw new ValidationError("El nombre del insumo no puede estar vacío");
@@ -74,6 +78,9 @@ export class Insumo extends Entity {
 				"El período de retiro debe ser un entero mayor o igual a 0",
 			);
 		}
+		if (Number.isNaN(costoUnitario) || costoUnitario < 0) {
+			throw new ValidationError("El costo unitario no puede ser negativo");
+		}
 		return new Insumo(
 			new EntityId(),
 			nombre,
@@ -85,6 +92,7 @@ export class Insumo extends Entity {
 			fechaCaducidad,
 			usuarioId,
 			periodoRetiroDias,
+			costoUnitario,
 		);
 	}
 
@@ -99,6 +107,7 @@ export class Insumo extends Entity {
 		fechaCaducidad: Date,
 		usuarioId: number,
 		periodoRetiroDias = 0,
+		costoUnitario = 0,
 	): Insumo {
 		return new Insumo(
 			new EntityId(id),
@@ -111,6 +120,7 @@ export class Insumo extends Entity {
 			fechaCaducidad,
 			usuarioId,
 			periodoRetiroDias,
+			costoUnitario,
 		);
 	}
 
@@ -148,6 +158,10 @@ export class Insumo extends Entity {
 
 	public getPeriodoRetiroDias(): number {
 		return this.periodoRetiroDias;
+	}
+
+	public getCostoUnitario(): number {
+		return this.costoUnitario;
 	}
 
 	public esNuevo(): boolean {
@@ -199,6 +213,7 @@ export class Insumo extends Entity {
 		lote: string,
 		fechaCaducidad: Date,
 		periodoRetiroDias?: number,
+		costoUnitario?: number,
 	): void {
 		if (!nombre || nombre.trim() === "") {
 			throw new ValidationError("El nombre del insumo no puede estar vacío");
@@ -220,6 +235,12 @@ export class Insumo extends Entity {
 				"El período de retiro debe ser un entero mayor o igual a 0",
 			);
 		}
+		if (
+			costoUnitario !== undefined &&
+			(Number.isNaN(costoUnitario) || costoUnitario < 0)
+		) {
+			throw new ValidationError("El costo unitario no puede ser negativo");
+		}
 		this.nombre = nombre;
 		this.tipo = tipo;
 		this.stockMinimo = stockMinimo;
@@ -228,6 +249,9 @@ export class Insumo extends Entity {
 		this.fechaCaducidad = fechaCaducidad;
 		if (periodoRetiroDias !== undefined) {
 			this.periodoRetiroDias = periodoRetiroDias;
+		}
+		if (costoUnitario !== undefined) {
+			this.costoUnitario = costoUnitario;
 		}
 	}
 }

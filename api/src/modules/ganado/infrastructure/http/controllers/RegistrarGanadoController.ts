@@ -32,6 +32,10 @@ export class RegistrarGanadoController extends BaseController {
 						: undefined,
 				padreId: body.padreId ? Number(body.padreId) : null,
 				madreId: body.madreId ? Number(body.madreId) : null,
+				procedencia:
+					typeof body.procedencia === "string" && body.procedencia.trim() !== ""
+						? body.procedencia
+						: null,
 				imagenGanado:
 					body.imagenGanado === "" || typeof body.imagenGanado === "string"
 						? undefined

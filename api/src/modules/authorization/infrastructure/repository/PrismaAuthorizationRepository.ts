@@ -1,31 +1,21 @@
 import { injectable } from "tsyringe";
 import { prisma } from "@/core/config/prisma";
-import type { AuthorizationRepository } from "../../domain/repository/AuthorizationRepository";
-import { Permission } from "../../domain/Permission";
-import { PermissionNotFoundError } from "../../domain/error/PermissionNotFoundError";
 import { PermissionAlreadyExistsError } from "../../domain/error/PermissionAlreadyExistsError";
+import { PermissionNotFoundError } from "../../domain/error/PermissionNotFoundError";
+import { Permission } from "../../domain/Permission";
+import type {
+	AuthorizationRepository,
+	RoleSummary,
+	UserAccessSummary,
+} from "../../domain/repository/AuthorizationRepository";
 
-/**
- * Implementación Prisma del repositorio de autorización.
- *
- * Algoritmo de resolución de permisos efectivos:
- * 1. Obtiene todos los permisos que el usuario hereda de sus roles.
- * 2. Obtiene los permisos directos del usuario (UserPermission).
- * 3. Fusiona ambos conjuntos:
- *    - Un permiso directo con `granted = true` lo añade al set.
- *    - Un permiso directo con `granted = false` lo ELIMINA del set
- *      (permite revocar granularmente un permiso de rol).
- */
 @injectable()
 export class PrismaAuthorizationRepository implements AuthorizationRepository {
-	// ── Permisos efectivos ──────────────────────────────────────────────────────
-
 	async getEffectivePermissions(userId: number): Promise<Permission[]> {
 		const permissionSelect = {
 			select: { id: true, resource: true, action: true },
 		} as const;
 
-		// Una sola consulta: permisos heredados por los roles y excepciones directas del usuario
 		const user = await prisma.user.findUnique({
 			where: { id: userId },
 			select: {
@@ -34,6 +24,7 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 					select: {
 						role: {
 							select: {
+								isActive: true,
 								permissions: {
 									select: { permission: permissionSelect },
 								},
@@ -47,20 +38,14 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 			},
 		});
 
-		if (!user) {
+		if (!user || !user.isActive) {
 			return [];
 		}
 
-		// Un usuario desactivado no conserva ningún permiso, aunque su access token siga vigente
-		if (!user.isActive) {
-			return [];
-		}
-
-		// Construir un mapa de permisos usando "resource:action" como clave
 		const permissionMap = new Map<string, Permission>();
 
-		// Agregar los permisos que vienen de todos los roles del usuario
 		for (const userRole of user.roles) {
+			if (!userRole.role.isActive) continue;
 			for (const rolePermission of userRole.role.permissions) {
 				const p = rolePermission.permission;
 				permissionMap.set(
@@ -70,19 +55,16 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 			}
 		}
 
-		// Aplicar las excepciones directas del usuario
 		for (const userPerm of user.directPermissions) {
 			const p = userPerm.permission;
 			const key = `${p.resource}:${p.action}`;
 
 			if (userPerm.granted) {
-				// Conceder explícitamente (útil si el permiso no viene del rol)
 				permissionMap.set(
 					key,
 					Permission.reconstitute(p.id, p.resource, p.action),
 				);
 			} else {
-				// Denegar explícitamente (revoca el permiso aunque lo tenga por rol)
 				permissionMap.delete(key);
 			}
 		}
@@ -90,7 +72,122 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 		return [...permissionMap.values()];
 	}
 
-	// ── CRUD de permisos ────────────────────────────────────────────────────────
+	async findAllRoles(): Promise<RoleSummary[]> {
+		const roles = await prisma.role.findMany({
+			where: { isActive: true },
+			orderBy: { id: "asc" },
+			include: {
+				permissions: { select: { permissionId: true } },
+			},
+		});
+
+		return roles.map((r) => ({
+			id: r.id,
+			name: r.name,
+			description: r.description,
+			isActive: r.isActive,
+			permissionIds: r.permissions.map((p) => p.permissionId),
+		}));
+	}
+
+	async findRolesByIds(roleIds: number[]): Promise<RoleSummary[]> {
+		if (roleIds.length === 0) return [];
+		const roles = await prisma.role.findMany({
+			where: { id: { in: roleIds }, isActive: true },
+			include: { permissions: { select: { permissionId: true } } },
+		});
+		return roles.map((r) => ({
+			id: r.id,
+			name: r.name,
+			description: r.description,
+			isActive: r.isActive,
+			permissionIds: r.permissions.map((p) => p.permissionId),
+		}));
+	}
+
+	async findPermissionsByIds(permissionIds: number[]): Promise<Permission[]> {
+		if (permissionIds.length === 0) return [];
+		const perms = await prisma.permission.findMany({
+			where: { id: { in: permissionIds } },
+		});
+		return perms.map((p) =>
+			Permission.reconstitute(p.id, p.resource, p.action),
+		);
+	}
+
+	async getUserAccess(userId: number): Promise<UserAccessSummary | null> {
+		const user = await prisma.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				roles: {
+					select: {
+						role: {
+							select: { id: true, name: true, description: true },
+						},
+					},
+				},
+				directPermissions: {
+					select: {
+						granted: true,
+						permission: {
+							select: { id: true, resource: true, action: true },
+						},
+					},
+				},
+			},
+		});
+
+		if (!user) return null;
+
+		const effectivePermissions = await this.getEffectivePermissions(userId);
+
+		return {
+			userId: user.id,
+			roles: user.roles.map((r) => ({
+				id: r.role.id,
+				name: r.role.name,
+				description: r.role.description,
+			})),
+			directPermissions: user.directPermissions.map((dp) => ({
+				permissionId: dp.permission.id,
+				resource: dp.permission.resource,
+				action: dp.permission.action,
+				granted: dp.granted,
+			})),
+			effectivePermissions,
+		};
+	}
+
+	async setUserRoles(userId: number, roleIds: number[]): Promise<void> {
+		const uniqueIds = [...new Set(roleIds)];
+		await prisma.$transaction(async (tx) => {
+			await tx.userRole.deleteMany({ where: { userId } });
+			if (uniqueIds.length > 0) {
+				await tx.userRole.createMany({
+					data: uniqueIds.map((roleId) => ({ userId, roleId })),
+				});
+			}
+		});
+	}
+
+	async setUserDirectPermissions(
+		userId: number,
+		overrides: Array<{ permissionId: number; granted: boolean }>,
+	): Promise<void> {
+		await prisma.$transaction(async (tx) => {
+			await tx.userPermission.deleteMany({ where: { userId } });
+			if (overrides.length > 0) {
+				await tx.userPermission.createMany({
+					data: overrides.map((o) => ({
+						userId,
+						permissionId: o.permissionId,
+						granted: o.granted,
+					})),
+				});
+			}
+		});
+	}
 
 	async findAll(): Promise<Permission[]> {
 		const records = await prisma.permission.findMany({
@@ -104,14 +201,11 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 
 	async findById(id: number): Promise<Permission | null> {
 		const record = await prisma.permission.findUnique({ where: { id } });
-
 		if (!record) return null;
-
 		return Permission.reconstitute(record.id, record.resource, record.action);
 	}
 
 	async create(resource: string, action: string): Promise<Permission> {
-		// Verificar unicidad antes de insertar (para devolver error de dominio claro)
 		const existing = await prisma.permission.findUnique({
 			where: { resource_action: { resource, action } },
 		});
@@ -133,12 +227,10 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 		action: string,
 	): Promise<Permission> {
 		const existing = await prisma.permission.findUnique({ where: { id } });
-
 		if (!existing) {
 			throw new PermissionNotFoundError(id);
 		}
 
-		// Verificar que la nueva combinación no choque con otro registro
 		const conflict = await prisma.permission.findFirst({
 			where: { resource, action, NOT: { id } },
 		});
@@ -157,11 +249,9 @@ export class PrismaAuthorizationRepository implements AuthorizationRepository {
 
 	async delete(id: number): Promise<void> {
 		const existing = await prisma.permission.findUnique({ where: { id } });
-
 		if (!existing) {
 			throw new PermissionNotFoundError(id);
 		}
-
 		await prisma.permission.delete({ where: { id } });
 	}
 }

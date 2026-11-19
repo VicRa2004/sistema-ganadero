@@ -18,6 +18,7 @@ interface PrismaInsumoRecord {
 	lote: string;
 	fechaCaducidad: Date;
 	periodoRetiroDias: number;
+	costoUnitario: Prisma.Decimal;
 	usuarioId: number;
 	deletedAt: Date | null;
 }
@@ -36,6 +37,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 			record.fechaCaducidad,
 			record.usuarioId,
 			record.periodoRetiroDias ?? 0,
+			record.costoUnitario?.toNumber() ?? 0,
 		);
 	}
 
@@ -93,7 +95,6 @@ export class PrismaInsumoRepository implements InsumoRepository {
 
 	public async findCriticos(actor: Actor): Promise<Insumo[]> {
 		const whereClause: Prisma.InsumoWhereInput = {
-			// Comparación columna con columna en la BD: stock <= stock_minimo
 			stock: { lte: db().insumo.fields.stockMinimo },
 		};
 		const usuarioId = usuarioIdDeFiltro(actor);
@@ -123,14 +124,14 @@ export class PrismaInsumoRepository implements InsumoRepository {
 					lote: insumo.getLote(),
 					fechaCaducidad: insumo.getFechaCaducidad(),
 					periodoRetiroDias: insumo.getPeriodoRetiroDias(),
+					costoUnitario: insumo.getCostoUnitario(),
 					usuarioId: insumo.getUsuarioId(),
 				},
 			});
 			return this.toDomain(record as unknown as PrismaInsumoRecord);
 		}
 
-		// El stock no se escribe aquí: se modifica solo con descontarStock/adicionarStock
-		// (operaciones atómicas) para no pisar movimientos concurrentes con un valor viejo.
+		// El stock no se escribe aquí: se modifica solo con operaciones atómicas
 		const record = await db().insumo.update({
 			where: { id: insumo.getId() },
 			data: {
@@ -141,6 +142,7 @@ export class PrismaInsumoRepository implements InsumoRepository {
 				lote: insumo.getLote(),
 				fechaCaducidad: insumo.getFechaCaducidad(),
 				periodoRetiroDias: insumo.getPeriodoRetiroDias(),
+				costoUnitario: insumo.getCostoUnitario(),
 				usuarioId: insumo.getUsuarioId(),
 			},
 		});
@@ -151,7 +153,6 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		id: number,
 		cantidad: number,
 	): Promise<Insumo | null> {
-		// Un único UPDATE condicionado: nunca deja el stock en negativo, ni siquiera con concurrencia
 		const { count } = await db().insumo.updateMany({
 			where: { id, stock: { gte: cantidad } },
 			data: { stock: { decrement: cantidad } },
@@ -171,6 +172,25 @@ export class PrismaInsumoRepository implements InsumoRepository {
 		});
 		if (count !== 1) return null;
 
+		return this.findById(id);
+	}
+
+	public async ajustarStock(id: number, delta: number): Promise<Insumo | null> {
+		if (delta < 0) {
+			return this.descontarStock(id, Math.abs(delta));
+		}
+		return this.adicionarStock(id, delta);
+	}
+
+	public async actualizarCostoUnitario(
+		id: number,
+		costoUnitario: number,
+	): Promise<Insumo | null> {
+		const { count } = await db().insumo.updateMany({
+			where: { id },
+			data: { costoUnitario },
+		});
+		if (count !== 1) return null;
 		return this.findById(id);
 	}
 

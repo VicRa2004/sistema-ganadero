@@ -58,7 +58,7 @@ function InsumosPage() {
 	const criticosCount = insumosCriticos?.length ?? 0;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 py-6">
 			{/* Encabezado y botón de acción */}
 			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 				<div>

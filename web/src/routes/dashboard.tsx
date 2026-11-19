@@ -25,7 +25,8 @@ function DashboardLayout() {
 				<Sidebar />
 
 				{/* Área de contenido principal */}
-				<div className="flex-1 min-w-0 px-3.5 sm:px-6 py-4 sm:py-6 overflow-auto">
+				{/* Sin padding superior: cada página ya trae el suyo */}
+				<div className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
 					<Outlet />
 				</div>
 			</div>

@@ -136,7 +136,7 @@ function DashboardIndexComponent() {
 	};
 
 	return (
-		<div className="space-y-6 sm:space-y-10 animate-fade-in text-foreground">
+		<div className="space-y-6 sm:space-y-10 py-6 animate-fade-in text-foreground">
 			{/* Bienvenida */}
 			<section className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 pb-4 sm:pb-6 border-b border-border">
 				<div className="space-y-1 text-left">
@@ -195,7 +195,7 @@ function DashboardIndexComponent() {
 
 						return (
 							<Card
-								key={op.resource}
+								key={op.title}
 								className="border border-border bg-card/45 hover:bg-card/85 transition-all duration-300 shadow-sm relative overflow-hidden group"
 							>
 								{/* Adorno visual superior */}

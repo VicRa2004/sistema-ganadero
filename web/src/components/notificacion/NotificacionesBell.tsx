@@ -106,7 +106,7 @@ export function NotificacionesBell() {
 				onClick={() => setOpen(true)}
 				aria-label={`Notificaciones (${noLeidas} sin leer)`}
 				title="Notificaciones y alertas sanitarias"
-				className="relative h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground cursor-pointer"
+				className="relative size-10 sm:size-9 text-muted-foreground hover:text-foreground cursor-pointer"
 			>
 				<Bell className="h-4 w-4" />
 				{noLeidas > 0 && (

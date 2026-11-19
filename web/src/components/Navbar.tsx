@@ -1,11 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { usePermissions } from "@/modules/auth/hooks/usePermissions";
 import { useLogout } from "@/modules/auth/hooks/useLogout";
-import { MobileSidebarTrigger } from "@/components/Sidebar";
+import { MobileSidebarTrigger, Logo } from "@/components/Sidebar";
 import { NotificacionesBell } from "@/components/notificacion/NotificacionesBell";
 import {
 	Sun,
@@ -15,76 +24,74 @@ import {
 	LayoutDashboard,
 	Search,
 	X,
+	UserRound,
+	ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALLOW_PUBLIC_REGISTER } from "@/config/features";
 
+type Theme = "light" | "dark";
+
+function useTheme() {
+	const [theme, setTheme] = useState<Theme>(() =>
+		document.documentElement.classList.contains("dark") ? "dark" : "light",
+	);
+
+	useEffect(() => {
+		document.documentElement.classList.toggle("dark", theme === "dark");
+		try {
+			localStorage.setItem("theme", theme);
+		} catch {
+			// almacenamiento bloqueado: el tema solo dura esta sesión
+		}
+	}, [theme]);
+
+	return {
+		theme,
+		toggleTheme: () => setTheme((t) => (t === "dark" ? "light" : "dark")),
+	};
+}
+
 export function Navbar() {
 	const user = useAuthStore((state) => state.user);
-	const accessToken = useAuthStore((state) => state.accessToken);
-	const isAuthenticated = !!accessToken;
+	const isAuthenticated = useAuthStore((state) => !!state.accessToken);
 
 	const navigate = useNavigate();
 	const { can } = usePermissions();
-	const canReadGanado = can("ganado", "read");
+	const canSearch = isAuthenticated && can("ganado", "read");
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 	const [showMobileSearch, setShowMobileSearch] = useState(false);
+	const { theme, toggleTheme } = useTheme();
 
-	const [theme, setTheme] = useState<"light" | "dark">(() => {
-		const saved = localStorage.getItem("theme");
-		if (saved === "light" || saved === "dark") return saved;
-		return window.matchMedia("(prefers-color-scheme: dark)").matches
-			? "dark"
-			: "light";
-	});
-
-	useEffect(() => {
-		const root = window.document.documentElement;
-		if (theme === "dark") {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-		localStorage.setItem("theme", theme);
-	}, [theme]);
-
-	const toggleTheme = () => {
-		setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+	const buscarArete = (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const campo = e.currentTarget.elements.namedItem(
+			"arete",
+		) as HTMLInputElement;
+		const val = campo.value.trim();
+		if (!val) return;
+		navigate({ to: "/dashboard/ganado", search: { identificador: val } });
+		setShowMobileSearch(false);
 	};
 
+	const isAdmin = user?.role === "ADMIN";
 	const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+	const ThemeIcon = theme === "dark" ? Sun : Moon;
 
 	return (
-		<header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-			<div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+		<header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/70">
+			<div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center gap-2">
 				{showMobileSearch ? (
-					/* Vista expandida de búsqueda en móvil */
-					<div className="flex-1 flex items-center gap-2">
-						<form
-							className="relative flex-1 flex items-center"
-							onSubmit={(e) => {
-								e.preventDefault();
-								const campo = e.currentTarget.elements.namedItem(
-									"arete",
-								) as HTMLInputElement;
-								const val = campo.value.trim();
-								if (val) {
-									navigate({
-										to: "/dashboard/ganado",
-										search: { identificador: val },
-									});
-									setShowMobileSearch(false);
-								}
-							}}
-						>
-							<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+					<search className="flex-1 flex items-center gap-2 sm:hidden">
+						<form className="relative flex-1" onSubmit={buscarArete}>
+							<Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 							<Input
 								name="arete"
 								type="search"
 								autoFocus
 								aria-label="Buscar ganado por arete"
-								placeholder="Buscar por arete (Ej: AR-01)..."
-								className="h-9 w-full pl-8 pr-8 text-xs"
+								placeholder="Buscar por arete (Ej: AR-01)"
+								className="h-10 w-full pl-9"
 							/>
 						</form>
 						<Button
@@ -93,193 +100,181 @@ export function Navbar() {
 							size="icon"
 							onClick={() => setShowMobileSearch(false)}
 							aria-label="Cerrar búsqueda"
-							className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
+							className="size-10 shrink-0"
 						>
-							<X className="h-4 w-4" />
+							<X className="size-5" />
 						</Button>
-					</div>
+					</search>
 				) : (
 					<>
-						{/* Lado izquierdo: Hamburger (móvil) + Logo */}
-						<div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+						{/* Izquierda: menú (móvil) + logo */}
+						<div className="flex items-center gap-1 min-w-0 flex-1">
 							{isAuthenticated && <MobileSidebarTrigger />}
-
 							<Link
 								to="/"
-								className="flex items-center gap-2 font-bold tracking-tight text-foreground hover:opacity-95 transition-opacity min-w-0"
+								className="flex items-center gap-2.5 min-w-0 rounded-md hover:opacity-90 transition-opacity"
 							>
-								<div className="size-8 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center shadow-xs shrink-0">
-									<span className="text-base select-none leading-none">🐮</span>
-								</div>
-								<div className="flex flex-col leading-none text-left min-w-0">
-									<span className="text-sm sm:text-base font-extrabold tracking-tight text-foreground truncate">
+								<Logo />
+								<span className="flex flex-col leading-none min-w-0">
+									<span className="text-[15px] sm:text-base font-extrabold tracking-tight truncate">
 										Sistema Ganadero
 									</span>
-									<span className="hidden sm:inline text-[10px] font-semibold text-primary tracking-wider uppercase">
+									<span className="hidden sm:block mt-0.5 text-[10px] font-semibold text-primary tracking-wider uppercase">
 										Gestión Bovina
 									</span>
-								</div>
+								</span>
 							</Link>
 						</div>
 
-						{/* Lado derecho — Búsqueda, Dashboard, Tema y Auth */}
-						<div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-							{/* Botón de búsqueda para móvil */}
-							{isAuthenticated && canReadGanado && (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									onClick={() => setShowMobileSearch(true)}
-									className="sm:hidden h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
-									aria-label="Buscar ganado por arete"
-									title="Buscar ganado por arete"
-								>
-									<Search className="h-4 w-4" />
-								</Button>
-							)}
-
-							{/* Buscador de escritorio/tablet */}
-							{isAuthenticated && canReadGanado && (
-								<search className="hidden sm:block">
-									<form
-										className="relative"
-										onSubmit={(e) => {
-											e.preventDefault();
-											const campo = e.currentTarget.elements.namedItem(
-												"arete",
-											) as HTMLInputElement;
-											const val = campo.value.trim();
-											if (val) {
-												navigate({
-													to: "/dashboard/ganado",
-													search: { identificador: val },
-												});
-											}
-										}}
-									>
-										<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-										<Input
-											name="arete"
-											type="search"
-											aria-label="Buscar ganado por arete"
-											placeholder="Arete..."
-											className="h-9 w-28 md:w-44 pl-8 text-xs"
-										/>
-									</form>
-								</search>
-							)}
-
-							{/* Acceso a Dashboard en escritorio */}
-							{isAuthenticated && (
-								<Link to="/dashboard" className="hidden md:inline-flex">
+						{/* Derecha */}
+						<div className="flex items-center gap-1 sm:gap-2 shrink-0">
+							{canSearch && (
+								<>
 									<Button
 										type="button"
 										variant="ghost"
-										size="sm"
-										className="gap-1.5 cursor-pointer h-9 text-xs"
+										size="icon"
+										onClick={() => setShowMobileSearch(true)}
+										className="sm:hidden size-10 text-muted-foreground hover:text-foreground"
+										aria-label="Buscar ganado por arete"
 									>
-										<LayoutDashboard className="h-3.5 w-3.5" />
-										<span>Dashboard</span>
+										<Search className="size-5" />
 									</Button>
-								</Link>
+									<search className="hidden sm:block">
+										<form className="relative" onSubmit={buscarArete}>
+											<Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+											<Input
+												name="arete"
+												type="search"
+												aria-label="Buscar ganado por arete"
+												placeholder="Buscar arete..."
+												className="h-9 w-36 md:w-52 pl-8 text-sm"
+											/>
+										</form>
+									</search>
+								</>
 							)}
 
-							{/* Campana de notificaciones */}
 							{isAuthenticated && <NotificacionesBell />}
 
-							{/* Toggle de tema */}
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								onClick={toggleTheme}
-								aria-label="Alternar modo oscuro"
-								className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground cursor-pointer"
-							>
-								{theme === "dark" ? (
-									<Sun className="h-4 w-4" />
-								) : (
-									<Moon className="h-4 w-4" />
-								)}
-							</Button>
-
 							{isAuthenticated ? (
-								<div className="flex items-center gap-1.5 sm:gap-3">
-									{/* Perfil del usuario */}
-									<Link
-										to="/dashboard/perfil"
-										aria-label="Mi perfil"
-										className="flex items-center gap-2 group"
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<Button
+												variant="ghost"
+												className="h-10 gap-2 pl-1 pr-1 sm:pr-2 rounded-full"
+												aria-label="Menú de usuario"
+											/>
+										}
 									>
-										<div className="hidden lg:flex flex-col items-end text-right leading-none gap-0.5">
-											<span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-												{user?.name || "Usuario"}
-											</span>
-											<span
-												className="text-[10px] text-muted-foreground max-w-[120px] truncate"
-												title={user?.email}
-											>
-												{user?.email || "sin correo"}
-											</span>
-										</div>
-										<div
+										<span
 											className={cn(
-												"h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold select-none border shadow-xs shrink-0 transition-transform group-hover:scale-105",
-												user?.role === "ADMIN"
-													? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
-													: "bg-primary/10 border-primary/20 text-primary",
+												"size-8 rounded-full flex items-center justify-center text-xs font-bold select-none border shrink-0",
+												isAdmin
+													? "bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400"
+													: "bg-primary/10 border-primary/25 text-primary",
 											)}
-											title={
-												user?.role === "ADMIN"
-													? "Rol: Administrador"
-													: "Rol: Usuario Estándar"
-											}
 										>
 											{userInitial}
-										</div>
-									</Link>
-
-									{/* Cerrar Sesión */}
+										</span>
+										<span className="hidden lg:block max-w-32 truncate text-sm font-semibold">
+											{user?.name || "Usuario"}
+										</span>
+										<ChevronDown className="hidden sm:block size-4 text-muted-foreground" />
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end" className="w-60">
+										<DropdownMenuGroup>
+											<DropdownMenuLabel className="flex flex-col gap-0.5 px-2 py-2">
+												<span className="text-sm font-semibold text-foreground truncate">
+													{user?.name || "Usuario"}
+												</span>
+												<span className="text-xs font-normal truncate">
+													{user?.email || "sin correo"}
+												</span>
+												<span
+													className={cn(
+														"mt-1 w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+														isAdmin
+															? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+															: "bg-primary/10 text-primary",
+													)}
+												>
+													{isAdmin ? "Administrador" : "Usuario"}
+												</span>
+											</DropdownMenuLabel>
+										</DropdownMenuGroup>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											className="py-2"
+											render={<Link to="/dashboard" />}
+										>
+											<LayoutDashboard />
+											Dashboard
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											className="py-2"
+											render={<Link to="/dashboard/perfil" />}
+										>
+											<UserRound />
+											Mi perfil
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											className="py-2"
+											closeOnClick={false}
+											onClick={toggleTheme}
+										>
+											<ThemeIcon />
+											{theme === "dark" ? "Modo claro" : "Modo oscuro"}
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											className="py-2"
+											variant="destructive"
+											disabled={isLoggingOut}
+											onClick={() => logout()}
+										>
+											{isLoggingOut ? (
+												<Loader2 className="animate-spin" />
+											) : (
+												<LogOut />
+											)}
+											Cerrar sesión
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							) : (
+								<>
 									<Button
 										type="button"
-										variant="outline"
-										size="sm"
-										className="gap-1.5 cursor-pointer h-8 sm:h-9 text-xs px-2 sm:px-3"
-										onClick={() => logout()}
-										disabled={isLoggingOut}
-										title="Cerrar Sesión"
+										variant="ghost"
+										size="icon"
+										onClick={toggleTheme}
+										aria-label={
+											theme === "dark"
+												? "Activar modo claro"
+												: "Activar modo oscuro"
+										}
+										className="size-10 text-muted-foreground hover:text-foreground"
 									>
-										{isLoggingOut ? (
-											<Loader2 className="h-3.5 w-3.5 animate-spin" />
-										) : (
-											<LogOut className="h-3.5 w-3.5" />
-										)}
-										<span className="hidden sm:inline">Cerrar Sesión</span>
+										<ThemeIcon className="size-5" />
 									</Button>
-								</div>
-							) : (
-								<div className="flex items-center gap-1.5 sm:gap-2">
-									<Link to="/login">
-										<Button
-											variant="ghost"
-											size="sm"
-											className="cursor-pointer text-xs h-8 sm:h-9 px-2 sm:px-3"
-										>
-											Iniciar Sesión
-										</Button>
-									</Link>
+									<Button
+										variant="ghost"
+										nativeButton={false}
+										render={<Link to="/login" />}
+									>
+										Iniciar sesión
+									</Button>
 									{ALLOW_PUBLIC_REGISTER && (
-										<Link to="/register">
-											<Button
-												size="sm"
-												className="cursor-pointer text-xs h-8 sm:h-9 px-2 sm:px-3 shadow-xs"
-											>
-												Registrarse
-											</Button>
-										</Link>
+										<Button
+											nativeButton={false}
+											render={<Link to="/register" />}
+										>
+											Registrarse
+										</Button>
 									)}
-								</div>
+								</>
 							)}
 						</div>
 					</>

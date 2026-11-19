@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
 	Activity,
+	Beef,
 	Calendar,
 	Database,
 	Dna,
@@ -181,6 +182,16 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 	},
 ];
 
+// ─── Logo (compartido con Navbar) ─────────────────────────────────────────────
+
+export function Logo() {
+	return (
+		<span className="size-8 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
+			<Beef className="size-4.5" aria-hidden />
+		</span>
+	);
+}
+
 // ─── Item de navegación ───────────────────────────────────────────────────────
 
 interface SidebarNavItemProps {
@@ -196,7 +207,7 @@ function SidebarNavItem({ item, hasAccess, onNavigate }: SidebarNavItemProps) {
 	if (!hasAccess) {
 		return (
 			<div
-				className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-muted-foreground/50 cursor-not-allowed select-none"
+				className="flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg text-sm text-muted-foreground/50 cursor-not-allowed select-none"
 				title={`Sin permiso: ${item.label}`}
 			>
 				<Icon className="h-4 w-4 shrink-0" />
@@ -209,7 +220,7 @@ function SidebarNavItem({ item, hasAccess, onNavigate }: SidebarNavItemProps) {
 	if (isPlaceholder) {
 		return (
 			<div
-				className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-muted-foreground/60 cursor-not-allowed select-none"
+				className="flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg text-sm text-muted-foreground/60 cursor-not-allowed select-none"
 				title={`${item.label} (próximamente)`}
 			>
 				<Icon className="h-4 w-4 shrink-0" />
@@ -227,14 +238,14 @@ function SidebarNavItem({ item, hasAccess, onNavigate }: SidebarNavItemProps) {
 			onClick={onNavigate}
 			activeProps={{
 				className:
-					"bg-primary/10 text-primary font-semibold [&>svg]:text-primary",
+					"bg-primary/10 text-primary font-semibold [&>svg]:text-primary before:absolute before:left-0 before:inset-y-1.5 before:w-0.5 before:rounded-full before:bg-primary",
 			}}
 			inactiveProps={{
 				className:
 					"text-muted-foreground hover:bg-accent hover:text-foreground",
 			}}
 			activeOptions={{ exact: item.href === "/dashboard" }}
-			className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors duration-150"
+			className="relative flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg text-sm transition-colors duration-150"
 		>
 			<Icon className="h-4 w-4 shrink-0" />
 			<span className="flex-1 truncate">{item.label}</span>
@@ -257,7 +268,10 @@ function SidebarContent({ onNavigate }: SidebarContentProps) {
 	};
 
 	return (
-		<nav className="flex-1 py-4 px-2 space-y-6 overflow-y-auto">
+		<nav
+			aria-label="Navegación principal"
+			className="flex-1 py-4 px-3 space-y-5 overflow-y-auto overscroll-contain"
+		>
 			{SIDEBAR_GROUPS.map((group) => {
 				// Grupos con hideIfNoAccess se ocultan completamente si no hay acceso a ningún item
 				if (group.hideIfNoAccess) {
@@ -269,7 +283,7 @@ function SidebarContent({ onNavigate }: SidebarContentProps) {
 
 				return (
 					<div key={group.title}>
-						<p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
+						<p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70 select-none">
 							{group.title}
 						</p>
 						<ul className="space-y-0.5">
@@ -294,7 +308,7 @@ function SidebarContent({ onNavigate }: SidebarContentProps) {
 
 export function Sidebar() {
 	return (
-		<aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-background/60 min-h-[calc(100vh-4rem)]">
+		<aside className="hidden md:flex sticky top-16 h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col border-r border-border bg-muted/20">
 			<SidebarContent />
 			<div className="px-4 py-3 border-t border-border">
 				<p className="text-[10px] text-muted-foreground/40 text-center">
@@ -322,7 +336,7 @@ export function MobileSidebarTrigger({
 						variant="ghost"
 						size="icon"
 						className={cn(
-							"md:hidden text-muted-foreground hover:text-foreground cursor-pointer h-8 w-8 sm:h-9 sm:w-9 shrink-0",
+							"md:hidden size-10 shrink-0 text-muted-foreground hover:text-foreground",
 							className,
 						)}
 						aria-label="Abrir menú de navegación"
@@ -331,15 +345,17 @@ export function MobileSidebarTrigger({
 			>
 				<Menu className="h-5 w-5" />
 			</SheetTrigger>
-			<SheetContent side="left" className="w-64 p-0 flex flex-col">
-				<SheetHeader className="px-4 py-4 border-b border-border">
-					<SheetTitle className="text-left text-base font-bold">
-						🐮 Sistema Ganadero
+			<SheetContent
+				side="left"
+				className="w-72 max-w-[85vw] p-0 gap-0 flex flex-col"
+			>
+				<SheetHeader className="h-14 px-4 flex-row items-center gap-2.5 border-b border-border">
+					<Logo />
+					<SheetTitle className="text-left text-base font-extrabold tracking-tight">
+						Sistema Ganadero
 					</SheetTitle>
 				</SheetHeader>
-				<div className="flex-1 overflow-y-auto">
-					<SidebarContent onNavigate={() => setOpen(false)} />
-				</div>
+				<SidebarContent onNavigate={() => setOpen(false)} />
 				<div className="px-4 py-3 border-t border-border">
 					<p className="text-[10px] text-muted-foreground/40 text-center">
 						v0.1.0

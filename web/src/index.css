@@ -208,6 +208,10 @@
 	html {
 		@apply font-sans;
 	}
+	/* Tailwind v4 quitó el cursor pointer por defecto en botones */
+	:where(button:not(:disabled), [role="button"], [role="menuitem"]) {
+		cursor: pointer;
+	}
 }
 
 /* Puntero táctil (uso en campo): objetivos de al menos 44 px (WCAG 2.5.5) */

@@ -60,6 +60,7 @@ import { RefreshTokenUseCase } from "@/modules/auth/application/useCases/Refresh
 import { RegisterUseCase } from "@/modules/auth/application/useCases/RegisterUseCase";
 import { LoginController } from "@/modules/auth/infrastructure/http/controllers/LoginController";
 import { ChangePasswordController } from "@/modules/auth/infrastructure/http/controllers/ChangePasswordController";
+import { UpdateProfileController } from "@/modules/auth/infrastructure/http/controllers/UpdateProfileController";
 import { LogoutController } from "@/modules/auth/infrastructure/http/controllers/LogoutController";
 import { RefreshTokenController } from "@/modules/auth/infrastructure/http/controllers/RefreshTokenController";
 import { RegisterController } from "@/modules/auth/infrastructure/http/controllers/RegisterController";
@@ -404,6 +405,9 @@ container.register("LoginController", { useClass: LoginController });
 container.register("LogoutController", { useClass: LogoutController });
 container.register("ChangePasswordController", {
 	useClass: ChangePasswordController,
+});
+container.register("UpdateProfileController", {
+	useClass: UpdateProfileController,
 });
 container.register("RefreshTokenController", {
 	useClass: RefreshTokenController,

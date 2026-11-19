@@ -1,12 +1,6 @@
 import { prisma } from "../src/core/config/prisma";
 import bcrypt from "bcrypt";
-import {
-	ACCIONES,
-	type Accion,
-	type PermissionKey,
-	RECURSOS,
-	type Recurso,
-} from "../src/modules/authorization/domain/Recursos";
+import { syncPermisos } from "../scripts/sync-permisos";
 
 async function main() {
 	console.log("🌱 Iniciando el proceso de seed...");
@@ -35,122 +29,8 @@ async function main() {
 	}
 	console.log("✅ Roles inicializados");
 
-	// ─── 2. Recursos y Permisos atómicos ─────────────────────────────────────────
-	const resources = RECURSOS;
-	const actions = ACCIONES;
-
-	const permissionsList: { resource: Recurso; action: Accion }[] = [];
-	for (const resource of resources) {
-		for (const action of actions) {
-			permissionsList.push({ resource, action });
-		}
-	}
-
-	const permissionsMap: Record<
-		string,
-		{ id: number; resource: string; action: string }
-	> = {};
-
-	for (const perm of permissionsList) {
-		const dbPerm = await prisma.permission.upsert({
-			where: {
-				resource_action: { resource: perm.resource, action: perm.action },
-			},
-			update: {},
-			create: perm,
-		});
-		permissionsMap[`${perm.resource}:${perm.action}`] = dbPerm;
-	}
-	console.log("✅ Permisos atómicos inicializados");
-
-	// ─── 3. Asignación de permisos a roles (Idempotente & Limpieza de obsoletos) ──
-	const rolePermissionsSetup: Record<string, PermissionKey[]> = {
-		ADMIN: Object.keys(permissionsMap) as PermissionKey[], // Todos los permisos
-		USER: [
-			// Lectura de todo el negocio
-			"ganado:read",
-			"terreno:read",
-			"inventario-insumos:read",
-			"propietario:read",
-			"propietario:create",
-			"propietario:update",
-			"propietario:delete",
-			"sesiones-sanitarias:read",
-			"tratamientos-medicos:read",
-			"veterinarios:read",
-			// Operación básica (creación, actualización, eliminación)
-			"ganado:create",
-			"ganado:update",
-			"ganado:delete",
-			"terreno:create",
-			"terreno:update",
-			"terreno:delete",
-			"inventario-insumos:create",
-			"inventario-insumos:update",
-			"inventario-insumos:delete",
-			"sesiones-sanitarias:create",
-			"sesiones-sanitarias:update",
-			"tratamientos-medicos:create",
-			"tratamientos-medicos:update",
-			"veterinarios:create",
-			"veterinarios:update",
-			"veterinarios:delete",
-			"reproduccion:read",
-			"reproduccion:create",
-			"reproduccion:update",
-			"reproduccion:delete",
-			"comercial:read",
-			"comercial:create",
-			"comercial:update",
-			"comercial:delete",
-			"lotes:read",
-			"lotes:create",
-			"lotes:update",
-			"lotes:delete",
-			"alimentacion:read",
-			"alimentacion:create",
-			"alimentacion:update",
-			"alimentacion:delete",
-		],
-	};
-
-	for (const [roleName, allowedPermKeys] of Object.entries(
-		rolePermissionsSetup,
-	)) {
-		const role = rolesMap[roleName];
-		if (!role) continue;
-
-		const targetPermissionIds: number[] = [];
-
-		for (const key of allowedPermKeys) {
-			const perm = permissionsMap[key];
-			if (perm) {
-				targetPermissionIds.push(perm.id);
-			}
-		}
-
-		// Registrar los permisos requeridos de forma idempotente
-		for (const permissionId of targetPermissionIds) {
-			await prisma.rolePermission.upsert({
-				where: {
-					roleId_permissionId: { roleId: role.id, permissionId },
-				},
-				update: {},
-				create: { roleId: role.id, permissionId },
-			});
-		}
-
-		// Purgar permisos que hayan sido eliminados del seed para este rol
-		await prisma.rolePermission.deleteMany({
-			where: {
-				roleId: role.id,
-				permissionId: { notIn: targetPermissionIds },
-			},
-		});
-	}
-	console.log(
-		"✅ Permisos asignados a roles (limpieza de obsoletos realizada)",
-	);
+	// ─── 2-3. Permisos del catálogo y su asignación a roles ─────────────────────
+	await syncPermisos();
 
 	// ─── 4. Usuarios de prueba ───────────────────────────────────────────────────
 	const passwordHash = await bcrypt.hash("SecurePass123!", 10);

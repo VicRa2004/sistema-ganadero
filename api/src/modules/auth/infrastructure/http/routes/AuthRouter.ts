@@ -11,6 +11,7 @@ import type { RegisterController } from "../controllers/RegisterController";
 import type { RefreshTokenController } from "../controllers/RefreshTokenController";
 import type { LogoutController } from "../controllers/LogoutController";
 import type { ChangePasswordController } from "../controllers/ChangePasswordController";
+import type { UpdateProfileController } from "../controllers/UpdateProfileController";
 import type { AuthMiddleware } from "../middlewares/authMiddleware";
 
 @injectable()
@@ -28,6 +29,8 @@ export class AuthRouter {
 		private readonly logoutController: LogoutController,
 		@inject("ChangePasswordController")
 		private readonly changePasswordController: ChangePasswordController,
+		@inject("UpdateProfileController")
+		private readonly updateProfileController: UpdateProfileController,
 		@inject("AuthMiddleware")
 		private readonly authMiddleware: AuthMiddleware,
 	) {
@@ -204,6 +207,37 @@ export class AuthRouter {
 			this.authMiddleware.handle,
 			cambioPasswordPorIp,
 			this.changePasswordController.run,
+		);
+
+		/**
+		 * @openapi
+		 * /api/auth/me:
+		 *   patch:
+		 *     tags: [Auth]
+		 *     summary: Editar el perfil del usuario autenticado (nombre y email)
+		 *     security:
+		 *       - BearerAuth: []
+		 *     requestBody:
+		 *       required: true
+		 *       content:
+		 *         application/json:
+		 *           schema:
+		 *             type: object
+		 *             properties:
+		 *               name:
+		 *                 type: string
+		 *               email:
+		 *                 type: string
+		 *     responses:
+		 *       200:
+		 *         description: Perfil actualizado
+		 *       400:
+		 *         description: Validación fallida o email en uso
+		 */
+		this.router.patch(
+			"/me",
+			this.authMiddleware.handle,
+			this.updateProfileController.run,
 		);
 	}
 }

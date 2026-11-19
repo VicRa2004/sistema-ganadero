@@ -30,3 +30,8 @@ export const changePasswordSchema = z.object({
 	currentPassword: z.string().min(1, "La contraseña actual es requerida"),
 	newPassword: passwordSchema,
 });
+
+export const updateProfileSchema = z.object({
+	name: z.string().trim().min(1, "El nombre es requerido").max(255),
+	email: z.email("Debe ser un email válido").max(128),
+});

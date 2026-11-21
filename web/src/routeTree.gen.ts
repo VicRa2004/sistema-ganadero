@@ -24,11 +24,13 @@ import { Route as DashboardSesionesSanitariasIndexRouteImport } from './routes/d
 import { Route as DashboardRazasIndexRouteImport } from './routes/dashboard.razas.index'
 import { Route as DashboardPropietariosIndexRouteImport } from './routes/dashboard.propietarios.index'
 import { Route as DashboardPermisosIndexRouteImport } from './routes/dashboard.permisos.index'
+import { Route as DashboardPapeleraIndexRouteImport } from './routes/dashboard.papelera.index'
 import { Route as DashboardLotesIndexRouteImport } from './routes/dashboard.lotes.index'
 import { Route as DashboardInsumosIndexRouteImport } from './routes/dashboard.insumos.index'
 import { Route as DashboardGanadoIndexRouteImport } from './routes/dashboard.ganado.index'
 import { Route as DashboardComercialIndexRouteImport } from './routes/dashboard.comercial.index'
 import { Route as DashboardCalendarioSanitarioIndexRouteImport } from './routes/dashboard.calendario-sanitario.index'
+import { Route as DashboardAuditoriaIndexRouteImport } from './routes/dashboard.auditoria.index'
 import { Route as DashboardAlimentacionIndexRouteImport } from './routes/dashboard.alimentacion.index'
 import { Route as DashboardTratamientosMedicosIdRouteImport } from './routes/dashboard.tratamientos-medicos.$id'
 import { Route as DashboardTerrenosIdRouteImport } from './routes/dashboard.terrenos.$id'
@@ -114,6 +116,11 @@ const DashboardPermisosIndexRoute = DashboardPermisosIndexRouteImport.update({
   path: '/permisos/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPapeleraIndexRoute = DashboardPapeleraIndexRouteImport.update({
+  id: '/papelera/',
+  path: '/papelera/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardLotesIndexRoute = DashboardLotesIndexRouteImport.update({
   id: '/lotes/',
   path: '/lotes/',
@@ -140,6 +147,11 @@ const DashboardCalendarioSanitarioIndexRoute =
     path: '/calendario-sanitario/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardAuditoriaIndexRoute = DashboardAuditoriaIndexRouteImport.update({
+  id: '/auditoria/',
+  path: '/auditoria/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAlimentacionIndexRoute =
   DashboardAlimentacionIndexRouteImport.update({
     id: '/alimentacion/',
@@ -181,11 +193,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
   '/dashboard/alimentacion/': typeof DashboardAlimentacionIndexRoute
+  '/dashboard/auditoria/': typeof DashboardAuditoriaIndexRoute
   '/dashboard/calendario-sanitario/': typeof DashboardCalendarioSanitarioIndexRoute
   '/dashboard/comercial/': typeof DashboardComercialIndexRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/lotes/': typeof DashboardLotesIndexRoute
+  '/dashboard/papelera/': typeof DashboardPapeleraIndexRoute
   '/dashboard/permisos/': typeof DashboardPermisosIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
   '/dashboard/razas/': typeof DashboardRazasIndexRoute
@@ -207,11 +221,13 @@ export interface FileRoutesByTo {
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
   '/dashboard/alimentacion': typeof DashboardAlimentacionIndexRoute
+  '/dashboard/auditoria': typeof DashboardAuditoriaIndexRoute
   '/dashboard/calendario-sanitario': typeof DashboardCalendarioSanitarioIndexRoute
   '/dashboard/comercial': typeof DashboardComercialIndexRoute
   '/dashboard/ganado': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos': typeof DashboardInsumosIndexRoute
   '/dashboard/lotes': typeof DashboardLotesIndexRoute
+  '/dashboard/papelera': typeof DashboardPapeleraIndexRoute
   '/dashboard/permisos': typeof DashboardPermisosIndexRoute
   '/dashboard/propietarios': typeof DashboardPropietariosIndexRoute
   '/dashboard/razas': typeof DashboardRazasIndexRoute
@@ -235,11 +251,13 @@ export interface FileRoutesById {
   '/dashboard/terrenos/$id': typeof DashboardTerrenosIdRoute
   '/dashboard/tratamientos-medicos/$id': typeof DashboardTratamientosMedicosIdRoute
   '/dashboard/alimentacion/': typeof DashboardAlimentacionIndexRoute
+  '/dashboard/auditoria/': typeof DashboardAuditoriaIndexRoute
   '/dashboard/calendario-sanitario/': typeof DashboardCalendarioSanitarioIndexRoute
   '/dashboard/comercial/': typeof DashboardComercialIndexRoute
   '/dashboard/ganado/': typeof DashboardGanadoIndexRoute
   '/dashboard/insumos/': typeof DashboardInsumosIndexRoute
   '/dashboard/lotes/': typeof DashboardLotesIndexRoute
+  '/dashboard/papelera/': typeof DashboardPapeleraIndexRoute
   '/dashboard/permisos/': typeof DashboardPermisosIndexRoute
   '/dashboard/propietarios/': typeof DashboardPropietariosIndexRoute
   '/dashboard/razas/': typeof DashboardRazasIndexRoute
@@ -264,11 +282,13 @@ export interface FileRouteTypes {
     | '/dashboard/terrenos/$id'
     | '/dashboard/tratamientos-medicos/$id'
     | '/dashboard/alimentacion/'
+    | '/dashboard/auditoria/'
     | '/dashboard/calendario-sanitario/'
     | '/dashboard/comercial/'
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/lotes/'
+    | '/dashboard/papelera/'
     | '/dashboard/permisos/'
     | '/dashboard/propietarios/'
     | '/dashboard/razas/'
@@ -290,11 +310,13 @@ export interface FileRouteTypes {
     | '/dashboard/terrenos/$id'
     | '/dashboard/tratamientos-medicos/$id'
     | '/dashboard/alimentacion'
+    | '/dashboard/auditoria'
     | '/dashboard/calendario-sanitario'
     | '/dashboard/comercial'
     | '/dashboard/ganado'
     | '/dashboard/insumos'
     | '/dashboard/lotes'
+    | '/dashboard/papelera'
     | '/dashboard/permisos'
     | '/dashboard/propietarios'
     | '/dashboard/razas'
@@ -317,11 +339,13 @@ export interface FileRouteTypes {
     | '/dashboard/terrenos/$id'
     | '/dashboard/tratamientos-medicos/$id'
     | '/dashboard/alimentacion/'
+    | '/dashboard/auditoria/'
     | '/dashboard/calendario-sanitario/'
     | '/dashboard/comercial/'
     | '/dashboard/ganado/'
     | '/dashboard/insumos/'
     | '/dashboard/lotes/'
+    | '/dashboard/papelera/'
     | '/dashboard/permisos/'
     | '/dashboard/propietarios/'
     | '/dashboard/razas/'
@@ -446,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPermisosIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/papelera/': {
+      id: '/dashboard/papelera/'
+      path: '/papelera'
+      fullPath: '/dashboard/papelera/'
+      preLoaderRoute: typeof DashboardPapeleraIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/lotes/': {
       id: '/dashboard/lotes/'
       path: '/lotes'
@@ -479,6 +510,13 @@ declare module '@tanstack/react-router' {
       path: '/calendario-sanitario'
       fullPath: '/dashboard/calendario-sanitario/'
       preLoaderRoute: typeof DashboardCalendarioSanitarioIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/auditoria/': {
+      id: '/dashboard/auditoria/'
+      path: '/auditoria'
+      fullPath: '/dashboard/auditoria/'
+      preLoaderRoute: typeof DashboardAuditoriaIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/alimentacion/': {
@@ -528,11 +566,13 @@ interface DashboardRouteChildren {
   DashboardTerrenosIdRoute: typeof DashboardTerrenosIdRoute
   DashboardTratamientosMedicosIdRoute: typeof DashboardTratamientosMedicosIdRoute
   DashboardAlimentacionIndexRoute: typeof DashboardAlimentacionIndexRoute
+  DashboardAuditoriaIndexRoute: typeof DashboardAuditoriaIndexRoute
   DashboardCalendarioSanitarioIndexRoute: typeof DashboardCalendarioSanitarioIndexRoute
   DashboardComercialIndexRoute: typeof DashboardComercialIndexRoute
   DashboardGanadoIndexRoute: typeof DashboardGanadoIndexRoute
   DashboardInsumosIndexRoute: typeof DashboardInsumosIndexRoute
   DashboardLotesIndexRoute: typeof DashboardLotesIndexRoute
+  DashboardPapeleraIndexRoute: typeof DashboardPapeleraIndexRoute
   DashboardPermisosIndexRoute: typeof DashboardPermisosIndexRoute
   DashboardPropietariosIndexRoute: typeof DashboardPropietariosIndexRoute
   DashboardRazasIndexRoute: typeof DashboardRazasIndexRoute
@@ -552,12 +592,14 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTerrenosIdRoute: DashboardTerrenosIdRoute,
   DashboardTratamientosMedicosIdRoute: DashboardTratamientosMedicosIdRoute,
   DashboardAlimentacionIndexRoute: DashboardAlimentacionIndexRoute,
+  DashboardAuditoriaIndexRoute: DashboardAuditoriaIndexRoute,
   DashboardCalendarioSanitarioIndexRoute:
     DashboardCalendarioSanitarioIndexRoute,
   DashboardComercialIndexRoute: DashboardComercialIndexRoute,
   DashboardGanadoIndexRoute: DashboardGanadoIndexRoute,
   DashboardInsumosIndexRoute: DashboardInsumosIndexRoute,
   DashboardLotesIndexRoute: DashboardLotesIndexRoute,
+  DashboardPapeleraIndexRoute: DashboardPapeleraIndexRoute,
   DashboardPermisosIndexRoute: DashboardPermisosIndexRoute,
   DashboardPropietariosIndexRoute: DashboardPropietariosIndexRoute,
   DashboardRazasIndexRoute: DashboardRazasIndexRoute,

@@ -124,6 +124,13 @@ export const queryKeys = {
 			["alimentacion", "suministros", filters] as const,
 		autonomia: () => ["alimentacion", "autonomia"] as const,
 	},
+	papelera: {
+		all: ["papelera"] as const,
+		list: (tipo: string, page: number) => ["papelera", tipo, page] as const,
+	},
+	auditoria: {
+		list: (filters: unknown) => ["auditoria", filters] as const,
+	},
 	comercial: {
 		all: ["comercial"] as const,
 		transaccionesAll: () => ["comercial", "transacciones"] as const,

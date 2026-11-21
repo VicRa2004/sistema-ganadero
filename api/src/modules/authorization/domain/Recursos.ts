@@ -18,6 +18,7 @@ export const RECURSOS = [
 	"comercial",
 	"lotes",
 	"alimentacion",
+	"auditoria",
 ] as const;
 
 export type Recurso = (typeof RECURSOS)[number];

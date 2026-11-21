@@ -43,6 +43,9 @@ import { ReproduccionRouter } from "@/modules/reproduccion/infrastructure/http/r
 import { LoteRouter } from "@/modules/lote/infrastructure/http/routes/LoteRouter";
 import { AlimentacionRouter } from "@/modules/alimentacion/infrastructure/http/routes/AlimentacionRouter";
 import { ComercialRouter } from "@/modules/comercial/infrastructure/http/routes/ComercialRouter";
+import { AuditoriaRouter } from "@/core/auditoria/infrastructure/http/routes/AuditoriaRouter";
+import { AuditMiddleware } from "@/core/auditoria/infrastructure/http/middlewares/AuditMiddleware";
+import { PapeleraRouter } from "@/core/papelera/infrastructure/http/routes/PapeleraRouter";
 
 const app = new Hono();
 
@@ -58,6 +61,7 @@ app.use(
 );
 app.use("*", requestId());
 app.use("*", logger());
+app.use("/api/*", container.resolve(AuditMiddleware).handle);
 
 // Límite de tamaño del body: pequeño para JSON y mayor solo para multipart (imágenes)
 const onBodyTooLarge = (c: Context) =>
@@ -143,6 +147,8 @@ const reproduccionRouter = container.resolve(ReproduccionRouter);
 const loteRouter = container.resolve(LoteRouter);
 const alimentacionRouter = container.resolve(AlimentacionRouter);
 const comercialRouter = container.resolve(ComercialRouter);
+const auditoriaRouter = container.resolve(AuditoriaRouter);
+const papeleraRouter = container.resolve(PapeleraRouter);
 
 // 4. Registro de rutas
 // En Hono se usa .route() en lugar de .use() para anidar otros routers
@@ -164,6 +170,8 @@ app.route("/api/reproduccion", reproduccionRouter.router);
 app.route("/api/lotes", loteRouter.router);
 app.route("/api/alimentacion", alimentacionRouter.router);
 app.route("/api/comercial", comercialRouter.router);
+app.route("/api/auditoria", auditoriaRouter.router);
+app.route("/api/papelera", papeleraRouter.router);
 
 // 5. Servir Frontend (Vite SPA) en producción
 const distPath = existsSync(path.resolve(process.cwd(), "web/dist"))

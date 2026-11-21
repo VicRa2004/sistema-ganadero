@@ -68,6 +68,19 @@ import { AuthMiddleware } from "@/modules/auth/infrastructure/http/middlewares/a
 import { RequirePermissionMiddleware } from "@/modules/authorization/infrastructure/http/middlewares/RequirePermissionMiddleware";
 import { CheckUserPermissionUseCase } from "@/modules/authorization/application/useCases/CheckUserPermissionUseCase";
 import { PrismaRefreshTokenRepository } from "@/modules/auth/infrastructure/repository/PrismaRefreshTokenRepository";
+import { PrismaAuditLogRepository } from "@/core/auditoria/infrastructure/repository/PrismaAuditLogRepository";
+import { ListarAuditoriaUseCase } from "@/core/auditoria/application/useCases/ListarAuditoriaUseCase";
+import { ListarAuditoriaController } from "@/core/auditoria/infrastructure/http/controllers/ListarAuditoriaController";
+import { PrismaPapeleraRepository } from "@/core/papelera/infrastructure/repository/PrismaPapeleraRepository";
+import {
+	EliminarDefinitivoUseCase,
+	ListarPapeleraUseCase,
+	PurgarPapeleraUseCase,
+	RestaurarElementoUseCase,
+} from "@/core/papelera/application/useCases/PapeleraUseCases";
+import { ListarPapeleraController } from "@/core/papelera/infrastructure/http/controllers/ListarPapeleraController";
+import { RestaurarElementoController } from "@/core/papelera/infrastructure/http/controllers/RestaurarElementoController";
+import { EliminarDefinitivoController } from "@/core/papelera/infrastructure/http/controllers/EliminarDefinitivoController";
 import { PrismaLoginAttemptRepository } from "@/modules/auth/infrastructure/repository/PrismaLoginAttemptRepository";
 
 // Propietario
@@ -309,6 +322,43 @@ container.register("RequirePermissionMiddleware", {
 
 container.register("CheckUserPermissionUseCase", {
 	useClass: CheckUserPermissionUseCase,
+});
+
+// Auditoría
+container.register("AuditLogRepository", {
+	useClass: PrismaAuditLogRepository,
+});
+container.register("ListarAuditoriaUseCase", {
+	useClass: ListarAuditoriaUseCase,
+});
+container.register("ListarAuditoriaController", {
+	useClass: ListarAuditoriaController,
+});
+
+// Papelera
+container.register("PapeleraRepository", {
+	useClass: PrismaPapeleraRepository,
+});
+container.register("ListarPapeleraUseCase", {
+	useClass: ListarPapeleraUseCase,
+});
+container.register("RestaurarElementoUseCase", {
+	useClass: RestaurarElementoUseCase,
+});
+container.register("EliminarDefinitivoUseCase", {
+	useClass: EliminarDefinitivoUseCase,
+});
+container.register("PurgarPapeleraUseCase", {
+	useClass: PurgarPapeleraUseCase,
+});
+container.register("ListarPapeleraController", {
+	useClass: ListarPapeleraController,
+});
+container.register("RestaurarElementoController", {
+	useClass: RestaurarElementoController,
+});
+container.register("EliminarDefinitivoController", {
+	useClass: EliminarDefinitivoController,
 });
 
 container.register("LoginAttemptRepository", {

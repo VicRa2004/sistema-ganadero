@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { app } from "@/core/shared/infrastructure/http/server";
 import { container } from "@/core/shared/infrastructure/di/container";
 import type { RefreshTokenRepository } from "@/modules/auth/domain/repository/RefreshTokenRepository";
+import type { PurgarPapeleraUseCase } from "@/core/papelera/application/useCases/PapeleraUseCases";
 import type { EvaluarAlertasSanitariasUseCase } from "@/modules/salud/application/useCases/EvaluarAlertasSanitariasUseCase";
 import { env } from "./core/config/env";
 import { logger } from "./core/config/logger";
@@ -40,7 +41,22 @@ const ejecutarEvaluacionSalud = () =>
 			logger.error("Error en evaluación diaria de salud", error),
 		);
 
+// Purga diaria de la papelera (lo eliminado hace más de DIAS_EN_PAPELERA días)
+const purgarPapelera = () =>
+	container
+		.resolve<PurgarPapeleraUseCase>("PurgarPapeleraUseCase")
+		.run()
+		.then((res) =>
+			logger.info(
+				`Purga de papelera: ${res.eliminados} eliminado(s), ${res.conservados} conservado(s) por estar referenciados`,
+			),
+		)
+		.catch((error) => logger.error("Error en la purga de la papelera", error));
+
 if (env.NODE_ENV !== "test") {
 	setTimeout(ejecutarEvaluacionSalud, 10_000).unref();
 	setInterval(ejecutarEvaluacionSalud, EVALUACION_SALUD_MS).unref();
+
+	setTimeout(purgarPapelera, 60_000).unref();
+	setInterval(purgarPapelera, EVALUACION_SALUD_MS).unref();
 }

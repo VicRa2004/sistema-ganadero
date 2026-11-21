@@ -39,6 +39,7 @@ model User {
   lotes             Lote[]
   racionesAlimentacion RacionAlimentacion[]
   suministrosRacion SuministroRacion[]
+  auditoria         AuditLog[]
 
   @@map("user")
 }
@@ -787,4 +788,24 @@ model SuministroRacion {
   @@index([loteId])
   @@index([usuarioId])
   @@map("suministro_racion")
+}
+
+/// Una fila por cada escritura (POST/PUT/PATCH/DELETE) con éxito de un usuario autenticado.
+/// No guarda el cuerpo de la petición: puede llevar contraseñas o datos personales.
+model AuditLog {
+  id        Int      @id @default(autoincrement()) @map("aud_id")
+  usuarioId Int?     @map("aud_fkusuario")
+  metodo    String   @map("aud_metodo") @db.VarChar(10)
+  ruta      String   @map("aud_ruta") @db.VarChar(255)
+  estado    Int      @map("aud_estado")
+  ip        String?  @map("aud_ip") @db.VarChar(64)
+  requestId String?  @map("aud_request_id") @db.VarChar(64)
+  fecha     DateTime @default(now()) @map("aud_fecha")
+
+  // El registro sobrevive al usuario
+  usuario User? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([fecha])
+  @@index([usuarioId, fecha])
+  @@map("audit_log")
 }

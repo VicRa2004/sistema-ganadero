@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { User } from "@/core/user/domain/User";
 import { BcryptPasswordHasherService } from "@/core/user/infrastructure/service/BcryptPasswordHasherService";
 import { IssueSessionService } from "../services/IssueSessionService";
-import { LoginUseCase } from "./LoginUseCase";
+import { LoginUseCase, MAX_INTENTOS_LOGIN } from "./LoginUseCase";
 
 const userRepository = { findByEmail: mock() };
 const passwordHasher = { compare: mock() };
@@ -12,6 +12,11 @@ const tokenService = {
 	hashRefreshToken: mock(() => "hash"),
 };
 const refreshTokenRepo = { create: mock(async () => {}) };
+const loginAttempts = {
+	obtenerBloqueo: mock(async (): Promise<Date | null> => null),
+	registrarFallo: mock(async () => {}),
+	reiniciar: mock(async () => {}),
+};
 const issueSession = new IssueSessionService(
 	tokenService as any,
 	refreshTokenRepo as any,
@@ -27,10 +32,15 @@ describe("LoginUseCase", () => {
 		userRepository.findByEmail.mockReset();
 		passwordHasher.compare.mockReset();
 		refreshTokenRepo.create.mockClear();
+		loginAttempts.obtenerBloqueo.mockReset();
+		loginAttempts.obtenerBloqueo.mockResolvedValue(null);
+		loginAttempts.registrarFallo.mockClear();
+		loginAttempts.reiniciar.mockClear();
 		useCase = new LoginUseCase(
 			userRepository as any,
 			passwordHasher as any,
 			issueSession,
+			loginAttempts,
 		);
 	});
 
@@ -86,6 +96,7 @@ describe("LoginUseCase", () => {
 			userRepository as any,
 			new BcryptPasswordHasherService(),
 			issueSession,
+			loginAttempts,
 		);
 		const hashReal = await new BcryptPasswordHasherService().hash("otra");
 		const medir = async (user: User | null) => {
@@ -106,5 +117,46 @@ describe("LoginUseCase", () => {
 		expect(sinUsuario).toBeGreaterThan(20);
 		expect(sinUsuario / conUsuario).toBeGreaterThan(0.4);
 		expect(sinUsuario / conUsuario).toBeLessThan(2.5);
+	});
+
+	it("cuenta el fallo de un usuario existente y reinicia el contador al acertar", async () => {
+		userRepository.findByEmail.mockResolvedValue(usuario(true));
+		passwordHasher.compare.mockResolvedValue(false);
+		await expect(
+			useCase.run({ email: "ana@test.com", password: "mal" }),
+		).rejects.toMatchObject({ code: 401 });
+		expect(loginAttempts.registrarFallo).toHaveBeenCalledWith(
+			1,
+			MAX_INTENTOS_LOGIN,
+			expect.any(Number),
+		);
+
+		passwordHasher.compare.mockResolvedValue(true);
+		await useCase.run({ email: "ana@test.com", password: "x" });
+		expect(loginAttempts.reiniciar).toHaveBeenCalledWith(1);
+	});
+
+	it("no cuenta fallos de correos inexistentes", async () => {
+		userRepository.findByEmail.mockResolvedValue(null);
+		passwordHasher.compare.mockResolvedValue(false);
+		await expect(
+			useCase.run({ email: "nadie@test.com", password: "x" }),
+		).rejects.toMatchObject({ code: 401 });
+		expect(loginAttempts.registrarFallo).not.toHaveBeenCalled();
+	});
+
+	it("rechaza una cuenta bloqueada aunque la contraseña sea correcta, con el mismo error", async () => {
+		userRepository.findByEmail.mockResolvedValue(usuario(true));
+		passwordHasher.compare.mockResolvedValue(true);
+		loginAttempts.obtenerBloqueo.mockResolvedValue(
+			new Date(Date.now() + 60_000),
+		);
+
+		await expect(
+			useCase.run({ email: "ana@test.com", password: "x" }),
+		).rejects.toMatchObject({ code: 401, message: "Credenciales inválidas" });
+		expect(refreshTokenRepo.create).not.toHaveBeenCalled();
+		expect(loginAttempts.reiniciar).not.toHaveBeenCalled();
+		expect(loginAttempts.registrarFallo).not.toHaveBeenCalled();
 	});
 });

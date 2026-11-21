@@ -17,6 +17,8 @@ model User {
   name      String    @map("usr_nombre") @db.VarChar(255)
   password  String    @map("usr_password") @db.VarChar(255)
   isActive  Boolean   @default(true) @map("estatus")
+  intentosFallidos Int       @default(0) @map("usr_intentos_fallidos")
+  bloqueadoHasta   DateTime? @map("usr_bloqueado_hasta")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
@@ -266,6 +268,8 @@ model Terreno {
   racionesAlimentacion RacionAlimentacion[]
   suministrosRacion  SuministroRacion[]
   movimientosInsumo  MovimientoInsumo[]
+  trasladosOrigen    HistorialTraslado[] @relation("Traslado_Origen")
+  trasladosDestino   HistorialTraslado[] @relation("Traslado_Destino")
 
   @@index([usuarioId])
   @@map("terreno")
@@ -321,6 +325,7 @@ model Ganado {
   gastos                 Gasto[]
   lotes                  LoteGanado[]
   movimientosInsumo      MovimientoInsumo[]
+  traslados              HistorialTraslado[]
 
   @@index([terrenoId])
   @@index([razaId])
@@ -342,6 +347,23 @@ model Pesaje {
 
   @@index([ganadoId, fecha])
   @@map("pesaje")
+}
+
+/// Lo rellena el trigger `registrar_traslado_ganado` al cambiar `ganado.gan_fkterreno`,
+/// así cubre cualquier vía de traslado (individual, masivo por lote, edición).
+model HistorialTraslado {
+  id               Int      @id @default(autoincrement()) @map("tra_id")
+  ganadoId         Int      @map("tra_fkganado")
+  terrenoOrigenId  Int      @map("tra_fkterreno_origen")
+  terrenoDestinoId Int      @map("tra_fkterreno_destino")
+  fecha            DateTime @default(now()) @map("tra_fecha")
+
+  ganado         Ganado  @relation(fields: [ganadoId], references: [id], onDelete: Cascade)
+  terrenoOrigen  Terreno @relation("Traslado_Origen", fields: [terrenoOrigenId], references: [id], onDelete: Cascade)
+  terrenoDestino Terreno @relation("Traslado_Destino", fields: [terrenoDestinoId], references: [id], onDelete: Cascade)
+
+  @@index([ganadoId, fecha])
+  @@map("historial_traslado")
 }
 
 model Insumo {

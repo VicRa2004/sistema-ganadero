@@ -6,6 +6,10 @@ import type { PasswordHasher } from "@/core/user/domain/service/PasswordHasher";
 import type { IssueSessionService } from "../services/IssueSessionService";
 import type { UserDto } from "@/core/user/application/dtos/UserDto";
 import { UserMapper } from "@/core/user/application/mappers/UserMapper";
+import type { LoginAttemptRepository } from "../../domain/repository/LoginAttemptRepository";
+
+export const MAX_INTENTOS_LOGIN = 5;
+export const MINUTOS_BLOQUEO_LOGIN = 15;
 
 /**
  * Hash bcrypt de un valor aleatorio descartado. Se compara contra él cuando el usuario no
@@ -22,6 +26,8 @@ export class LoginUseCase {
 		@inject("PasswordHasher") private readonly passwordHasher: PasswordHasher,
 		@inject("IssueSessionService")
 		private readonly issueSession: IssueSessionService,
+		@inject("LoginAttemptRepository")
+		private readonly loginAttempts: LoginAttemptRepository,
 	) {}
 
 	async run(
@@ -35,10 +41,24 @@ export class LoginUseCase {
 			user ? user.getPasswordHash() : HASH_FICTICIO,
 		);
 
+		const bloqueada = user
+			? (await this.loginAttempts.obtenerBloqueo(user.getId())) !== null
+			: false;
+
 		// Misma respuesta que con credenciales erróneas para no revelar si el correo existe ni el estado de la cuenta
-		if (!user || !isPasswordValid || !user.getIsActive()) {
+		if (!user || !isPasswordValid || !user.getIsActive() || bloqueada) {
+			// Durante el bloqueo no se cuentan más fallos: no se alarga indefinidamente
+			if (user && !isPasswordValid && !bloqueada) {
+				await this.loginAttempts.registrarFallo(
+					user.getId(),
+					MAX_INTENTOS_LOGIN,
+					MINUTOS_BLOQUEO_LOGIN,
+				);
+			}
 			throw new BaseError("Credenciales inválidas", 401);
 		}
+
+		await this.loginAttempts.reiniciar(user.getId());
 
 		const session = await this.issueSession.emitir(user);
 

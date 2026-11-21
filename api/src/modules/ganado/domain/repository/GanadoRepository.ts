@@ -10,6 +10,13 @@ export interface PromedioPesoRazaEdadResult {
 	razaNombre: string;
 }
 
+export interface TrasladoRegistro {
+	id: number;
+	fecha: Date;
+	terrenoOrigen: { id: number; nombre: string };
+	terrenoDestino: { id: number; nombre: string };
+}
+
 export interface GanadoRepository {
 	findById(id: number): Promise<Ganado | null>;
 	findByIdentificador(identificador: string): Promise<Ganado | null>;
@@ -22,6 +29,8 @@ export interface GanadoRepository {
 	registrarPesaje(ganadoId: number, pesaje: NuevoPesaje): Promise<Ganado>;
 	/** Pesajes del animal ordenados del más antiguo al más reciente. */
 	findPesajes(ganadoId: number): Promise<Pesaje[]>;
+	/** Historial de traslados del animal, del más reciente al más antiguo. */
+	findTraslados(ganadoId: number): Promise<TrasladoRegistro[]>;
 	/** Promedio de peso de animales activos de la misma raza y franja de edad. */
 	obtenerPromedioPesoRazaEdad(params: {
 		razaId: number;

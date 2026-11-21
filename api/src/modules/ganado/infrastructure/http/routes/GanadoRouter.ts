@@ -18,6 +18,7 @@ import type { ConfirmarImportacionGanadoController } from "../controllers/Confir
 import type { ExportarGanadoCsvController } from "../controllers/ExportarGanadoCsvController";
 import type { ExportarFichaGanadoPdfController } from "../controllers/ExportarFichaGanadoPdfController";
 import type { ObtenerGenealogiaController } from "../controllers/ObtenerGenealogiaController";
+import type { ListarTrasladosController } from "../controllers/ListarTrasladosController";
 
 @injectable()
 export class GanadoRouter {
@@ -60,6 +61,8 @@ export class GanadoRouter {
 		private readonly exportarFichaPdfController: ExportarFichaGanadoPdfController,
 		@inject("ObtenerGenealogiaController")
 		private readonly genealogiaController: ObtenerGenealogiaController,
+		@inject("ListarTrasladosController")
+		private readonly listarTrasladosController: ListarTrasladosController,
 	) {
 		this.router = new Hono();
 		this.initRoutes();
@@ -146,6 +149,12 @@ export class GanadoRouter {
 			"/:id/pesajes",
 			this.requirePermissionMiddleware.handle("ganado", "update"),
 			this.pesajeController.run.bind(this.pesajeController),
+		);
+
+		this.router.get(
+			"/:id/traslados",
+			this.requirePermissionMiddleware.handle("ganado", "read"),
+			this.listarTrasladosController.run.bind(this.listarTrasladosController),
 		);
 
 		this.router.post(

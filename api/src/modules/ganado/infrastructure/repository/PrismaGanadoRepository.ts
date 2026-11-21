@@ -12,6 +12,7 @@ import type { GanadoFilters } from "../../domain/repository/GanadoFilters";
 import type {
 	GanadoRepository,
 	PromedioPesoRazaEdadResult,
+	TrasladoRegistro,
 } from "../../domain/repository/GanadoRepository";
 
 interface PrismaGanadoRecord {
@@ -204,6 +205,20 @@ export class PrismaGanadoRepository implements GanadoRepository {
 				peso: true,
 				fecha: true,
 				observaciones: true,
+			},
+		});
+	}
+
+	public async findTraslados(ganadoId: number): Promise<TrasladoRegistro[]> {
+		const terreno = { select: { id: true, nombre: true } };
+		return prisma.historialTraslado.findMany({
+			where: { ganadoId },
+			orderBy: [{ fecha: "desc" }, { id: "desc" }],
+			select: {
+				id: true,
+				fecha: true,
+				terrenoOrigen: terreno,
+				terrenoDestino: terreno,
 			},
 		});
 	}

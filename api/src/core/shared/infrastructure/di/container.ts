@@ -68,6 +68,7 @@ import { AuthMiddleware } from "@/modules/auth/infrastructure/http/middlewares/a
 import { RequirePermissionMiddleware } from "@/modules/authorization/infrastructure/http/middlewares/RequirePermissionMiddleware";
 import { CheckUserPermissionUseCase } from "@/modules/authorization/application/useCases/CheckUserPermissionUseCase";
 import { PrismaRefreshTokenRepository } from "@/modules/auth/infrastructure/repository/PrismaRefreshTokenRepository";
+import { PrismaLoginAttemptRepository } from "@/modules/auth/infrastructure/repository/PrismaLoginAttemptRepository";
 
 // Propietario
 import { PrismaPropietarioRepository } from "@/modules/propietario/infrastructure/repository/PrismaPropietarioRepository";
@@ -139,6 +140,7 @@ import { ObtenerGenealogiaController } from "@/modules/ganado/infrastructure/htt
 import { RegistrarGanadoUseCase } from "@/modules/ganado/application/useCases/RegistrarGanadoUseCase";
 import { RegistrarPesajeUseCase } from "@/modules/ganado/application/useCases/RegistrarPesajeUseCase";
 import { ListarPesajesUseCase } from "@/modules/ganado/application/useCases/ListarPesajesUseCase";
+import { ListarTrasladosUseCase } from "@/modules/ganado/application/useCases/ListarTrasladosUseCase";
 import { TrasladarGanadoUseCase } from "@/modules/ganado/application/useCases/TrasladarGanadoUseCase";
 import { ObtenerFichaGanadoUseCase } from "@/modules/ganado/application/useCases/ObtenerFichaGanadoUseCase";
 import { ListarGanadosUseCase } from "@/modules/ganado/application/useCases/ListarGanadosUseCase";
@@ -149,6 +151,7 @@ import { ListarMotivosBajaUseCase } from "@/modules/ganado/application/useCases/
 import { RegistrarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarGanadoController";
 import { RegistrarPesajeController } from "@/modules/ganado/infrastructure/http/controllers/RegistrarPesajeController";
 import { ListarPesajesController } from "@/modules/ganado/infrastructure/http/controllers/ListarPesajesController";
+import { ListarTrasladosController } from "@/modules/ganado/infrastructure/http/controllers/ListarTrasladosController";
 import { TrasladarGanadoController } from "@/modules/ganado/infrastructure/http/controllers/TrasladarGanadoController";
 import { ObtenerFichaGanadoController } from "@/modules/ganado/infrastructure/http/controllers/ObtenerFichaGanadoController";
 import { ListarGanadosController } from "@/modules/ganado/infrastructure/http/controllers/ListarGanadosController";
@@ -308,6 +311,9 @@ container.register("CheckUserPermissionUseCase", {
 	useClass: CheckUserPermissionUseCase,
 });
 
+container.register("LoginAttemptRepository", {
+	useClass: PrismaLoginAttemptRepository,
+});
 container.register("RefreshTokenRepository", {
 	useClass: PrismaRefreshTokenRepository,
 });
@@ -620,6 +626,9 @@ container.register("RegistrarPesajeUseCase", {
 container.register("ListarPesajesUseCase", {
 	useClass: ListarPesajesUseCase,
 });
+container.register("ListarTrasladosUseCase", {
+	useClass: ListarTrasladosUseCase,
+});
 container.register("TrasladarGanadoUseCase", {
 	useClass: TrasladarGanadoUseCase,
 });
@@ -652,6 +661,9 @@ container.register("RegistrarPesajeController", {
 });
 container.register("ListarPesajesController", {
 	useClass: ListarPesajesController,
+});
+container.register("ListarTrasladosController", {
+	useClass: ListarTrasladosController,
 });
 container.register("TrasladarGanadoController", {
 	useClass: TrasladarGanadoController,

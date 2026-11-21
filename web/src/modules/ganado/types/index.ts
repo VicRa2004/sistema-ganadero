@@ -147,6 +147,13 @@ export interface ComparacionRazaEdadDto {
 	porcentajeDiferencia: number | null;
 }
 
+export interface TrasladoDto {
+	id: number;
+	fecha: string;
+	terrenoOrigen: { id: number; nombre: string };
+	terrenoDestino: { id: number; nombre: string };
+}
+
 export interface HistorialPesajesDto {
 	pesajes: PesajeDto[];
 	gananciaDiariaAcumulada: number | null;

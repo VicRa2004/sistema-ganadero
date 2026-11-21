@@ -113,7 +113,8 @@ export function useTrasladoMasivoLote(id: number) {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.lotes.lists() });
 			queryClient.invalidateQueries({ queryKey: queryKeys.lotes.detail(id) });
-			queryClient.invalidateQueries({ queryKey: queryKeys.ganado.lists() });
+			// Cambia el terreno de varios animales: listas, fichas e historiales
+			queryClient.invalidateQueries({ queryKey: queryKeys.ganado.all });
 			queryClient.invalidateQueries({ queryKey: queryKeys.terrenos.all });
 		},
 	});

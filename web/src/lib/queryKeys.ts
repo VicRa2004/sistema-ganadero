@@ -18,6 +18,7 @@ export const queryKeys = {
 		detail: (idOrIdentificador: number | string) =>
 			["ganado", "ficha", idOrIdentificador] as const,
 		pesajes: (id: number) => ["ganado", "pesajes", id] as const,
+		traslados: (id: number) => ["ganado", "traslados", id] as const,
 		genealogia: (id: number, generaciones?: number) =>
 			["ganado", "genealogia", id, generaciones] as const,
 		motivosBaja: () => ["ganado", "motivos-baja"] as const,

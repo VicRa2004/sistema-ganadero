@@ -13,6 +13,9 @@ export function useTrasladarGanado(id: number) {
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.ganado.lists() });
 			queryClient.invalidateQueries({ queryKey: queryKeys.ganado.detail(id) });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.ganado.traslados(id),
+			});
 			if (data?.identificador) {
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.ganado.detail(data.identificador),

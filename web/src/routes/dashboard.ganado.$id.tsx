@@ -13,6 +13,7 @@ import { GanadoPesajeDialog } from "@/components/ganado/GanadoPesajeDialog";
 import { GanadoTrasladoDialog } from "@/components/ganado/GanadoTrasladoDialog";
 import { EliminarGanadoDialog } from "@/components/ganado/EliminarGanadoDialog";
 import { HistorialPesajesCard } from "@/components/ganado/HistorialPesajesCard";
+import { HistorialTrasladosCard } from "@/components/ganado/HistorialTrasladosCard";
 import { HistorialSanitarioCard } from "@/components/ganado/HistorialSanitarioCard";
 import { HistorialTratamientosCard } from "@/components/ganado/HistorialTratamientosCard";
 import { GenealogiaCard } from "@/components/ganado/GenealogiaCard";
@@ -381,6 +382,8 @@ function DetalleGanadoComponent() {
 			</Card>
 
 			<HistorialPesajesCard ganadoId={ganado.id} />
+
+			<HistorialTrasladosCard ganadoId={ganado.id} />
 
 			<HistorialTratamientosCard
 				ganadoId={ganado.id}

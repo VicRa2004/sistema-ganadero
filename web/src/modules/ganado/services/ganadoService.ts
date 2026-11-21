@@ -14,6 +14,7 @@ import type {
 	PrevisualizacionImportacionGanadoDto,
 	RegistrarGanadoInput,
 	RegistrarPesajeInput,
+	TrasladoDto,
 	TrasladarGanadoInput,
 } from "../types";
 
@@ -86,6 +87,11 @@ export const ganadoService = {
 		input: RegistrarPesajeInput,
 	): Promise<GanadoDto> {
 		const { data } = await api.post<GanadoDto>(`/ganado/${id}/pesajes`, input);
+		return data;
+	},
+
+	async listarTraslados(id: number): Promise<TrasladoDto[]> {
+		const { data } = await api.get<TrasladoDto[]>(`/ganado/${id}/traslados`);
 		return data;
 	},
 

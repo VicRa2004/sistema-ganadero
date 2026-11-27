@@ -67,6 +67,11 @@ export const EnvSchema = z
 			.enum(["true", "false"])
 			.default("false")
 			.transform((value) => value === "true"),
+		// Sentry o GlitchTip; sin él, no se envían errores.
+		SENTRY_DSN: z.preprocess(
+			(v) => (v === "" ? undefined : v),
+			z.string().url("SENTRY_DSN debe ser una URL valida").optional(),
+		),
 	})
 	.superRefine((value, ctx) => {
 		if (value.STORAGE_DRIVER === "s3") {
@@ -135,6 +140,7 @@ const envPrev = {
 	S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
 	S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
 	S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
+	SENTRY_DSN: process.env.SENTRY_DSN || undefined,
 };
 
 export const env = EnvSchema.parse(envPrev);

@@ -1,9 +1,15 @@
 import { Link, type ErrorComponentProps } from "@tanstack/react-router";
 import { AlertTriangle, FileQuestion } from "lucide-react";
+import { useEffect } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { reportarError } from "@/config/monitoreo";
 
 /** Se muestra cuando una ruta lanza un error: aísla el fallo sin tumbar el resto de la app */
 export function RouteError({ error, reset }: ErrorComponentProps) {
+	useEffect(() => {
+		reportarError(error);
+	}, [error]);
+
 	return (
 		<div
 			role="alert"

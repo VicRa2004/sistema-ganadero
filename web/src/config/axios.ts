@@ -1,4 +1,5 @@
 import axios from "axios";
+import { reportarErrorApi } from "@/config/monitoreo";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 
 const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
@@ -49,6 +50,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 api.interceptors.response.use(
 	(response) => response,
 	async (error) => {
+		reportarErrorApi(error);
 		const originalRequest = error.config;
 
 		// Si falla con 401 y no se ha reintentado aún, y no es login/registro/refresh

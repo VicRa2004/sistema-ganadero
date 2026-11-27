@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_SENTRY_DSN: ${SENTRY_DSN:-}
     container_name: sistema_ganadero_migrations
     command: ["bun", "run", "--cwd", "api", "scripts/migrate.ts"]
     env_file:
@@ -19,6 +21,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_SENTRY_DSN: ${SENTRY_DSN:-}
     container_name: sistema_ganadero_app
     expose:
       - "${PORT:-3000}"

@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { requestId } from "hono/request-id";
 import { Prisma } from "@/generated/prisma/client";
 import { BaseError } from "../../domain/error/BaseError";
+import * as monitoreo from "../monitoreo";
 import { BaseController } from "./base.controller";
 
 class ControllerDePrueba extends BaseController {
@@ -105,5 +106,29 @@ describe("BaseController.handleError", () => {
 		expect(res.status).toBe(400);
 		const { error } = (await res.json()) as { error: { message: string } };
 		expect(error.message).toBe("El cuerpo de la petición no es un JSON válido");
+	});
+
+	it("reporta al monitoreo solo los 5xx con requestId y no los 4xx", async () => {
+		const reportarSpy = spyOn(monitoreo, "reportarError").mockImplementation(
+			() => undefined,
+		);
+		try {
+			await llamar("base");
+			await llamar("p2025");
+			expect(reportarSpy).not.toHaveBeenCalled();
+
+			const res500 = await llamar("secreto");
+			const {
+				error: { requestId },
+			} = (await res500.json()) as { error: { requestId: string } };
+
+			expect(reportarSpy).toHaveBeenCalledTimes(1);
+			expect(reportarSpy).toHaveBeenCalledWith(
+				expect.any(Error),
+				expect.objectContaining({ requestId }),
+			);
+		} finally {
+			reportarSpy.mockRestore();
+		}
 	});
 });

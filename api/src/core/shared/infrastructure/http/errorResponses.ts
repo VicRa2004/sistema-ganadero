@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { Prisma } from "@/generated/prisma/client";
 import { logger } from "@/core/config/logger";
+import { reportarError } from "@/core/shared/infrastructure/monitoreo";
 
 const CODIGOS: Record<number, string> = {
 	400: "BAD_REQUEST",
@@ -75,6 +76,10 @@ export function internalErrorResponse(c: Context, error: unknown): Response {
 		`${c.req.method} ${c.req.path} requestId=${requestId ?? "-"}`,
 		error,
 	);
+	reportarError(error, {
+		requestId,
+		usuarioId: c.get("user")?.id,
+	});
 
 	return errorResponse(c, 500, "Error interno del servidor");
 }

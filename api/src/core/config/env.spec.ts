@@ -106,3 +106,36 @@ describe("EnvSchema · LOG_LEVEL", () => {
 		).toBe(false);
 	});
 });
+
+describe("EnvSchema · SENTRY_DSN", () => {
+	it("es opcional y normaliza cadena vacía a undefined", () => {
+		const omitido = EnvSchema.parse({
+			...base,
+			JWT_SECRET: SECRETO_VALIDO,
+		});
+		const vacio = EnvSchema.parse({
+			...base,
+			JWT_SECRET: SECRETO_VALIDO,
+			SENTRY_DSN: "",
+		});
+
+		expect(omitido.SENTRY_DSN).toBeUndefined();
+		expect(vacio.SENTRY_DSN).toBeUndefined();
+	});
+
+	it("acepta una URL válida y rechaza valores inválidos", () => {
+		const valido = EnvSchema.safeParse({
+			...base,
+			JWT_SECRET: SECRETO_VALIDO,
+			SENTRY_DSN: "https://clave@glitchtip.ejemplo.com/1",
+		});
+		const invalido = EnvSchema.safeParse({
+			...base,
+			JWT_SECRET: SECRETO_VALIDO,
+			SENTRY_DSN: "no-es-url",
+		});
+
+		expect(valido.success).toBe(true);
+		expect(invalido.success).toBe(false);
+	});
+});

@@ -14,6 +14,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { env } from "@/core/config/env";
 import { logger as appLogger } from "@/core/config/logger";
 import { prisma } from "@/core/config/prisma";
+import { reportarError } from "@/core/shared/infrastructure/monitoreo";
 import { S3ImageStorageService } from "@/core/shared/infrastructure/libs/S3ImageStorageService";
 import { swaggerSpec } from "@/core/config/swagger";
 import { BaseError } from "@/core/shared/domain/error/BaseError";
@@ -56,6 +57,7 @@ app.use(
 	cors({
 		// Lista blanca (CORS_ORIGINS). Vacía = no se emiten cabeceras CORS (solo mismo origen).
 		origin: (origin) => (env.CORS_ORIGINS.includes(origin) ? origin : null),
+		exposeHeaders: ["X-Request-Id"],
 		credentials: true,
 	}),
 );
@@ -204,11 +206,24 @@ if (isProd && existsSync(distPath)) {
 app.onError((err, c) => {
 	// Errores HTTP controlados por Hono (p. ej. bodyLimit) ya traen su respuesta
 	if (err instanceof HTTPException) {
+		if (err.status >= 500) {
+			reportarError(err, {
+				requestId: c.get("requestId") as string | undefined,
+				usuarioId: c.get("user")?.id,
+			});
+		}
 		return err.getResponse();
 	}
 
 	if (err instanceof BaseError) {
-		return errorResponse(c, toStatusCode(err.code), err.message);
+		const status = toStatusCode(err.code);
+		if (status >= 500) {
+			reportarError(err, {
+				requestId: c.get("requestId") as string | undefined,
+				usuarioId: c.get("user")?.id,
+			});
+		}
+		return errorResponse(c, status, err.message);
 	}
 
 	const prismaError = mapPrismaError(err);

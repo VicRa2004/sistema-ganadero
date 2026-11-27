@@ -7,6 +7,7 @@ import { ZodError } from "zod";
 import z from "zod";
 import type { Actor } from "../../domain/Actor";
 import { BaseError } from "../../domain/error/BaseError";
+import { reportarError } from "../monitoreo";
 import {
 	BODY_TOO_LARGE_MESSAGE,
 	errorResponse,
@@ -32,11 +33,24 @@ export abstract class BaseController {
 		}
 
 		if (error instanceof BaseError) {
-			return errorResponse(c, toStatusCode(error.code), error.message);
+			const status = toStatusCode(error.code);
+			if (status >= 500) {
+				reportarError(error, {
+					requestId: c.get("requestId") as string | undefined,
+					usuarioId: c.get("user")?.id,
+				});
+			}
+			return errorResponse(c, status, error.message);
 		}
 
 		// Errores HTTP de Hono (p. ej. bodyLimit al leer un cuerpo sin Content-Length) traen su respuesta
 		if (error instanceof HTTPException) {
+			if (error.status >= 500) {
+				reportarError(error, {
+					requestId: c.get("requestId") as string | undefined,
+					usuarioId: c.get("user")?.id,
+				});
+			}
 			return error.getResponse();
 		}
 

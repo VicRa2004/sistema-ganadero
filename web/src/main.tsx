@@ -3,7 +3,9 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { queryClient } from "@/config/query";
+import { iniciarMonitoreo } from "@/config/monitoreo";
 import { NotFound, RouteError } from "@/components/RouteError";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { restoreSession } from "@/modules/auth/services/restoreSession";
@@ -11,6 +13,8 @@ import "./index.css";
 
 // Importar el árbol de rutas auto-generado por el compilador de TanStack Router
 import { routeTree } from "./routeTree.gen";
+
+iniciarMonitoreo();
 
 const router = createRouter({
 	routeTree,
@@ -70,10 +74,12 @@ if (rootElement && !rootElement.innerHTML) {
 	restoreSession().finally(() => {
 		root.render(
 			<StrictMode>
-				<QueryClientProvider client={queryClient}>
-					<App />
-					<Toaster richColors closeButton />
-				</QueryClientProvider>
+				<ErrorBoundary>
+					<QueryClientProvider client={queryClient}>
+						<App />
+						<Toaster richColors closeButton />
+					</QueryClientProvider>
+				</ErrorBoundary>
 			</StrictMode>,
 		);
 	});

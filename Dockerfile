@@ -18,6 +18,10 @@ RUN pnpm install --frozen-lockfile
 # Copy remaining source code
 COPY . .
 
+# Vite lo fija al compilar; vacío, la web no envía errores.
+ARG VITE_SENTRY_DSN=""
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+
 # Build Vite web frontend
 RUN pnpm --filter web build
 

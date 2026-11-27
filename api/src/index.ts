@@ -8,7 +8,7 @@ import { env } from "./core/config/env";
 import { logger } from "./core/config/logger";
 import { iniciarMonitoreo } from "@/core/shared/infrastructure/monitoreo";
 
-iniciarMonitoreo();
+iniciarMonitoreo(env.SENTRY_DSN, env.NODE_ENV);
 
 const server = Bun.serve({
 	hostname: env.HOST,

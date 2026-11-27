@@ -1,17 +1,22 @@
 import * as Sentry from "@sentry/bun";
-import { env } from "@/core/config/env";
+
+let activo = false;
 
 /**
  * Inicializa el reporte de errores hacia Sentry o GlitchTip si hay `SENTRY_DSN`.
  * Sin DSN no hace nada; tampoco activa tracing, profiling ni replay.
  */
-export function iniciarMonitoreo(dsn = env.SENTRY_DSN): void {
-	if (!dsn) return;
+export function iniciarMonitoreo(dsn?: string, environment?: string): void {
+	if (!dsn) {
+		activo = false;
+		return;
+	}
 	Sentry.init({
 		dsn,
-		environment: env.NODE_ENV,
+		environment,
 		beforeSend: limpiarEvento,
 	});
+	activo = true;
 }
 
 /**
@@ -41,9 +46,8 @@ export function limpiarEvento<T extends Sentry.ErrorEvent>(evento: T): T {
 export function reportarError(
 	error: unknown,
 	{ requestId, usuarioId }: { requestId?: string; usuarioId?: number },
-	dsn = env.SENTRY_DSN,
 ): void {
-	if (!dsn) return;
+	if (!activo) return;
 	Sentry.withScope((scope) => {
 		if (requestId) scope.setTag("requestId", requestId);
 		if (usuarioId !== undefined) scope.setUser({ id: String(usuarioId) });

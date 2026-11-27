@@ -46,6 +46,7 @@ describe("iniciarMonitoreo (backend)", () => {
 	const spies: Array<{ mockRestore: () => void }> = [];
 
 	afterEach(() => {
+		iniciarMonitoreo(undefined);
 		while (spies.length > 0) {
 			spies.pop()?.mockRestore();
 		}
@@ -57,24 +58,25 @@ describe("iniciarMonitoreo (backend)", () => {
 		);
 		spies.push(initSpy);
 
-		iniciarMonitoreo(undefined);
-		iniciarMonitoreo("");
+		iniciarMonitoreo(undefined, "prod");
+		iniciarMonitoreo("", "prod");
 
 		expect(initSpy).not.toHaveBeenCalled();
 	});
 
-	it("inicializa Sentry con beforeSend=limpiarEvento cuando hay DSN", () => {
+	it("inicializa Sentry con environment y beforeSend=limpiarEvento cuando hay DSN", () => {
 		const initSpy = spyOn(Sentry, "init").mockImplementation(
 			() => undefined as never,
 		);
 		spies.push(initSpy);
 
-		iniciarMonitoreo("https://clave@glitchtip.ejemplo.com/1");
+		iniciarMonitoreo("https://clave@glitchtip.ejemplo.com/1", "prod");
 
 		expect(initSpy).toHaveBeenCalledTimes(1);
 		expect(initSpy).toHaveBeenCalledWith(
 			expect.objectContaining({
 				dsn: "https://clave@glitchtip.ejemplo.com/1",
+				environment: "prod",
 				beforeSend: limpiarEvento,
 			}),
 		);
@@ -85,23 +87,27 @@ describe("reportarError (backend)", () => {
 	const spies: Array<{ mockRestore: () => void }> = [];
 
 	afterEach(() => {
+		iniciarMonitoreo(undefined);
 		while (spies.length > 0) {
 			spies.pop()?.mockRestore();
 		}
 	});
 
-	it("no envía nada si no hay DSN", () => {
+	it("no envía nada si no se inicializó monitoreo", () => {
 		const captureSpy = spyOn(Sentry, "captureException").mockImplementation(
 			() => "",
 		);
 		spies.push(captureSpy);
 
-		reportarError(new Error("fallo"), { requestId: "req-1", usuarioId: 5 }, "");
+		reportarError(new Error("fallo"), { requestId: "req-1", usuarioId: 5 });
 
 		expect(captureSpy).not.toHaveBeenCalled();
 	});
 
-	it("etiqueta requestId y solo el id del usuario cuando hay DSN", () => {
+	it("etiqueta requestId y solo el id del usuario tras iniciarMonitoreo con DSN", () => {
+		const initSpy = spyOn(Sentry, "init").mockImplementation(
+			() => undefined as never,
+		);
 		const setTag = mock(() => undefined);
 		const setUser = mock(() => undefined);
 		const withScopeSpy = spyOn(Sentry, "withScope").mockImplementation((cb) =>
@@ -110,14 +116,11 @@ describe("reportarError (backend)", () => {
 		const captureSpy = spyOn(Sentry, "captureException").mockImplementation(
 			() => "",
 		);
-		spies.push(withScopeSpy, captureSpy);
+		spies.push(initSpy, withScopeSpy, captureSpy);
 
+		iniciarMonitoreo("https://clave@glitchtip.ejemplo.com/1", "prod");
 		const err = new Error("fallo interno");
-		reportarError(
-			err,
-			{ requestId: "req-500", usuarioId: 42 },
-			"https://clave@glitchtip.ejemplo.com/1",
-		);
+		reportarError(err, { requestId: "req-500", usuarioId: 42 });
 
 		expect(setTag).toHaveBeenCalledWith("requestId", "req-500");
 		expect(setUser).toHaveBeenCalledWith({ id: "42" });

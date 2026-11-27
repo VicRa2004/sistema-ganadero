@@ -12,6 +12,12 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    # Los tests unitarios importan módulos que validan env al cargarse (src/core/config/env.ts).
+    # BD inalcanzable a propósito: aquí no hay Postgres y ningún test unitario debe conectarse.
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:1/unit
+      JWT_SECRET: unit-test-secret
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
